@@ -7,7 +7,9 @@ export default function Home() {
       <Card className="max-w-md">
         <CardContent className="space-y-4 p-6">
           <h1 className="text-2xl font-bold">Project Lung</h1>
-          <p className="text-muted-foreground">EV bus dispatch decision support system</p>
+          <p className="text-muted-foreground">
+            EV bus dispatch decision support system
+          </p>
           <Button>Test Button</Button>
         </CardContent>
       </Card>
