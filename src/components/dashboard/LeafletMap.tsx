@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useFleetStore } from "@/store/fleetStore";
 
 const ROUTES = [
   {
@@ -91,6 +92,7 @@ export function LeafletMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null);
+  const { drivers } = useFleetStore();
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -177,30 +179,50 @@ export function LeafletMap() {
           smoothFactor: 1,
         }).addTo(map);
 
-        const last = route.points[Math.floor(route.points.length / 2)];
-        const labelIcon = L.divIcon({
-          className: "",
-          html: `
-            <div style="
-              background: ${route.color};
-              color: white;
-              font-size: 11px;
-              font-weight: bold;
-              padding: 2px 6px;
-              border-radius: 4px;
-              white-space: nowrap;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-              font-family: sans-serif;
-              border: 1px solid white;
-            ">${route.labelShort}</div>
-          `,
-          iconAnchor: [0, 12],
-        });
-        L.marker(last, { icon: labelIcon, interactive: false }).addTo(map);
         polyline.bindPopup(`<b>${route.label}</b>`);
 
+        // Bus Stops
+        route.points.forEach((point, index) => {
+          const prefix = route.id === "red" ? "R" : route.id === "blue" ? "B" : "G";
+          const stopCode = prefix + (index + 1);
+          
+          const stopIcon = L.divIcon({
+            className: "",
+            iconSize: [28, 18],
+            html: `
+              <div style="
+                width: 100%;
+                height: 100%;
+                background: ${route.color};
+                color: white;
+                font-size: 10px;
+                font-weight: bold;
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border: 1.5px solid white;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                font-family: sans-serif;
+              ">${stopCode}</div>
+            `,
+            iconAnchor: [14, 9],
+          });
+          L.marker(point, { icon: stopIcon, interactive: false }).addTo(map);
+        });
+
+        // Map route.id to driver route string
+        const routeIdMap: Record<string, string> = {
+          red: "Line 1",
+          blue: "Line 2",
+          green: "Line 3",
+        };
+        const routeDrivers = drivers.filter(d => d.route === routeIdMap[route.id] && d.status === "Active");
+
         // Buses
-        for(let i=0; i<3; i++) {
+        for(let i=0; i<5; i++) {
+          const driver = routeDrivers.length > 0 ? routeDrivers[i % routeDrivers.length] : null;
+
           const busHtml = L.divIcon({
             className: "",
             html: `
@@ -230,37 +252,27 @@ export function LeafletMap() {
           });
           
           const marker = L.marker(route.points[0], { icon: busHtml, zIndexOffset: 1000 }).addTo(map);
+          
+          if (driver) {
+            marker.bindPopup(`
+              <div style="font-family: sans-serif; text-align: center; padding: 4px;">
+                <b style="font-size: 13px;">${driver.name} ${driver.surname}</b><br/>
+                <span style="font-size: 11px; color: #64748b;">รหัส: ${driver.code}</span><br/>
+                <span style="font-size: 11px; font-weight: bold; color: ${route.color};">รถ: ${driver.vehicle}</span>
+              </div>
+            `, { closeButton: false, offset: [0, -10] });
+          }
+
           busMarkers.push({
             marker,
             route,
-            progress: i * 0.33,
+            progress: i * 0.20,
             speed: 0.00015 + (Math.random() * 0.00010), // Realistic, slower speed
             direction: 1
           });
         }
       });
 
-      // You are here marker
-      const youAreHereIcon = L.divIcon({
-        className: "",
-        html: `
-          <div style="position: relative; display: flex; align-items: center; justify-content: center;">
-            <div style="position: absolute; width: 48px; height: 48px; background-color: #3b82f6; border-radius: 50%; opacity: 0.3; animation: ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-            <div style="
-              background: #2563eb;
-              border: 3px solid white;
-              width: 18px;
-              height: 18px;
-              border-radius: 50%;
-              box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-              z-index: 10;
-            "></div>
-          </div>
-        `,
-        iconSize: [48, 48],
-        iconAnchor: [24, 24],
-      });
-      L.marker([13.7934, 100.3225], { icon: youAreHereIcon, zIndexOffset: 2000 }).addTo(map);
 
       function getPointOnRoute(points: [number, number][], progress: number): [number, number] {
         const totalSegments = points.length - 1;
