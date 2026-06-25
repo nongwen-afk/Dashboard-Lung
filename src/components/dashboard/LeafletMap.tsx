@@ -134,6 +134,8 @@ export function LeafletMap() {
         minZoom: 14.5,
         zoomSnap: 0.1,
         zoomDelta: 0.5,
+        wheelPxPerZoomLevel: 20,
+        wheelDebounceTime: 20,
         maxBounds: campusBounds,
         maxBoundsViscosity: 1.0,
         zoomControl: false,
@@ -170,14 +172,16 @@ export function LeafletMap() {
       }[] = [];
 
       ROUTES.forEach((route) => {
-        L.polyline(route.points, {
+        const closedPoints = [...route.points, route.points[0]];
+        
+        L.polyline(closedPoints, {
           color: 'white',
           weight: 7,
           opacity: 0.8,
           smoothFactor: 1,
         }).addTo(map);
 
-        const polyline = L.polyline(route.points, {
+        const polyline = L.polyline(closedPoints, {
           color: route.color,
           weight: 4,
           opacity: 0.9,

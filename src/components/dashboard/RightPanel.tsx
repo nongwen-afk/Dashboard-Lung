@@ -6,7 +6,7 @@ import { Users } from "lucide-react";
 import { useFleetStore } from "@/store/fleetStore";
 
 export function RightPanel() {
-  const { panelsCollapsed } = useFleetStore();
+  const { panelsCollapsed, mapOnly } = useFleetStore();
 
   return (
     <aside
@@ -20,7 +20,10 @@ export function RightPanel() {
         /* Curtain animation: expands from 370 px → 50 % when closing */
         width: panelsCollapsed ? "50%" : "370px",
         borderRadius: panelsCollapsed ? "16px 0px 0px 16px" : "16px",
-        transition: "width 0.5s cubic-bezier(0.4, 0, 0.2, 1), right 0.5s cubic-bezier(0.4, 0, 0.2, 1), top 0.5s cubic-bezier(0.4, 0, 0.2, 1), bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+        transform: mapOnly ? "translateX(120%)" : "translateX(0)",
+        opacity: mapOnly ? 0 : 1,
+        pointerEvents: mapOnly ? "none" : "auto",
+        transition: "transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1), width 0.5s cubic-bezier(0.4, 0, 0.2, 1), right 0.5s cubic-bezier(0.4, 0, 0.2, 1), top 0.5s cubic-bezier(0.4, 0, 0.2, 1), bottom 0.5s cubic-bezier(0.4, 0, 0.2, 1), border-radius 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
         background: "linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%)",
         border: panelsCollapsed ? "none" : "1px solid rgba(26,26,46,0.06)",
         boxShadow: panelsCollapsed ? "-4px 0 32px rgba(26,26,46,0.08)" : "0 8px 32px rgba(26,26,46,0.14), 0 2px 8px rgba(26,26,46,0.08)",

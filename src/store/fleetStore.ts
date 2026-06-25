@@ -17,7 +17,8 @@ interface FleetState {
   searchQuery: string;
   toast: { message: string; visible: boolean };
   panelsCollapsed: boolean;
-
+  mapOnly: boolean;
+  
   // Actions
   setSelectedReserve: (reserve: ReserveDriver | null) => void;
   openModal: (driverId: number) => void;
@@ -30,6 +31,7 @@ interface FleetState {
   hideToast: () => void;
   updatePassengerLoad: (routeId: string, load: number) => void;
   togglePanels: () => void;
+  toggleMapOnly: () => void;
 }
 
 export const useFleetStore = create<FleetState>((set, get) => ({
@@ -45,6 +47,8 @@ export const useFleetStore = create<FleetState>((set, get) => ({
   searchQuery: "",
   toast: { message: "", visible: false },
   panelsCollapsed: false,
+
+  mapOnly: false,
 
   setSelectedReserve: (reserve) => set({ selectedReserve: reserve }),
 
@@ -107,4 +111,5 @@ export const useFleetStore = create<FleetState>((set, get) => ({
     })),
 
   togglePanels: () => set((s) => ({ panelsCollapsed: !s.panelsCollapsed })),
+  toggleMapOnly: () => set((s) => ({ mapOnly: !s.mapOnly })),
 }));

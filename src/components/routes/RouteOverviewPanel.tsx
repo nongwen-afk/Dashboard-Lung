@@ -5,11 +5,11 @@ import { RouteSection } from "./RouteSection";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/store/fleetStore";
 import type { RouteId } from "@/types";
-import { CalendarClock, Activity } from "lucide-react";
+import { CalendarClock, Activity, Maximize } from "lucide-react";
 import { PanelToggleButton } from "@/components/ui/PanelToggleButton";
 
 export function RouteOverviewPanel() {
-  const { routes, drivers, panelsCollapsed } = useFleetStore();
+  const { routes, drivers, panelsCollapsed, mapOnly, toggleMapOnly } = useFleetStore();
   const [timetableOpen, setTimetableOpen] = useState(false);
   const [timetableRoute, setTimetableRoute] = useState<RouteId>("L1");
 
@@ -38,6 +38,9 @@ export function RouteOverviewPanel() {
           bottom: panelsCollapsed ? 0 : 12,
           width:  panelsCollapsed ? "50%" : 340,
           borderRadius: panelsCollapsed ? "0px 16px 16px 0px" : "16px 16px 16px 16px",
+          transform: mapOnly ? "translateX(-120%)" : "translateX(0)",
+          opacity: mapOnly ? 0 : 1,
+          pointerEvents: mapOnly ? "none" : "auto",
           /* Fully opaque when covering the map; glass when overlaid on map */
           background: panelsCollapsed ? "#ffffff" : "rgba(255,255,255,0.95)",
           backdropFilter: panelsCollapsed ? "none" : "blur(20px) saturate(180%)",
@@ -78,6 +81,22 @@ export function RouteOverviewPanel() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={toggleMapOnly}
+              title="ซ่อนหน้าต่าง (Map Only)"
+              className="p-1.5 rounded-lg transition-all duration-200 flex-shrink-0 group"
+              style={{ background: "rgba(37,99,235,0.07)" }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(37,99,235,0.14)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 8px rgba(37,99,235,0.18)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(37,99,235,0.07)";
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = "none";
+              }}
+            >
+              <Maximize className="w-4 h-4 text-[#1e3a8a]" />
+            </button>
             <PanelToggleButton />
             <button
               onClick={() => openTimetable("L1")}
