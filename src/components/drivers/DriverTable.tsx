@@ -169,7 +169,7 @@ export function DriverTable() {
                     {/* Name */}
                     <td className="px-2 py-1.5">
                       <div className="flex items-center gap-1.5">
-                        <Avatar name={d.name} size="xs" color={isLeave ? "#94a3b8" : undefined} />
+                        <Avatar name={d.name} size="xs" color={isLeave ? "#94a3b8" : rc} />
                         <div className="min-w-0">
                           <span className={`block leading-tight ${isLeave ? "text-gray-400" : "text-[#0f172a] font-medium"} ${exp ? "text-[12px]" : "text-[10px]"}`}>
                             {d.name} {d.surname}

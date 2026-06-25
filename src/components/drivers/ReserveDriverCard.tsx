@@ -72,7 +72,7 @@ export function ReserveDriverCard({ driver }: ReserveDriverCardProps) {
       <Avatar
         name={driver.name}
         size={compact ? "xs" : "md"}
-        color={isAssigned ? "#94a3b8" : driver.color}
+        color="#cbd5e1"
         className="mx-auto mb-1 relative z-10"
       />
       <p className={cn("font-bold text-center text-[#0f172a] relative z-10", compact ? "text-[9px]" : "text-[11px]")}>{driver.name}</p>

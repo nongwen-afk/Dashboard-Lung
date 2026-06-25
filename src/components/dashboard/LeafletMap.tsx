@@ -92,7 +92,9 @@ export function LeafletMap() {
   const mapRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null);
-  const { drivers } = useFleetStore();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const busMarkersRef = useRef<any[]>([]);
+  const { drivers, focusDriverId } = useFleetStore();
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -277,10 +279,13 @@ export function LeafletMap() {
             route,
             progress: i * 0.20,
             speed: 0.00015 + (Math.random() * 0.00010), // Realistic, slower speed
-            direction: 1
+            direction: 1,
+            driverId: driver ? driver.id : null
           });
         }
       });
+
+      busMarkersRef.current = busMarkers;
 
 
       function getPointOnRoute(points: [number, number][], progress: number): [number, number] {
@@ -347,6 +352,18 @@ export function LeafletMap() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (focusDriverId && mapInstanceRef.current && busMarkersRef.current.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const bus = busMarkersRef.current.find((b: any) => b.driverId === focusDriverId);
+      if (bus && bus.marker) {
+        const latLng = bus.marker.getLatLng();
+        mapInstanceRef.current.flyTo(latLng, 16.5, { duration: 1.0 });
+        bus.marker.openPopup();
+      }
+    }
+  }, [focusDriverId]);
 
   return (
     <div className="relative w-full h-full">

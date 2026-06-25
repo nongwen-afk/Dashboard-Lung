@@ -32,6 +32,8 @@ interface FleetState {
   updatePassengerLoad: (routeId: string, load: number) => void;
   togglePanels: () => void;
   toggleMapOnly: () => void;
+  focusDriverId: number | null;
+  setFocusDriverId: (id: number | null) => void;
 }
 
 export const useFleetStore = create<FleetState>((set, get) => ({
@@ -112,4 +114,7 @@ export const useFleetStore = create<FleetState>((set, get) => ({
 
   togglePanels: () => set((s) => ({ panelsCollapsed: !s.panelsCollapsed })),
   toggleMapOnly: () => set((s) => ({ mapOnly: !s.mapOnly })),
+  
+  focusDriverId: null,
+  setFocusDriverId: (id) => set({ focusDriverId: id }),
 }));

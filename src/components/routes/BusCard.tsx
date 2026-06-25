@@ -1,6 +1,10 @@
+"use client";
+
 import { Avatar } from "@/components/ui/Avatar";
 import type { Driver } from "@/types";
 import { cn } from "@/lib/utils";
+
+import { useFleetStore } from "@/store/fleetStore";
 
 interface BusCardProps {
   driver: Driver;
@@ -10,11 +14,13 @@ interface BusCardProps {
 
 export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
   const isLeave = driver.status === "Leave";
+  const { setFocusDriverId } = useFleetStore();
 
   /* ─── EXPANDED: horizontal list-row style ─── */
   if (expanded) {
     return (
       <div
+        onClick={() => !isLeave && setFocusDriverId(driver.id)}
         className={cn(
           "flex items-center gap-2.5 rounded-lg px-2.5 py-2 transition-all duration-200 group cursor-pointer",
           isLeave && "opacity-50"
@@ -52,7 +58,7 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
         <Avatar
           name={driver.name}
           size="xs"
-          color={isLeave ? "#94a3b8" : undefined}
+          color={isLeave ? "#94a3b8" : routeColor}
           className="flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
@@ -79,6 +85,7 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
   /* ─── NORMAL: compact card (unchanged) ─── */
   return (
     <div
+      onClick={() => !isLeave && setFocusDriverId(driver.id)}
       className={cn(
         "rounded-lg p-1.5 min-w-[56px] cursor-pointer relative overflow-hidden",
         "transition-all duration-200 group",
@@ -125,7 +132,7 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
       <Avatar
         name={driver.name}
         size="xs"
-        color={isLeave ? "#94a3b8" : undefined}
+        color={isLeave ? "#94a3b8" : routeColor}
         className="mx-auto mb-0.5 relative z-10"
       />
       <p className="text-[7px] text-center text-gray-500 truncate max-w-[52px] relative z-10">{driver.name}</p>
