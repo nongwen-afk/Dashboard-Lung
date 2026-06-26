@@ -171,7 +171,8 @@ export function LeafletMap() {
         progress: number, 
         speed: number, 
         direction: number,
-        driverId: number | null
+        driverId: number | null,
+        displaySpeed: number
       }[] = [];
 
       ROUTES.forEach((route) => {
@@ -235,6 +236,16 @@ export function LeafletMap() {
         for(let i=0; i<5; i++) {
           const driver = routeDrivers.length > 0 ? routeDrivers[i % routeDrivers.length] : null;
 
+          const busObj = {
+            marker: null as any,
+            route,
+            progress: i * 0.20,
+            speed: 0.00015 + (Math.random() * 0.00010),
+            direction: 1,
+            driverId: driver ? driver.id : null,
+            displaySpeed: Math.floor(Math.random() * 60) + 40
+          };
+
           const busHtml = L.divIcon({
             className: "",
             html: `
@@ -251,12 +262,30 @@ export function LeafletMap() {
                   border-radius: 50%;
                   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
                   z-index: 10;
-                  transition: transform 0.1s linear;
+                  transition: transform 0.1s linear, border-color 0.3s, color 0.3s, box-shadow 0.3s;
                 ">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 19V5M5 12l7-7 7 7"/>
                   </svg>
                 </div>
+                <div class="speed-warning-badge" style="
+                  position: absolute;
+                  top: -4px;
+                  right: -4px;
+                  background: #ef4444;
+                  color: white;
+                  border-radius: 50%;
+                  width: 16px;
+                  height: 16px;
+                  display: none;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 10px;
+                  font-weight: bold;
+                  z-index: 20;
+                  border: 2px solid white;
+                  animation: pulseAlert 1s infinite;
+                ">!</div>
               </div>
             `,
             iconSize: [32, 32],
@@ -264,25 +293,36 @@ export function LeafletMap() {
           });
           
           const marker = L.marker(route.points[0], { icon: busHtml, zIndexOffset: 1000 }).addTo(map);
+          busObj.marker = marker;
           
-          if (driver) {
-            marker.bindPopup(`
+          marker.on('click', () => {
+            const displaySpeed = busObj.displaySpeed;
+            let warningHtml = '';
+            
+            if (displaySpeed > 80) {
+              warningHtml = '<br/><span style="font-size: 11px; font-weight: bold; color: #ef4444;">⚠️ เตือน: ความเร็วเกิน 80 km/h!</span>';
+            }
+
+            const popupContent = driver ? `
               <div style="font-family: sans-serif; text-align: center; padding: 4px;">
                 <b style="font-size: 13px;">${driver.name} ${driver.surname}</b><br/>
                 <span style="font-size: 11px; color: #64748b;">รหัส: ${driver.code}</span><br/>
-                <span style="font-size: 11px; font-weight: bold; color: ${route.color};">รถ: ${driver.vehicle}</span>
+                <span style="font-size: 11px; font-weight: bold; color: ${route.color};">รถ: ${driver.vehicle}</span><br/>
+                <span style="font-size: 11px; font-weight: bold; color: ${displaySpeed > 80 ? '#ef4444' : '#10b981'};">ความเร็ว: ${displaySpeed} km/h</span>
+                ${warningHtml}
               </div>
-            `, { closeButton: false, offset: [0, -10] });
-          }
+            ` : `
+              <div style="font-family: sans-serif; text-align: center; padding: 4px;">
+                <span style="font-size: 11px; font-weight: bold; color: ${route.color};">รถบัสไม่ระบุ</span><br/>
+                <span style="font-size: 11px; font-weight: bold; color: ${displaySpeed > 80 ? '#ef4444' : '#10b981'};">ความเร็ว: ${displaySpeed} km/h</span>
+                ${warningHtml}
+              </div>
+            `;
 
-          busMarkers.push({
-            marker,
-            route,
-            progress: i * 0.20,
-            speed: 0.00015 + (Math.random() * 0.00010), // Realistic, slower speed
-            direction: 1,
-            driverId: driver ? driver.id : null
+            marker.bindPopup(popupContent, { closeButton: false, offset: [0, -10] }).openPopup();
           });
+
+          busMarkers.push(busObj);
         }
       });
 
@@ -328,13 +368,32 @@ export function LeafletMap() {
           const dLat = newPos[0] - oldPos[0];
           const dLng = newPos[1] - oldPos[1];
           
+          // Update display speed randomly for simulation
+          if (Math.random() < 0.02) {
+            const change = Math.floor(Math.random() * 11) - 5;
+            b.displaySpeed = Math.max(40, Math.min(100, b.displaySpeed + change));
+          }
+
           if (Math.abs(dLat) > 0.000001 || Math.abs(dLng) > 0.000001) {
             let angle = Math.atan2(dLng, dLat) * 180 / Math.PI;
             const el = b.marker.getElement();
             if (el) {
               const inner = el.querySelector('.bus-icon-inner') as HTMLElement;
+              const badge = el.querySelector('.speed-warning-badge') as HTMLElement;
               if (inner) {
                 inner.style.transform = `rotate(${angle}deg)`;
+                
+                if (b.displaySpeed > 80) {
+                  inner.style.borderColor = '#ef4444';
+                  inner.style.color = '#ef4444';
+                  inner.style.boxShadow = '0 0 12px rgba(239, 68, 68, 0.8)';
+                  if (badge) badge.style.display = 'flex';
+                } else {
+                  inner.style.borderColor = b.route.color;
+                  inner.style.color = b.route.color;
+                  inner.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+                  if (badge) badge.style.display = 'none';
+                }
               }
             }
           }
@@ -361,7 +420,7 @@ export function LeafletMap() {
       if (bus && bus.marker) {
         const latLng = bus.marker.getLatLng();
         mapInstanceRef.current.flyTo(latLng, 16.5, { duration: 1.0 });
-        bus.marker.openPopup();
+        bus.marker.fire('click');
       }
     }
   }, [focusDriverId]);
@@ -381,6 +440,11 @@ export function LeafletMap() {
             transform: scale(2);
             opacity: 0;
           }
+        }
+        @keyframes pulseAlert {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.3); }
+          100% { transform: scale(1); }
         }
       `}</style>
       <div ref={mapRef} className="absolute inset-0 bg-[#f1f5f9]" />
