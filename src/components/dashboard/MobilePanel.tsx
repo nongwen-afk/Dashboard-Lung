@@ -12,8 +12,8 @@ import type { RouteId } from "@/types";
 type SheetState = "peek" | "full";
 
 const SHEET_HEIGHTS: Record<SheetState, string> = {
-  peek: "64px",
-  full: "88%",
+  peek: "calc(100% - 64px)",
+  full: "0%",
 };
 
 export function MobilePanel() {
@@ -68,8 +68,10 @@ export function MobilePanel() {
       <div
         className="absolute left-0 right-0 bottom-0 z-[800] flex flex-col"
         style={{
-          height: SHEET_HEIGHTS[sheetState],
-          transition: "height 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
+          height: "88vh", // Use constant height to prevent layout reflows during animation
+          transform: `translateY(${SHEET_HEIGHTS[sheetState]})`,
+          transition: "transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
+          willChange: "transform",
           borderRadius: "20px 20px 0 0",
           background: "linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%)",
           boxShadow: "0 -8px 40px rgba(26,26,46,0.18), 0 -1px 0 rgba(26,26,46,0.06)",

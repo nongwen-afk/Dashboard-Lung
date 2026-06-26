@@ -103,7 +103,8 @@ export function LeafletMap() {
 
     let L: typeof import("leaflet");
     let map: import("leaflet").Map;
-    let animationInterval: NodeJS.Timeout;
+    let animationFrameId: number;
+    let speedInterval: NodeJS.Timeout;
 
     (async () => {
       if (!mapRef.current) return;
@@ -173,7 +174,9 @@ export function LeafletMap() {
         direction: number,
         driverId: number | null,
         displaySpeed: number,
-        isSpeeding: boolean
+        isSpeeding: boolean,
+        innerEl: HTMLElement | null,
+        badgeEl: HTMLElement | null
       }[] = [];
 
       ROUTES.forEach((route) => {
@@ -245,13 +248,15 @@ export function LeafletMap() {
             direction: 1,
             driverId: driver ? driver.id : null,
             displaySpeed: Math.random() < 0.05 ? Math.floor(Math.random() * 15) + 81 : Math.floor(Math.random() * 35) + 40,
-            isSpeeding: false
+            isSpeeding: false,
+            innerEl: null as HTMLElement | null,
+            badgeEl: null as HTMLElement | null
           };
 
           const busHtml = L.divIcon({
             className: "",
             html: `
-              <div class="bus-icon-container" style="position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+              <div class="bus-icon-container" style="position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transform: translateZ(0); will-change: transform;">
                 <div class="bus-icon-inner" style="
                   background: white;
                   border: 3px solid ${route.color};
@@ -265,6 +270,8 @@ export function LeafletMap() {
                   box-shadow: 0 2px 6px rgba(0,0,0,0.3);
                   z-index: 10;
                   transition: transform 0.1s linear, border-color 0.3s, color 0.3s, box-shadow 0.3s;
+                  transform: translateZ(0);
+                  will-change: transform, border-color;
                 ">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 19V5M5 12l7-7 7 7"/>
@@ -355,11 +362,52 @@ export function LeafletMap() {
         ];
       }
 
-      animationInterval = setInterval(() => {
+      // Separate speed simulation logic into a less frequent interval
+      speedInterval = setInterval(() => {
+        busMarkers.forEach(b => {
+          if (b.displaySpeed > 80) {
+            if (Math.random() < 0.8) {
+              b.displaySpeed = Math.floor(Math.random() * 20) + 60; // 60-79
+            } else {
+              b.displaySpeed = Math.min(100, b.displaySpeed + Math.floor(Math.random() * 5) - 2);
+            }
+          } else {
+            if (Math.random() < 0.05) { 
+              b.displaySpeed = Math.floor(Math.random() * 15) + 81; // 81-95
+            } else {
+              const change = Math.floor(Math.random() * 11) - 5;
+              b.displaySpeed = Math.max(40, Math.min(79, b.displaySpeed + change));
+            }
+          }
+
+          if (b.displaySpeed > 80) {
+            if (!b.isSpeeding) {
+              b.isSpeeding = true;
+              const driverData = useFleetStore.getState().drivers.find(d => d.id === b.driverId);
+              useFleetStore.getState().addSpeedingLog({
+                driverName: driverData ? `${driverData.name} ${driverData.surname}` : "ไม่ระบุ",
+                vehicle: driverData ? driverData.vehicle : "รถบัส",
+                speed: b.displaySpeed
+              });
+            }
+          } else {
+            b.isSpeeding = false;
+          }
+        });
+      }, 2000); // Check speed every 2 seconds
+
+      let lastTime = performance.now();
+      
+      const animate = (time: number) => {
+        const deltaTime = time - lastTime;
+        lastTime = time;
+        // Normalize speed to 50ms ticks to keep movement consistent with previous code
+        const timeScale = Math.min(deltaTime / 50, 3); 
+
         busMarkers.forEach(b => {
           const oldPos = getPointOnRoute(b.route.points, b.progress);
           
-          b.progress += b.speed;
+          b.progress += (b.speed * timeScale);
           if (b.progress >= 1) {
             b.progress = 0;
           }
@@ -370,65 +418,47 @@ export function LeafletMap() {
           const dLat = newPos[0] - oldPos[0];
           const dLng = newPos[1] - oldPos[1];
           
-          // Update display speed randomly for simulation
-          if (Math.random() < 0.02) {
-            if (b.displaySpeed > 80) {
-              if (Math.random() < 0.8) {
-                b.displaySpeed = Math.floor(Math.random() * 20) + 60; // 60-79
-              } else {
-                b.displaySpeed = Math.min(100, b.displaySpeed + Math.floor(Math.random() * 5) - 2);
-              }
-            } else {
-              if (Math.random() < 0.03) {
-                b.displaySpeed = Math.floor(Math.random() * 15) + 81; // 81-95
-              } else {
-                const change = Math.floor(Math.random() * 11) - 5;
-                b.displaySpeed = Math.max(40, Math.min(79, b.displaySpeed + change));
-              }
-            }
-          }
-
           if (Math.abs(dLat) > 0.000001 || Math.abs(dLng) > 0.000001) {
             let angle = Math.atan2(dLng, dLat) * 180 / Math.PI;
             const el = b.marker.getElement();
             if (el) {
-              const inner = el.querySelector('.bus-icon-inner') as HTMLElement;
-              const badge = el.querySelector('.speed-warning-badge') as HTMLElement;
-              if (inner) {
-                inner.style.transform = `rotate(${angle}deg)`;
+              // Cache DOM queries to save CPU on low-end devices
+              if (!b.innerEl || !b.badgeEl) {
+                b.innerEl = el.querySelector('.bus-icon-inner') as HTMLElement | null;
+                b.badgeEl = el.querySelector('.speed-warning-badge') as HTMLElement | null;
+              }
+
+              if (b.innerEl) {
+                // Combine transforms into a single string
+                b.innerEl.style.transform = `translateZ(0) rotate(${angle}deg)`;
                 
-                if (b.displaySpeed > 80) {
-                  if (!b.isSpeeding) {
-                    b.isSpeeding = true;
-                    const driverData = useFleetStore.getState().drivers.find(d => d.id === b.driverId);
-                    useFleetStore.getState().addSpeedingLog({
-                      driverName: driverData ? `${driverData.name} ${driverData.surname}` : "ไม่ระบุ",
-                      vehicle: driverData ? driverData.vehicle : "รถบัส",
-                      speed: b.displaySpeed
-                    });
-                  }
-                  inner.style.borderColor = '#ef4444';
-                  inner.style.color = '#ef4444';
-                  inner.style.boxShadow = '0 0 12px rgba(239, 68, 68, 0.8)';
-                  if (badge) badge.style.display = 'flex';
+                if (b.isSpeeding) {
+                  b.innerEl.style.borderColor = '#ef4444';
+                  b.innerEl.style.color = '#ef4444';
+                  b.innerEl.style.boxShadow = '0 0 12px rgba(239, 68, 68, 0.8)';
+                  if (b.badgeEl) b.badgeEl.style.display = 'flex';
                 } else {
-                  b.isSpeeding = false;
-                  inner.style.borderColor = b.route.color;
-                  inner.style.color = b.route.color;
-                  inner.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
-                  if (badge) badge.style.display = 'none';
+                  b.innerEl.style.borderColor = b.route.color;
+                  b.innerEl.style.color = b.route.color;
+                  b.innerEl.style.boxShadow = '0 2px 6px rgba(0,0,0,0.3)';
+                  if (b.badgeEl) b.badgeEl.style.display = 'none';
                 }
               }
             }
           }
         });
-      }, 50);
+        
+        animationFrameId = requestAnimationFrame(animate);
+      };
+      
+      animationFrameId = requestAnimationFrame(animate);
 
       mapInstanceRef.current = map;
     })();
 
     return () => {
-      if (animationInterval) clearInterval(animationInterval);
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      if (speedInterval) clearInterval(speedInterval);
       const m = mapInstanceRef.current;
       if (m) {
         m.remove();

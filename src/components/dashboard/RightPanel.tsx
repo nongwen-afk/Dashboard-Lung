@@ -30,6 +30,8 @@ export function RightPanel() {
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
+        willChange: "transform, width, right, top, bottom, opacity",
+        contain: "layout paint style",
       }}
     >
       {/* Panel Header */}
