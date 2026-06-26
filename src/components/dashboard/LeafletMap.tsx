@@ -243,7 +243,7 @@ export function LeafletMap() {
             speed: 0.00015 + (Math.random() * 0.00010),
             direction: 1,
             driverId: driver ? driver.id : null,
-            displaySpeed: Math.floor(Math.random() * 60) + 40
+            displaySpeed: Math.random() < 0.05 ? Math.floor(Math.random() * 15) + 81 : Math.floor(Math.random() * 35) + 40
           };
 
           const busHtml = L.divIcon({
@@ -370,8 +370,20 @@ export function LeafletMap() {
           
           // Update display speed randomly for simulation
           if (Math.random() < 0.02) {
-            const change = Math.floor(Math.random() * 11) - 5;
-            b.displaySpeed = Math.max(40, Math.min(100, b.displaySpeed + change));
+            if (b.displaySpeed > 80) {
+              if (Math.random() < 0.8) {
+                b.displaySpeed = Math.floor(Math.random() * 20) + 60; // 60-79
+              } else {
+                b.displaySpeed = Math.min(100, b.displaySpeed + Math.floor(Math.random() * 5) - 2);
+              }
+            } else {
+              if (Math.random() < 0.03) {
+                b.displaySpeed = Math.floor(Math.random() * 15) + 81; // 81-95
+              } else {
+                const change = Math.floor(Math.random() * 11) - 5;
+                b.displaySpeed = Math.max(40, Math.min(79, b.displaySpeed + change));
+              }
+            }
           }
 
           if (Math.abs(dLat) > 0.000001 || Math.abs(dLng) > 0.000001) {
