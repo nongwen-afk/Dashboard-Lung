@@ -1,7 +1,18 @@
 # ER Diagram v1
 
+## Overview
+
 This document is the V1 source of truth for Project Lung database relationships
 before Drizzle Schema work begins.
+
+Project Lung is a Decision Support System for EV Bus Dispatch Operations. This
+diagram defines the first agreed relationship model for the MVP dispatch flow:
+drivers, vehicles, routes, daily assignments, operational events, and
+recommendations that require dispatcher review.
+
+![ER Diagram v1](./assets/er-diagram-v1.png)
+
+[Download SVG](./assets/er-diagram-v1.svg)
 
 Scope:
 
@@ -10,9 +21,20 @@ Scope:
 - Final table names and auth-related user modeling must be reviewed again during
   Better Auth integration.
 
-## Core Tables
+## High-Level Structure
 
-The confirmed V1 core tables are:
+ER Diagram v1 is organized into three layers:
+
+- Master data: stable reference records used by dispatch operations.
+- Primary driver history: long-term vehicle-to-driver pairing history.
+- Daily operations, decisions, and logs: scheduled departures, operational
+  events, and system recommendations.
+
+The visual diagram uses solid lines for required core relationships and dashed
+lines for nullable or contextual relationships. Labels are placed outside entity
+boxes so the table fields remain readable in the PNG and SVG assets.
+
+The confirmed V1 core entities are:
 
 - `users`
 - `drivers`
@@ -22,6 +44,173 @@ The confirmed V1 core tables are:
 - `assignments`
 - `events`
 - `recommendations`
+
+## 1. Master Data
+
+Master data tables hold stable records that daily operations reference. These
+tables should change less frequently than assignments, events, and
+recommendations.
+
+### users
+
+`users` represents authenticated system users, such as admins and dispatchers.
+It is used by operational audit fields, including:
+
+- `events.created_by`
+- `recommendations.resolved_by`
+
+Expected user roles include:
+
+- `admin`
+- `dispatcher`
+
+Drivers are not the same as authenticated users. A driver can exist as an
+operational person even if that driver never signs in to the system.
+
+### drivers
+
+`drivers` stores driver master data.
+
+Driver examples:
+
+- Primary driver
+- Reserve driver
+
+Expected driver status values include:
+
+- `active`
+- `leave`
+- `absent`
+- `inactive`
+
+Drivers connect to daily operations through `assignments`. Drivers also connect
+to long-term vehicle pairing history through `vehicle_primary_drivers`.
+
+### vehicles
+
+`vehicles` stores EV bus master data.
+
+Expected vehicle status values include:
+
+- `available`
+- `running`
+- `maintenance`
+- `breakdown`
+- `inactive`
+
+Vehicles must not store a route directly. A route is chosen for each scheduled
+departure, so route assignment belongs in `assignments`, not `vehicles`.
+
+Vehicles also must not store a direct `primary_driver_id`. The primary driver
+relationship needs history, so it belongs in `vehicle_primary_drivers`.
+
+### routes
+
+`routes` stores route master data.
+
+MVP route names are color names:
+
+- Green Line
+- Red Line
+- Blue Line
+
+Routes connect to daily operations through `assignments`. A vehicle can run
+different routes across different assignments, so the route relationship is
+assignment-specific.
+
+## 2. Primary Driver History
+
+Primary-driver history is separated from daily assignment data because it
+describes long-term default pairing, not a single scheduled departure.
+
+### vehicle_primary_drivers
+
+`vehicle_primary_drivers` stores long-term vehicle-to-primary-driver
+relationships and preserves history when a vehicle changes its primary driver.
+
+Each record connects:
+
+- `vehicle_id`
+- `driver_id`
+- `start_date`
+- `end_date`
+- `is_active`
+
+This table is intentionally separate from `vehicles`. Storing
+`primary_driver_id` directly on `vehicles` would overwrite history whenever a
+primary driver changes.
+
+This table is also separate from `assignments`. A primary driver is the usual
+long-term pairing, while an assignment is one scheduled departure that may use a
+reserve driver or temporary replacement.
+
+## 3. Daily Operations / Decision & Logs
+
+Daily operations tables represent the dispatch workflow itself. `assignments`
+is the center of this layer.
+
+### assignments
+
+`assignments` represents one scheduled departure, or one dispatch queue item.
+
+An assignment connects:
+
+- `assignment_date`
+- `departure_time`
+- `vehicle_id`
+- `driver_id`
+- `route_id`
+- `status`
+- `note`
+
+`assignments` is the heart of daily operations. It is where the system decides
+which vehicle, driver, and route are used for a specific departure time.
+
+Events and recommendations attach to assignments so the team can inspect what
+happened and what the system suggested for each dispatch decision.
+
+### events
+
+`events` stores operational log history.
+
+Event examples:
+
+- Driver leave
+- Driver absent
+- Vehicle breakdown
+- Maintenance
+- Driver swap
+- Vehicle swap
+- Manual override
+- Recommendation applied
+
+Events are flexible operational logs. They can reference an assignment, vehicle,
+driver, route, and creator when those values are known, but some event types may
+only have partial context.
+
+Events should be append-only whenever practical so the operations timeline stays
+auditable.
+
+### recommendations
+
+`recommendations` stores system-generated or AI-assisted recommendations.
+
+Recommendation examples:
+
+- Replace driver
+- Replace vehicle
+- Change route
+- Assign reserve driver
+
+Expected recommendation statuses include:
+
+- `pending`
+- `accepted`
+- `rejected`
+- `expired`
+
+Recommendations must not modify operations automatically. A dispatcher must
+approve or reject the recommendation before it affects the operational plan.
 
 ## Mermaid ER Diagram
 
@@ -133,151 +322,49 @@ erDiagram
     users |o--o{ recommendations : resolved_by
 ```
 
-## Relationship Matrix
+## Relationship Summary
 
-| From          | To                        | Foreign key                          | Cardinality | Required in V1         |
+| From          | To                        | Foreign key                          | Cardinality | V1 rule                |
 | ------------- | ------------------------- | ------------------------------------ | ----------- | ---------------------- |
-| `vehicles`    | `vehicle_primary_drivers` | `vehicle_primary_drivers.vehicle_id` | 1:N         | Yes                    |
-| `drivers`     | `vehicle_primary_drivers` | `vehicle_primary_drivers.driver_id`  | 1:N         | Yes                    |
-| `vehicles`    | `assignments`             | `assignments.vehicle_id`             | 1:N         | Yes                    |
-| `drivers`     | `assignments`             | `assignments.driver_id`              | 1:N         | Yes                    |
-| `routes`      | `assignments`             | `assignments.route_id`               | 1:N         | Yes                    |
-| `assignments` | `events`                  | `events.assignment_id`               | 1:N         | Nullable               |
-| `vehicles`    | `events`                  | `events.vehicle_id`                  | 1:N         | Nullable               |
-| `drivers`     | `events`                  | `events.driver_id`                   | 1:N         | Nullable               |
-| `routes`      | `events`                  | `events.route_id`                    | 1:N         | Nullable               |
-| `users`       | `events`                  | `events.created_by`                  | 1:N         | Nullable               |
-| `assignments` | `recommendations`         | `recommendations.assignment_id`      | 1:N         | Yes                    |
+| `drivers`     | `vehicle_primary_drivers` | `vehicle_primary_drivers.driver_id`  | 1:N         | Required               |
+| `vehicles`    | `vehicle_primary_drivers` | `vehicle_primary_drivers.vehicle_id` | 1:N         | Required               |
+| `drivers`     | `assignments`             | `assignments.driver_id`              | 1:N         | Required               |
+| `vehicles`    | `assignments`             | `assignments.vehicle_id`             | 1:N         | Required               |
+| `routes`      | `assignments`             | `assignments.route_id`               | 1:N         | Required               |
+| `assignments` | `events`                  | `events.assignment_id`               | 1:N         | Nullable event context |
+| `assignments` | `recommendations`         | `recommendations.assignment_id`      | 1:N         | Required               |
+| `users`       | `events`                  | `events.created_by`                  | 1:N         | Nullable event creator |
 | `users`       | `recommendations`         | `recommendations.resolved_by`        | 1:N         | Nullable while pending |
 
-## Entity Notes
+Additional event context relationships are allowed in V1:
 
-### `users`
+- `vehicles` to `events` through `events.vehicle_id`
+- `drivers` to `events` through `events.driver_id`
+- `routes` to `events` through `events.route_id`
 
-Stores authenticated system users such as admins and dispatchers.
+## Important Constraints
 
-User roles:
+Primary-driver constraints:
 
-- `admin`
-- `dispatcher`
+- One vehicle can have only one active primary driver.
+- One driver can be the active primary driver for only one vehicle.
+- Future schema work should enforce active uniqueness on `vehicle_id` when
+  `is_active = true`.
+- Future schema work should enforce active uniqueness on `driver_id` when
+  `is_active = true`.
 
-Better Auth may manage its own user table. The final table naming for `users`
-must be reviewed during Better Auth integration. If Better Auth owns the auth
-user table, application-level user data may move to `user_profiles`.
+Assignment scheduling constraints:
 
-### `drivers`
+- `vehicle_id + assignment_date + departure_time` must be unique.
+- `driver_id + assignment_date + departure_time` must be unique.
 
-Stores driver master data.
+These scheduling constraints prevent assigning the same vehicle or driver to
+two departures at the same time.
 
-Driver types:
+## Nullable Relationship Rules
 
-- `primary`
-- `reserve`
-
-Driver status examples:
-
-- `active`
-- `leave`
-- `absent`
-- `inactive`
-
-Drivers are operational people and are not the same as authenticated `users`.
-
-### `vehicles`
-
-Stores EV bus master data.
-
-Vehicle status examples:
-
-- `available`
-- `running`
-- `maintenance`
-- `breakdown`
-- `inactive`
-
-Vehicles must not store route directly. Routes are assigned through
-`assignments`.
-
-### `vehicle_primary_drivers`
-
-Stores long-term vehicle-to-primary-driver relationships and preserves history
-when a vehicle changes primary driver.
-
-The active relationship is identified by:
-
-- `start_date`
-- `end_date`
-- `is_active`
-
-### `routes`
-
-Stores route master data.
-
-MVP route names are color names:
-
-- Green Line
-- Red Line
-- Blue Line
-
-No separate `route_code` is required for V1.
-
-### `assignments`
-
-Stores one scheduled departure.
-
-Assignment is the center of daily operations and connects:
-
-- `assignment_date`
-- `departure_time`
-- `vehicle_id`
-- `driver_id`
-- `route_id`
-- `status`
-
-### `events`
-
-Stores operational event history.
-
-Event examples:
-
-- Driver leave
-- Driver absent
-- Vehicle breakdown
-- Maintenance
-- Driver swap
-- Vehicle swap
-- Manual override
-- Recommendation applied
-
-Events should be append-only whenever practical.
-
-### `recommendations`
-
-Stores system-generated recommendations.
-
-Recommendation examples:
-
-- Replace driver
-- Replace vehicle
-- Change route
-- Assign reserve driver
-
-Recommendation statuses:
-
-- `pending`
-- `accepted`
-- `rejected`
-- `expired`
-
-Recommendations must not modify operations automatically. Dispatcher approval
-is required.
-
-## Nullable Relationship Notes
-
-### Event foreign keys
-
-Event foreign keys can be nullable because an operational event may involve only
-part of the dispatch context.
+Event foreign keys can be nullable because an operational event may only have
+partial dispatch context.
 
 Nullable event foreign keys:
 
@@ -293,11 +380,11 @@ Examples:
 - A driver leave event may reference a driver but not a vehicle.
 - A system-generated event may not have `created_by`.
 
-### Recommendation resolver fields
+`recommendations.assignment_id` is required in V1 because a recommendation is
+attached to an assignment.
 
-`recommendations.assignment_id` is required in V1.
-
-The following fields can be nullable while a recommendation is `pending`:
+The following recommendation fields can be nullable while a recommendation is
+`pending`:
 
 - `recommendations.resolved_by`
 - `recommendations.resolved_at`
@@ -305,46 +392,38 @@ The following fields can be nullable while a recommendation is `pending`:
 When a recommendation is accepted or rejected, the system should record who
 resolved it and when.
 
-## Constraint Notes
-
-### Active primary driver constraints
-
-`vehicle_primary_drivers` must preserve history while enforcing active pairing
-rules.
-
-Required active constraints:
-
-- One active primary driver per vehicle.
-- One active primary vehicle per driver.
-
-Implementation note for future schema work:
-
-- Enforce active uniqueness on `vehicle_id` when `is_active = true`.
-- Enforce active uniqueness on `driver_id` when `is_active = true`.
-
-### Assignment scheduling constraints
-
-One assignment represents one scheduled departure.
-
-Required uniqueness rules:
-
-- `vehicle_id + assignment_date + departure_time` must be unique.
-- `driver_id + assignment_date + departure_time` must be unique.
-
-These constraints prevent scheduling the same vehicle or driver for two
-departures at the same time.
-
 ## Better Auth Note
 
 `users` is the documentation-level table name for authenticated system users in
 this V1 ER diagram.
 
-Before implementing Drizzle Schema, user table naming must be reviewed during
-Better Auth integration. If Better Auth owns a `user` or `users` table,
-application-specific profile fields should move to a separate table such as
-`user_profiles`.
+User table naming must be reviewed again during Better Auth integration. If
+Better Auth manages the `users` table itself, Project Lung may need a separate
+`user_profiles` table for application-level user data such as display name,
+role, and operational preferences.
+
+## What This Diagram Is Not
+
+ER Diagram v1 is not:
+
+- A real database schema.
+- A migration.
+- A final lock on every field.
+- A replacement for Better Auth integration review.
+
+The purpose of this diagram is to create an agreed relationship and structure
+baseline before implementation starts.
 
 ## Next Step
 
-Use this ER Diagram v1 as the source of truth for future Drizzle Schema work
-after the database design and Better Auth table naming are confirmed.
+After ER Diagram v1 passes review, create the first Drizzle Schema work in this
+order:
+
+1. Review Better Auth User Table Strategy
+2. Create Driver Schema
+3. Create Vehicle Schema
+4. Create VehiclePrimaryDriver Schema
+5. Create Route Schema
+6. Create Assignment Schema
+7. Create Event Schema
+8. Create Recommendation Schema
