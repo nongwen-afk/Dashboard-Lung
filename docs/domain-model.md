@@ -15,7 +15,16 @@ The domain model contains eight core entities:
 
 ## User
 
-Represents a system user.
+Represents an authenticated system user conceptually.
+
+Implementation note:
+
+Project Lung user profile data is separate from Better Auth identity data.
+Better Auth owns the auth user identity and related auth tables. Project Lung
+owns `user_profiles` for role, status, display profile fields, and future
+operational preferences.
+
+`user_profiles.user_id` should map 1:1 to the Better Auth user id.
 
 Roles:
 

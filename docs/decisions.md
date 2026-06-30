@@ -149,3 +149,45 @@ Implications:
 - The current `users` table name is documentation-level guidance, not final schema implementation.
 - If needed, application-level user data should move to `user_profiles`.
 - Database schema work must revisit this decision before implementation.
+
+Resolution:
+
+ADR-009 records the implementation decision for Better Auth-owned auth tables
+and Project Lung-owned `user_profiles`.
+
+## ADR-009: Use Better Auth for auth tables and user_profiles for app-level user data
+
+Status: Accepted
+
+Decision:
+
+Better Auth owns the auth core tables for identity, sessions, accounts, and
+verification data.
+
+Project Lung must not create a standalone custom `users` table before Better
+Auth integration. Instead, Project Lung should create `user_profiles` for
+application-level user data.
+
+`user_profiles.user_id` maps 1:1 to the Better Auth user id.
+
+Project Lung role, status, display profile fields, and future operational user
+preferences belong in `user_profiles`, not in the Better Auth auth identity
+table.
+
+Reason:
+
+Better Auth has its own user table and naming conventions. Keeping auth
+identity separate from Project Lung profile data avoids table naming conflicts,
+prevents duplicated identity records, and keeps the application schema focused
+on dispatch-specific user behavior.
+
+Implications:
+
+- Schema work should create `user_profiles`, not a custom standalone `users`
+  table for Project Lung.
+- #17 Create User Schema should be updated later to create `user_profiles`.
+- #29 Setup Better Auth should generate and review Better Auth auth tables
+  before or together with profile schema planning.
+- `events.created_by` and `recommendations.resolved_by` should reference an
+  authenticated system user conceptually, with final foreign key mapping decided
+  during Better Auth and `user_profiles` schema implementation.
