@@ -106,7 +106,7 @@ export function RouteSection({ route, drivers, lineNum, onShowTimetable, expande
       </button>
 
       {/* Bus driver list */}
-      <div className={expanded ? "flex flex-col gap-1.5 flex-1" : "flex gap-1 flex-nowrap"}>
+      <div className={expanded ? "flex flex-col gap-1.5 flex-1" : "flex gap-1.5 flex-wrap"}>
         {drivers.map((d) => (
           <BusCard key={d.id} driver={d} routeColor={route.color} expanded={expanded} />
         ))}

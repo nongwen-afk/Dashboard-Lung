@@ -38,7 +38,7 @@ export function RouteOverviewPanel() {
           left:   panelsCollapsed ? 0 : 12,
           top:    panelsCollapsed ? 0 : 12,
           bottom: panelsCollapsed ? 0 : 12,
-          width:  panelsCollapsed ? "50%" : 576,
+          width:  panelsCollapsed ? "50%" : "var(--left-panel-width)",
           borderRadius: panelsCollapsed ? "0px 16px 16px 0px" : "16px 16px 16px 16px",
           transform: mapOnly ? "translateX(-120%)" : "translateX(0)",
           opacity: mapOnly ? 0 : 1,

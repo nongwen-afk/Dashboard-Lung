@@ -18,7 +18,7 @@ export function RightPanel() {
         bottom: panelsCollapsed ? 0 : 12,
         zIndex: 800,
         /* Curtain animation: expands from 23.125rem → 50 % when closing */
-        width: panelsCollapsed ? "50%" : "27.75rem",
+        width: panelsCollapsed ? "50%" : "var(--right-panel-width)",
         borderRadius: panelsCollapsed ? "16px 0px 0px 16px" : "16px",
         transform: mapOnly ? "translateX(120%)" : "translateX(0)",
         opacity: mapOnly ? 0 : 1,

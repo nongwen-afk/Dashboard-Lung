@@ -16,6 +16,29 @@
   --shadow-xl:   0 20px 60px rgba(15,23,42,0.22), 0 8px 24px rgba(15,23,42,0.12);
   --shadow-brand:0 4px 20px rgba(30, 58, 138, 0.22);
   --shadow-glow: 0 0 0 3px rgba(30, 58, 138, 0.12), 0 4px 20px rgba(30, 58, 138, 0.18);
+  --left-panel-width: 576px;
+  --right-panel-width: 27.75rem;
+}
+
+@media (max-width: 1600px) {
+  :root {
+    --left-panel-width: 480px;
+    --right-panel-width: 23.125rem;
+  }
+}
+
+@media (max-width: 1366px) {
+  :root {
+    --left-panel-width: 420px;
+    --right-panel-width: 20rem;
+  }
+}
+
+@media (max-width: 1100px) {
+  :root {
+    --left-panel-width: 360px;
+    --right-panel-width: 18rem;
+  }
 }
 
 * { box-sizing: border-box; }

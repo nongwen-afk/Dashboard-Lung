@@ -90,7 +90,7 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
     <div
       onClick={() => !isLeave && setFocusDriverId(driver.id)}
       className={cn(
-        "rounded-lg p-1.5 min-w-[5.4rem] cursor-pointer relative overflow-hidden",
+        "rounded-lg p-1.5 flex-1 min-w-[4.8rem] max-w-[5.4rem] cursor-pointer relative overflow-hidden",
         "transition-all duration-200 group",
         isLeave ? "opacity-55" : ""
       )}

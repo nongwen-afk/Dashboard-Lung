@@ -161,7 +161,11 @@ export const useFleetStore = create<FleetState>((set, get) => ({
   
   focusDriverId: null,
   focusTrigger: 0,
-  setFocusDriverId: (id) => set((state) => ({ focusDriverId: id, focusTrigger: state.focusTrigger + 1 })),
+  setFocusDriverId: (id) => set((state) => ({
+    focusDriverId: id,
+    focusTrigger: state.focusTrigger + 1,
+    panelsCollapsed: id ? false : state.panelsCollapsed
+  })),
 
   addSpeedingLog: (log) => set((state) => {
     const newLog: SpeedingLog = {

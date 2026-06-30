@@ -341,6 +341,9 @@ export function LeafletMap() {
 
           marker.on('click', () => {
             busObj.updatePopup();
+            if (driver) {
+              useFleetStore.getState().setFocusDriverId(driver.id);
+            }
           });
 
           busMarkers.push(busObj);
@@ -484,13 +487,12 @@ export function LeafletMap() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bus = busMarkersRef.current.find((b: any) => b.driverId === focusDriverId);
       if (bus && bus.marker) {
-        const latLng = bus.marker.getLatLng();
-        mapInstanceRef.current.setView(latLng, 16.5, { animate: true, duration: 0.5 });
         bus.updatePopup();
         bus.marker.openPopup();
       }
     }
   }, [focusDriverId, focusTrigger]);
+
 
   return (
     <div className="relative w-full h-full">
