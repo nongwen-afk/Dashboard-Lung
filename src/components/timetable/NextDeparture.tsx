@@ -62,7 +62,7 @@ export function NextDeparture({ routeId, color }: NextDepartureProps) {
       {/* ── Countdown strip ── */}
       {countdown ? (
         <div
-          className="flex items-center gap-2 rounded-lg px-2 py-1.5 mb-1.5"
+          className="flex items-center gap-1.5 rounded-lg px-1.5 py-1.5 mb-1.5"
           style={{
             background: isUrgent
               ? `rgba(239,68,68,0.08)`
@@ -77,48 +77,42 @@ export function NextDeparture({ routeId, color }: NextDepartureProps) {
             style={{ color: badgeColor }}
           />
 
-          <div className="flex items-baseline gap-1 flex-1 min-w-0">
-            <span className="text-sm text-gray-500 whitespace-nowrap">อีก</span>
+          <div className="flex flex-col flex-1 min-w-0 justify-center">
+            <div className="flex items-baseline gap-1">
+              <span className="text-sm text-gray-500 whitespace-nowrap">อีก</span>
 
-            {/* Minutes — the prominent countdown number */}
-            <span
-              className="font-extrabold tabular-nums leading-none"
-              style={{
-                color: badgeColor,
-                fontSize: isUrgent ? "24px" : isWarning ? "22px" : "20px",
-                /* Blink by reducing opacity; urgent blinks faster (handled by blinkId) */
-                opacity: isWarning || isUrgent ? (blink ? 1 : 0.25) : 1,
-                transition: "opacity 0.15s ease",
-                textShadow: isUrgent
-                  ? `0 0 12px rgba(239,68,68,0.6)`
-                  : isWarning
-                  ? `0 0 8px rgba(245,158,11,0.4)`
-                  : "none",
-              }}
-            >
-              {countdown.minutes}
-            </span>
+              {/* Minutes — the prominent countdown number */}
+              <span
+                className="font-extrabold tabular-nums leading-none"
+                style={{
+                  color: badgeColor,
+                  fontSize: isUrgent ? "28.8px" : isWarning ? "26.4px" : "24px",
+                  /* Blink by reducing opacity; urgent blinks faster (handled by blinkId) */
+                  opacity: isWarning || isUrgent ? (blink ? 1 : 0.25) : 1,
+                  transition: "opacity 0.15s ease",
+                  textShadow: isUrgent
+                    ? `0 0 12px rgba(239,68,68,0.6)`
+                    : isWarning
+                    ? `0 0 8px rgba(245,158,11,0.4)`
+                    : "none",
+                }}
+              >
+                {countdown.minutes}
+              </span>
 
-            <span className="text-sm font-semibold" style={{ color: badgeColor }}>
-              นาที
-            </span>
-
-            {/* Seconds (small, always visible) */}
-            <span
-              className="text-xs text-gray-400 tabular-nums"
-              style={{ minWidth: "2.2ch" }}
-            >
-              {String(countdown.seconds).padStart(2, "0")} วิ
-            </span>
+              <span className="text-sm font-semibold" style={{ color: badgeColor }}>
+                นาที
+              </span>
+            </div>
             
-            <span className="text-xs text-slate-500 whitespace-nowrap ml-1 truncate min-w-0">
-              {currentDriver ? `(รอบของ: ${currentDriver.name})` : "(ไม่พบคนขับ)"}
-            </span>
+            <div className="text-[0.7rem] text-slate-500 truncate w-full mt-0.5 leading-tight">
+              {String(countdown.seconds).padStart(2, "0")} วิ • {currentDriver ? currentDriver.name : "ไม่พบคนขับ"}
+            </div>
           </div>
 
           {/* Next departure time badge */}
           <span
-            className="text-sm font-bold px-2 py-0.5 rounded-full flex-shrink-0 tabular-nums"
+            className="text-sm font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 tabular-nums"
             style={{
               background: isUrgent
                 ? "rgba(239,68,68,0.15)"
@@ -129,7 +123,7 @@ export function NextDeparture({ routeId, color }: NextDepartureProps) {
               border: `1px solid ${isUrgent ? "rgba(239,68,68,0.3)" : isWarning ? "rgba(245,158,11,0.25)" : `${color}30`}`,
             }}
           >
-            🕐 {countdown.time}
+            {countdown.time}
           </span>
         </div>
       ) : (
@@ -141,20 +135,20 @@ export function NextDeparture({ routeId, color }: NextDepartureProps) {
           }}
         >
           <Clock className="w-3 h-3 text-gray-400" />
-          <span className="text-xs text-gray-400 italic">หมดรอบวันนี้</span>
+          <span className="text-sm text-gray-400 italic">หมดรอบวันนี้</span>
         </div>
       )}
 
       {/* ── Upcoming departures row ── */}
       <div className="flex items-center gap-1 flex-wrap">
-        <Clock className="w-2.5 h-2.5 flex-shrink-0 text-gray-400" />
+        <Clock className="w-3 h-3 flex-shrink-0 text-gray-400" />
         {departures.length > 0 ? (
           departures.map((dept, i) => {
             const driver = getDriverForTrip(routeId, dept.tripIndex, new Date());
             return (
               <span
                 key={i}
-                className="text-xs px-1.5 py-0.5 rounded border flex items-center gap-1"
+                className="text-sm px-1.5 py-0.5 rounded border flex items-center gap-1"
                 style={{
                   background: "rgba(248,249,252,0.8)",
                   borderColor: "rgba(148,163,184,0.2)",
@@ -163,12 +157,12 @@ export function NextDeparture({ routeId, color }: NextDepartureProps) {
                 title={driver ? `รอบของ: ${driver.name} ${driver.surname}` : ""}
               >
                 {dept.time}
-                {driver && <span className="text-slate-400 truncate max-w-[2.5rem] hidden sm:inline-block"> {driver.name}</span>}
+                {driver && <span className="text-slate-400 truncate max-w-[3rem] hidden sm:inline-block"> {driver.name}</span>}
               </span>
             );
           })
         ) : (
-          <span className="text-xs text-gray-400">ไม่มีรอบถัดไป</span>
+          <span className="text-sm text-gray-400">ไม่มีรอบถัดไป</span>
         )}
       </div>
     </div>

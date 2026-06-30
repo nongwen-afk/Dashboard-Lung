@@ -42,7 +42,7 @@ export function RouteSection({ route, drivers, lineNum, onShowTimetable, expande
       {/* Header */}
       <div className={`flex items-center gap-2 pl-2 ${expanded ? "" : "mb-0"}`}>
         <div
-          className={`${expanded ? "w-10 h-10 text-base" : "w-8 h-8 text-sm"} rounded-md flex items-center justify-center font-bold text-white flex-shrink-0 relative overflow-hidden`}
+          className={`${expanded ? "w-11 h-11 text-lg" : "w-9 h-9 text-base"} rounded-md flex items-center justify-center font-bold text-white flex-shrink-0 relative overflow-hidden`}
           style={{
             background: `linear-gradient(135deg, ${route.color}, ${route.color}cc)`,
             boxShadow: `0 2px 8px ${route.color}50, inset 0 1px 0 rgba(255,255,255,0.25)`,
@@ -52,16 +52,16 @@ export function RouteSection({ route, drivers, lineNum, onShowTimetable, expande
           <span className="relative z-10">{lineNum}</span>
         </div>
         <div className="flex-1 min-w-0">
-          <p className={`${expanded ? "text-base" : "text-sm"} font-bold text-[#0f172a] leading-tight`}>
+          <p className={`${expanded ? "text-lg" : "text-base"} font-bold text-[#0f172a] leading-tight`}>
             {route.name}
           </p>
           {expanded && (
-            <p className="text-xs text-gray-400 leading-tight">{route.labelTh}</p>
+            <p className="text-sm text-gray-400 leading-tight">{route.labelTh}</p>
           )}
         </div>
         {!expanded && (
           <span
-            className="text-xs font-bold text-white px-2 py-0.5 rounded-full flex-shrink-0"
+            className="text-sm font-bold text-white px-2 py-0.5 rounded-full flex-shrink-0"
             style={{
               background: `linear-gradient(135deg, ${route.color}, ${route.color}dd)`,
               boxShadow: `0 1px 6px ${route.color}40`,
@@ -73,13 +73,13 @@ export function RouteSection({ route, drivers, lineNum, onShowTimetable, expande
         {expanded && (
           <div className="flex gap-1 flex-shrink-0">
             <span
-              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              className="text-sm font-bold px-2 py-0.5 rounded-full"
               style={{ background: `${route.color}18`, color: route.color }}
             >
               {activeCount} Active
             </span>
             {leaveCount > 0 && (
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+              <span className="text-sm font-bold px-2 py-0.5 rounded-full"
                 style={{ background: "rgba(220,38,38,0.10)", color: "#dc2626" }}>
                 {leaveCount} Leave
               </span>
@@ -115,10 +115,10 @@ export function RouteSection({ route, drivers, lineNum, onShowTimetable, expande
       {/* Passenger load */}
       <div>
         <div className="flex items-center justify-between mb-1">
-          <p className={`${expanded ? "text-sm" : "text-xs"} text-gray-400`}>
+          <p className={`${expanded ? "text-base" : "text-sm"} text-gray-400`}>
             Passenger Load
           </p>
-          <p className={`${expanded ? "text-sm" : "text-xs"} font-semibold`}
+          <p className={`${expanded ? "text-base" : "text-sm"} font-semibold`}
              style={{ color: route.color }}>
             {route.passengerLoad}%
           </p>

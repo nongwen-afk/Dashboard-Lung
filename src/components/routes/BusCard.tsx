@@ -65,14 +65,14 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
           className="flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-[#0f172a] truncate leading-tight">
+          <p className="text-base font-semibold text-[#0f172a] truncate leading-tight">
             {driver.name} {driver.surname}
           </p>
-          <p className="text-xs text-gray-400 leading-tight">{driver.vehicle}</p>
+          <p className="text-sm text-gray-400 leading-tight">{driver.vehicle}</p>
         </div>
         {/* Status */}
         <span
-          className="text-[0.65rem] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+          className="text-[0.78rem] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
           style={
             isLeave
               ? { background: "rgba(220,38,38,0.10)", color: "#dc2626" }
@@ -90,7 +90,7 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
     <div
       onClick={() => !isLeave && setFocusDriverId(driver.id)}
       className={cn(
-        "rounded-lg p-1.5 min-w-[4.5rem] cursor-pointer relative overflow-hidden",
+        "rounded-lg p-1.5 min-w-[5.4rem] cursor-pointer relative overflow-hidden",
         "transition-all duration-200 group",
         isLeave ? "opacity-55" : ""
       )}
@@ -146,15 +146,15 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
         color={isLeave ? "#94a3b8" : routeColor}
         className="mx-auto mb-0.5 relative z-10"
       />
-      <p className="text-[0.65rem] text-center text-gray-500 truncate max-w-[4rem] mx-auto relative z-10">{driver.name}</p>
-      <p className="text-[0.55rem] text-center text-gray-400 relative z-10">{driver.vehicle}</p>
+      <p className="text-[0.78rem] text-center text-gray-500 truncate max-w-[4.8rem] mx-auto relative z-10">{driver.name}</p>
+      <p className="text-[0.66rem] text-center text-gray-400 relative z-10">{driver.vehicle}</p>
       {isLeave && (
-        <p className="text-[0.55rem] text-center font-bold relative z-10" style={{ color: "#dc2626" }}>
+        <p className="text-[0.66rem] text-center font-bold relative z-10" style={{ color: "#dc2626" }}>
           LEAVE
         </p>
       )}
       {isSubstitute && (
-        <p className="text-[0.55rem] text-center font-bold relative z-10 mt-0.5" style={{ color: routeColor }}>
+        <p className="text-[0.66rem] text-center font-bold relative z-10 mt-0.5" style={{ color: routeColor }}>
           ตัวแทน
         </p>
       )}

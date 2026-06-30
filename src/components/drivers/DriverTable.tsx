@@ -25,7 +25,7 @@ export function DriverTable() {
 
   return (
     <div>
-      <p className={exp ? "text-[0.875rem] font-bold text-[#1a1a2e] mb-3" : "text-[0.75rem] font-bold text-[#1a1a2e] mb-2.5"}>
+      <p className={exp ? "text-[1.05rem] font-bold text-[#1a1a2e] mb-3" : "text-[0.9rem] font-bold text-[#1a1a2e] mb-2.5"}>
         Driver Assignment
       </p>
 
@@ -56,7 +56,7 @@ export function DriverTable() {
             <select
               value={sel.value}
               onChange={(e) => sel.onChange(e.target.value)}
-              className={`w-full rounded-lg px-2 py-1.5 outline-none appearance-none pr-6 font-medium transition-all duration-200 ${exp ? "text-[0.75rem] py-2" : "text-[0.625rem]"}`}
+              className={`w-full rounded-lg px-2 py-1.5 outline-none appearance-none pr-6 font-medium transition-all duration-200 ${exp ? "text-[0.9rem] py-2" : "text-[0.75rem]"}`}
               style={{
                 background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,249,252,0.9))",
                 border: "1px solid rgba(26,26,46,0.10)",
@@ -81,7 +81,7 @@ export function DriverTable() {
           placeholder="Search driver..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className={`w-full rounded-lg pl-7 pr-3 outline-none transition-all duration-200 ${exp ? "text-[0.75rem] py-2" : "text-[0.625rem] py-1.5"}`}
+          className={`w-full rounded-lg pl-7 pr-3 outline-none transition-all duration-200 ${exp ? "text-[0.9rem] py-2" : "text-[0.75rem] py-1.5"}`}
           style={{
             background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,249,252,0.9))",
             border: "1px solid rgba(26,26,46,0.10)",
@@ -120,7 +120,7 @@ export function DriverTable() {
               ).map((h) => (
                 <th
                   key={h}
-                  className={`font-bold text-slate-400 text-left px-2 uppercase tracking-wide ${exp ? "text-[0.625rem] py-2.5" : "text-[0.5625rem] py-2"}`}
+                  className={`font-bold text-slate-400 text-left px-2 uppercase tracking-wide ${exp ? "text-[0.75rem] py-2.5" : "text-[0.675rem] py-2"}`}
                 >
                   {h}
                 </th>
@@ -130,7 +130,7 @@ export function DriverTable() {
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-6 text-[0.6875rem] text-gray-400">
+                <td colSpan={5} className="text-center py-6 text-[0.825rem] text-gray-400">
                   ไม่พบข้อมูลคนขับ
                 </td>
               </tr>
@@ -157,7 +157,7 @@ export function DriverTable() {
                     {/* Line badge */}
                     <td className="px-2 py-1.5 w-[10%]">
                       <span
-                        className={`inline-block whitespace-nowrap font-bold text-white px-1.5 py-0.5 rounded ${exp ? "text-[0.625rem]" : "text-[0.5rem]"}`}
+                        className={`inline-block whitespace-nowrap font-bold text-white px-1.5 py-0.5 rounded ${exp ? "text-[0.75rem]" : "text-[0.6rem]"}`}
                         style={{
                           background: `linear-gradient(135deg, ${rc}, ${rc}cc)`,
                           boxShadow: `0 1px 4px ${rc}40`,
@@ -171,15 +171,15 @@ export function DriverTable() {
                       <div className="flex items-center gap-1.5">
                         <Avatar name={d.name} size="xs" color={isLeave ? "#94a3b8" : rc} />
                         <div className="min-w-0">
-                          <span className={`block leading-tight ${isLeave ? "text-gray-400" : "text-[#0f172a] font-medium"} ${exp ? "text-[0.75rem]" : "text-[0.625rem]"}`}>
+                          <span className={`block leading-tight ${isLeave ? "text-gray-400" : "text-[#0f172a] font-medium"} ${exp ? "text-[0.9rem]" : "text-[0.75rem]"}`}>
                             {d.name} {d.surname}
                           </span>
-                          <span className={exp ? "text-[0.5625rem] text-gray-400" : "text-[0.46875rem] text-gray-400"}>{d.code}</span>
+                          <span className={exp ? "text-[0.675rem] text-gray-400" : "text-[0.5625rem] text-gray-400"}>{d.code}</span>
                         </div>
                       </div>
                     </td>
                     {/* Vehicle */}
-                    <td className={`px-2 py-1.5 text-gray-500 ${exp ? "text-[0.6875rem]" : "text-[0.5625rem]"}`}>{d.vehicle}</td>
+                    <td className={`px-2 py-1.5 text-gray-500 ${exp ? "text-[0.825rem]" : "text-[0.675rem]"}`}>{d.vehicle}</td>
                     {/* Status column — only in expanded mode */}
                     {exp && (
                       <td className="px-2 py-1.5">
@@ -190,17 +190,17 @@ export function DriverTable() {
                     <td className="px-2 py-1.5">
                       <div className={exp ? "w-20" : "w-10"}>
                         <ProgressBar value={d.capacity} height={exp ? "h-1.5" : "h-1"} />
-                        <p className={exp ? "text-[0.5625rem] text-gray-400 mt-0.5" : "text-[0.4375rem] text-gray-400 mt-0.5"}>{d.capacity}%</p>
+                        <p className={exp ? "text-[0.675rem] text-gray-400 mt-0.5" : "text-[0.525rem] text-gray-400 mt-0.5"}>{d.capacity}%</p>
                       </div>
                     </td>
                     {/* Action */}
                     <td className="px-2 py-1.5">
                       {isLeave ? (
-                        <span className={`text-gray-400 font-semibold ${exp ? "text-[0.625rem]" : "text-[0.5rem]"}`}>On Leave</span>
+                        <span className={`text-gray-400 font-semibold ${exp ? "text-[0.75rem]" : "text-[0.6rem]"}`}>On Leave</span>
                       ) : (
                         <button
                           onClick={() => openModal(d.id)}
-                          className={`text-white font-bold rounded-md transition-all duration-200 active:scale-95 ${exp ? "text-[0.625rem] px-3 py-1.5" : "text-[0.5rem] px-2 py-1"}`}
+                          className={`text-white font-bold rounded-md transition-all duration-200 active:scale-95 ${exp ? "text-[0.75rem] px-3 py-1.5" : "text-[0.6rem] px-2 py-1"}`}
                           style={{
                             background: "linear-gradient(135deg, #1e3a8a, #1e40af)",
                             boxShadow: "0 2px 8px rgba(37,99,235,0.30)",

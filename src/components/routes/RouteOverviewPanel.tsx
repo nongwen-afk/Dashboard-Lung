@@ -38,7 +38,7 @@ export function RouteOverviewPanel() {
           left:   panelsCollapsed ? 0 : 12,
           top:    panelsCollapsed ? 0 : 12,
           bottom: panelsCollapsed ? 0 : 12,
-          width:  panelsCollapsed ? "50%" : 480,
+          width:  panelsCollapsed ? "50%" : 576,
           borderRadius: panelsCollapsed ? "0px 16px 16px 0px" : "16px 16px 16px 16px",
           transform: mapOnly ? "translateX(-120%)" : "translateX(0)",
           opacity: mapOnly ? 0 : 1,
@@ -76,10 +76,10 @@ export function RouteOverviewPanel() {
               <Activity className="w-3.5 h-3.5 text-white" />
             </div>
             <div>
-              <p className={`${panelsCollapsed ? "text-lg" : "text-base"} font-bold text-[#0f172a] transition-all duration-500`}>
+              <p className={`${panelsCollapsed ? "text-xl" : "text-lg"} font-bold text-[#0f172a] transition-all duration-500`}>
                 Active Routes Overview
               </p>
-              <p className="text-xs text-gray-400">ภาพรวมเส้นทางที่ใช้งานอยู่</p>
+              <p className="text-sm text-gray-400">ภาพรวมเส้นทางที่ใช้งานอยู่</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -136,8 +136,8 @@ export function RouteOverviewPanel() {
                 className="flex-1 rounded-lg px-2 py-1.5 text-center"
                 style={{ background: "linear-gradient(135deg, rgba(26,26,46,0.04), rgba(26,26,46,0.02))", border: "1px solid rgba(26,26,46,0.05)" }}
               >
-                <p className="text-xl font-extrabold leading-tight" style={{ color: s.color }}>{s.value}</p>
-                <p className="text-xs text-gray-400 leading-tight">{s.label}</p>
+                <p className="text-2xl font-extrabold leading-tight" style={{ color: s.color }}>{s.value}</p>
+                <p className="text-sm text-gray-400 leading-tight">{s.label}</p>
               </div>
             ))}
           </div>

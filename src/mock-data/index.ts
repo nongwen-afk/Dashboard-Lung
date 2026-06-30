@@ -126,4 +126,4 @@ export const UTILIZATION_DATA = [
   { name: "9", value: 75 },
 ];
 
-export { TIMETABLES, getNextDepartures, countDailyTrips } from "./timetables";
+export { TIMETABLES, getNextDepartures, getAllDepartures, countDailyTrips } from "./timetables";

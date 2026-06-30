@@ -135,6 +135,36 @@ export function countDailyTrips(routeId: string): number {
 }
 
 /**
+ * Returns ALL departures for a specific date, ignoring the current time.
+ */
+export function getAllDepartures(
+  routeId: string,
+  date: Date
+): { time: string; tripIndex: number }[] {
+  const day = date.getDay(); // 0 = Sunday, 6 = Saturday
+  const isWeekend = day === 0 || day === 6;
+  const table = TIMETABLES[routeId];
+  if (!table) return [];
+
+  const schedule = isWeekend ? table.weekend : table.weekday;
+  
+  const allDepartures: { time: string; tripIndex: number }[] = [];
+  let currentTripIndex = 0;
+
+  for (const { hour, minutes } of schedule) {
+    for (const min of minutes) {
+      allDepartures.push({
+        time: `${String(hour).padStart(2, "0")}:${min}`,
+        tripIndex: currentTripIndex
+      });
+      currentTripIndex++;
+    }
+  }
+
+  return allDepartures;
+}
+
+/**
  * Returns the number of whole minutes (and remaining seconds) until the
  * very next departure for a route.
  * Returns null when there are no more departures today.

@@ -28,8 +28,14 @@ interface FleetState {
   mapOnly: boolean;
   speedingLogs: SpeedingLog[];
   userRole: "dispatcher" | "driver";
+  isLoggedIn: boolean;
+  currentUser: Driver | null;
   
   // Actions
+  loginDispatcher: () => void;
+  loginDriver: (driverId: number) => void;
+  logout: () => void;
+  
   setSelectedReserve: (reserve: ReserveDriver | null) => void;
   openModal: (driverId: number) => void;
   closeModal: () => void;
@@ -70,6 +76,19 @@ export const useFleetStore = create<FleetState>((set, get) => ({
   rotationConfigs: {},
   speedingLogs: [],
   userRole: "dispatcher",
+  isLoggedIn: false,
+  currentUser: null,
+
+  loginDispatcher: () => set({ isLoggedIn: true, userRole: "dispatcher", currentUser: null }),
+  
+  loginDriver: (driverId) => {
+    const driver = get().drivers.find(d => d.id === driverId);
+    if (driver) {
+      set({ isLoggedIn: true, userRole: "driver", currentUser: driver });
+    }
+  },
+  
+  logout: () => set({ isLoggedIn: false, userRole: "dispatcher", currentUser: null }),
 
   setUserRole: (role) => set({ userRole: role }),
 

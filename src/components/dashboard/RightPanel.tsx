@@ -12,13 +12,13 @@ export function RightPanel() {
     <aside
       style={{
         /* Absolutely positioned overlay anchored to the right edge */
-        position: "absolute",
+         position: "absolute",
         right: panelsCollapsed ? 0 : 12,
         top: panelsCollapsed ? 0 : 12,
         bottom: panelsCollapsed ? 0 : 12,
         zIndex: 800,
         /* Curtain animation: expands from 23.125rem → 50 % when closing */
-        width: panelsCollapsed ? "50%" : "23.125rem",
+        width: panelsCollapsed ? "50%" : "27.75rem",
         borderRadius: panelsCollapsed ? "16px 0px 0px 16px" : "16px",
         transform: mapOnly ? "translateX(120%)" : "translateX(0)",
         opacity: mapOnly ? 0 : 1,
@@ -63,10 +63,10 @@ export function RightPanel() {
             <Users className="w-4 h-4 text-white" />
           </div>
           <div>
-            <h2 className="text-[0.875rem] font-bold text-white leading-tight">
+            <h2 className="text-[1.05rem] font-bold text-white leading-tight">
               Fleet Management &amp; Reserve Pool
             </h2>
-            <p className="text-[0.625rem] text-slate-400 mt-0.5">
+            <p className="text-[0.75rem] text-slate-400 mt-0.5">
               การจัดการกองรถและกลุ่มคนสำรอง
             </p>
           </div>
