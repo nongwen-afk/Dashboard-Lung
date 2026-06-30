@@ -2,7 +2,7 @@
 
 ## Core Tables
 
-- users
+- user_profiles
 - drivers
 - vehicles
 - vehicle_primary_drivers
@@ -22,17 +22,31 @@ These tables represent the confirmed V1 core entities:
 - Event
 - Recommendation
 
-## Users
+Better Auth-owned auth core tables are part of the authentication
+implementation and should be generated or reviewed during Better Auth
+integration. Project Lung should not create a standalone custom `users` table
+before that integration.
+
+## Users / User Profiles
 
 Purpose:
 
-Stores system users.
+Represents authenticated system users at the domain level.
 
-Suggested fields:
+Implementation strategy:
 
-- id
-- name
-- email
+- Better Auth owns the auth identity table and related auth core tables.
+- Project Lung owns `user_profiles` for application-level user data.
+- `users` in earlier documentation means the authenticated user conceptually,
+  not a required standalone Project Lung table.
+- Future schema work should create `user_profiles`, not a standalone custom
+  `users` table.
+- `user_profiles.user_id` should map 1:1 to the Better Auth user id.
+
+Suggested `user_profiles` fields:
+
+- user_id
+- display_name
 - role
 - status
 - created_at
@@ -46,9 +60,13 @@ Roles:
 Relationship notes:
 
 - User represents authenticated system users.
-- Better Auth may manage its own user table.
-- Final table naming must be reviewed during Better Auth integration.
-- If needed, application-level user data should move to `user_profiles`.
+- Better Auth manages auth identity data such as login credentials, sessions,
+  accounts, verification data, and auth-owned user metadata.
+- Project Lung app-level role, status, display profile fields, and operational
+  preferences belong in `user_profiles`.
+- `events.created_by` and `recommendations.resolved_by` should reference an
+  authenticated system user conceptually. The final physical foreign key should
+  be decided during Better Auth and `user_profiles` schema implementation.
 
 ## Drivers
 

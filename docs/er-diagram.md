@@ -18,8 +18,9 @@ Scope:
 
 - Documentation only.
 - No schema, migration, or database implementation is defined here.
-- Final table names and auth-related user modeling must be reviewed again during
-  Better Auth integration.
+- ER Diagram v1 uses `users` as a conceptual authenticated-user entity.
+  Implementation should map this to Better Auth-owned auth tables plus
+  Project Lung-owned `user_profiles`.
 
 ## High-Level Structure
 
@@ -45,6 +46,10 @@ The confirmed V1 core entities are:
 - `events`
 - `recommendations`
 
+The `users` entry is conceptual in this diagram. It represents authenticated
+admins and dispatchers in the domain model, not a requirement to create a
+standalone custom Project Lung `users` table.
+
 ## 1. Master Data
 
 Master data tables hold stable records that daily operations reference. These
@@ -53,8 +58,11 @@ recommendations.
 
 ### users
 
-`users` represents authenticated system users, such as admins and dispatchers.
-It is used by operational audit fields, including:
+`users` represents authenticated system users conceptually, such as admins and
+dispatchers. In implementation, Better Auth should own the auth identity table,
+and Project Lung should store app-level user data in `user_profiles`.
+
+The authenticated user concept is used by operational audit fields, including:
 
 - `events.created_by`
 - `recommendations.resolved_by`
@@ -63,6 +71,10 @@ Expected user roles include:
 
 - `admin`
 - `dispatcher`
+
+Role, status, display profile fields, and operational user preferences should
+live in `user_profiles`, with `user_profiles.user_id` mapping 1:1 to the Better
+Auth user id.
 
 Drivers are not the same as authenticated users. A driver can exist as an
 operational person even if that driver never signs in to the system.
@@ -394,13 +406,23 @@ resolved it and when.
 
 ## Better Auth Note
 
-`users` is the documentation-level table name for authenticated system users in
-this V1 ER diagram.
+`users` is the documentation-level name for authenticated system users in this
+V1 ER diagram.
 
-User table naming must be reviewed again during Better Auth integration. If
-Better Auth manages the `users` table itself, Project Lung may need a separate
-`user_profiles` table for application-level user data such as display name,
-role, and operational preferences.
+The implementation decision is:
+
+- Better Auth owns auth core tables.
+- Project Lung should not create a standalone custom `users` table before
+  Better Auth integration.
+- Project Lung should create `user_profiles` for app-level user data.
+- `user_profiles.user_id` should map 1:1 to the Better Auth user id.
+- Role, status, display profile fields, and operational preferences belong in
+  `user_profiles`.
+
+This means ER Diagram v1 should be read as a conceptual relationship map. During
+schema implementation, user-related foreign keys such as `events.created_by` and
+`recommendations.resolved_by` must be mapped to the chosen Better Auth user /
+`user_profiles` strategy.
 
 ## What This Diagram Is Not
 
@@ -419,11 +441,12 @@ baseline before implementation starts.
 After ER Diagram v1 passes review, create the first Drizzle Schema work in this
 order:
 
-1. Review Better Auth User Table Strategy
-2. Create Driver Schema
-3. Create Vehicle Schema
-4. Create VehiclePrimaryDriver Schema
-5. Create Route Schema
-6. Create Assignment Schema
-7. Create Event Schema
-8. Create Recommendation Schema
+1. Generate and review Better Auth auth tables
+2. Update #17 Create User Schema to create `user_profiles`
+3. Create Driver Schema
+4. Create Vehicle Schema
+5. Create VehiclePrimaryDriver Schema
+6. Create Route Schema
+7. Create Assignment Schema
+8. Create Event Schema
+9. Create Recommendation Schema

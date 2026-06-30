@@ -113,8 +113,17 @@ Admin can manage master data but should not interfere with live dispatch flow un
 
 ## BR-011 User and Better Auth
 
-User represents authenticated system users.
+User represents authenticated system users conceptually.
 
-Because Better Auth may manage its own user table, final table naming must be reviewed during Better Auth integration.
+Better Auth owns the auth identity table and related auth core tables.
 
-If needed, application-level user data should move to `user_profiles`.
+Project Lung should use `user_profiles` for application-level user data instead
+of creating a standalone custom `users` table.
+
+`user_profiles.user_id` should map 1:1 to the Better Auth user id.
+
+Role, status, display profile fields, and operational user preferences belong in
+`user_profiles`.
+
+Better Auth auth table generation and review should happen before or together
+with Project Lung profile schema planning.
