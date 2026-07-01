@@ -1,1 +1,1 @@
-// Database schemas will be defined here.
+export * from "./auth";
