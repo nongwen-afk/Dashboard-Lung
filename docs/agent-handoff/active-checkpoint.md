@@ -1,8 +1,8 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** None (Ready for Next Task)
-- **Current phase:** Awaiting next issue assessment
-- **Current branch:** dev
+- **Current active issue:** #21 Create Assignment Schema
+- **Current phase:** local implementation completed, awaiting user review
+- **Current branch:** feature/issue-21-assignment-schema
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
