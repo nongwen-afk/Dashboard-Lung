@@ -19,7 +19,14 @@ npm install
 DATABASE_URL=""
 ```
 
-4. Start app
+4. Set up database
+
+```bash
+npm run db:generate
+npm run db:seed
+```
+
+5. Start app
 
 ```bash
 npm run dev

@@ -33,6 +33,13 @@ Install dependencies:
 npm install
 ```
 
+Set up database:
+
+```bash
+npm run db:generate
+npm run db:seed
+```
+
 Start development server:
 
 ```bash
