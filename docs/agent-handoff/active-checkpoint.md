@@ -1,8 +1,8 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #18 Create Route Schema
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-18-route-schema
+- **Current active issue:** None (Ready for Next Task)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
@@ -25,6 +25,16 @@
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
 - The project uses **npm** only. Do not use pnpm.
+
+## Completed Maintenance Note: Issue #18 (Route Schema)
+
+- Issue #18 (Create Route Schema) was completed and closed (Project Status: Done).
+- PR #59 was merged into `dev`.
+- Branch `feature/issue-18-route-schema` was deleted.
+- Route schema added as MVP route master data.
+- `routes` table includes: `uuid` id, `name`, nullable `origin`/`destination`, `is_active`, `created_at`, `updated_at`.
+- No placeholder relations were added.
+- Issue #21 was not touched.
 
 ## Completed Maintenance Note: Issue #17 (User Profiles)
 
