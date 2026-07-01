@@ -1,8 +1,8 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #21 Create Assignment Schema
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-21-assignment-schema
+- **Current active issue:** None (Ready for Next Task)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
@@ -25,6 +25,20 @@
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
 - The project uses **npm** only. Do not use pnpm.
+
+## Completed Maintenance Note: Issue #21 (Assignment Schema)
+
+- Issue #21 (Create Assignment Schema) was completed and closed (Project Status: Done).
+- PR #62 was merged into `dev`.
+- Branch `feature/issue-21-assignment-schema` was deleted.
+- Assignment schema added as daily dispatch operation records.
+- `assignments` table links vehicles, drivers, and routes.
+- `assignments` table includes `uuid` id, `assignment_date`, `departure_time`, `vehicle_id`, `driver_id`, `route_id`, `assignment_status` enum, `note`, `created_at`, `updated_at`.
+- `assignment_status` values are `pending`, `in_progress`, `completed`, `cancelled`.
+- `status` defaults to `pending`.
+- `driver_id` is required / not nullable.
+- Composite unique constraints and additional indexes were deferred to Issue #32.
+- No reverse relations or placeholder relations were added.
 
 ## Completed Maintenance Note: Issue #20 (Driver Schema)
 
