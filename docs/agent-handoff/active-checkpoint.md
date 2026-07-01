@@ -1,8 +1,8 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #30 Create Seed Data
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-30-seed-data
+- **Current active issue:** None (Ready for Next Task)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
@@ -25,6 +25,24 @@
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
 - The project uses **npm** only. Do not use pnpm.
+
+## Completed Maintenance Note: Issue #30 (Seed Data)
+
+- Issue #30 (Create Seed Data) was completed and closed (Project Status: Done).
+- PR #65 was merged into `dev`.
+- Branch `feature/issue-30-seed-data` was deleted.
+- Initial development seed data was added.
+- Seed script added at `src/db/seed.ts`.
+- `db:seed` npm script added.
+- `tsx` added as a devDependency.
+- Seed data includes 3 routes, 3 vehicles, 3 drivers, and sample assignments.
+- Seed data uses fixed UUIDs.
+- Seed inserts use `onConflictDoNothing()`.
+- Production guard prevents running when `NODE_ENV` is `production`.
+- The script does not delete, truncate, reset, or overwrite existing data.
+- Better Auth `user` and `user_profiles` are intentionally not seeded.
+- Events and recommendations are intentionally not seeded.
+- `npm run db:seed` was intentionally not run during implementation because `DATABASE_URL` could not be confirmed safe and non-production.
 
 ## Completed Maintenance Note: Issue #27 (Recommendation Schema)
 
