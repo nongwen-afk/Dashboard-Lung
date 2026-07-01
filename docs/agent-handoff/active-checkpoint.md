@@ -1,14 +1,14 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #32 Create Database Indexes
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-32-database-indexes
+- **Current active issue:** None (Ready for Epic #8 completion review)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
 ## Next Candidate Work:
 
-- Epic #8 Database Design work items (Assessment required before implementation).
+- Epic #8 completion review, but not closing the epic yet.
 
 ## Which files to read next:
 
@@ -25,6 +25,24 @@
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
 - The project uses **npm** only. Do not use pnpm.
+
+## Completed Maintenance Note: Issue #32 (Create Database Indexes)
+
+- Issue #32 (Create Database Indexes) was completed and closed (Project Status: Done).
+- PR #67 was merged into `dev`.
+- Branch `feature/issue-32-database-indexes` was deleted.
+- Database indexes and unique constraints were added for MVP.
+- `assignments` received `assignment_date_idx`.
+- `assignments` received exact same-time unique constraints for vehicle/date/time and driver/date/time.
+- `events` received lookup indexes for assignment, vehicle, and driver.
+- `recommendations` received lookup indexes for assignment and status.
+- Overlapping time/range constraints were intentionally deferred.
+- No `btree_gist` or exclusion constraints were added.
+- `npm run db:migrate` was intentionally not run.
+- `npm run db:seed` was intentionally not run.
+- Epic #8 Database Design now appears complete at 12/12, 100%.
+- Epic #8 must remain open for now.
+- Epic #8 requires explicit user approval before closing.
 
 ## Completed Maintenance Note: Issue #31 (Create Database Migration)
 
