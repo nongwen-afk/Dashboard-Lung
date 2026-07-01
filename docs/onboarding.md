@@ -10,7 +10,7 @@ Project Lung helps dispatchers manage EV bus operations.
 2. Install dependencies
 
 ```bash
-pnpm install
+npm install
 ```
 
 3. Create `.env.local`
@@ -22,7 +22,7 @@ DATABASE_URL=""
 4. Start app
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 ## Read First
@@ -38,8 +38,8 @@ pnpm dev
 Run:
 
 ```bash
-pnpm format:check
-pnpm lint
-pnpm typecheck
-pnpm build
+npm run format:check
+npm run lint
+npm run typecheck
+npm run build
 ```

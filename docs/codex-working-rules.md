@@ -93,10 +93,10 @@ Ask for confirmation before continuing when needed.
 Provide commands to run, such as:
 
 ```bash
-pnpm format:check
-pnpm lint
-pnpm typecheck
-pnpm build
+npm run format:check
+npm run lint
+npm run typecheck
+npm run build
 ```
 
 ---
@@ -125,7 +125,7 @@ Follow the existing architecture:
 - Supabase PostgreSQL
 - Drizzle ORM
 - Better Auth
-- pnpm
+- npm
 - Vercel
 
 ---

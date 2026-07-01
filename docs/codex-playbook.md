@@ -17,7 +17,7 @@ Read:
 - Do not rename entities without approval.
 - Keep documentation updated.
 - Use existing architecture.
-- Use pnpm.
+- Use npm.
 - Use Drizzle ORM.
 - Use Supabase PostgreSQL.
 - Use Better Auth.
@@ -34,8 +34,8 @@ Read:
 ## Required Checks
 
 ```bash
-pnpm format:check
-pnpm lint
-pnpm typecheck
-pnpm build
+npm run format:check
+npm run lint
+npm run typecheck
+npm run build
 ```

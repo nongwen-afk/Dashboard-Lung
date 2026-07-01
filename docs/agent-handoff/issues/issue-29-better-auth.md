@@ -23,14 +23,14 @@
 
 ## 3. Verification Status
 
-- [x] pnpm format:check
-- [x] pnpm lint
-- [x] pnpm typecheck
-- [x] pnpm build
-- [x] pnpm db:generate
+- [x] npm run format:check
+- [x] npm run lint
+- [x] npm run typecheck
+- [x] npm run build
+- [x] npm run db:generate
 - [x] git diff --check
 
-Note: During `pnpm build`, a non-fatal warning `[Error [BetterAuthError]: You are using the default secret. Please set BETTER_AUTH_SECRET in your environment variables or pass secret in your auth config.]` is logged, which is expected until environment variables are set.
+Note: During `npm run build`, a non-fatal warning `[Error [BetterAuthError]: You are using the default secret. Please set BETTER_AUTH_SECRET in your environment variables or pass secret in your auth config.]` is logged, which is expected until environment variables are set.
 
 ## 4. Files Changed
 
@@ -49,7 +49,7 @@ Note: During `pnpm build`, a non-fatal warning `[Error [BetterAuthError]: You ar
 - `docs/auth-design.md`
 - `drizzle/meta/_journal.json`
 - `package.json`
-- `pnpm-lock.yaml`
+- `package-lock.json`
 - `src/db/schema/index.ts`
 
 ### Deleted
