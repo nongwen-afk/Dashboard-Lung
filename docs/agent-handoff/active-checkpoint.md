@@ -1,8 +1,8 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #29 Setup Better Auth
-- **Current phase:** local implementation completed, awaiting user review / commit / push / PR / merge / GitHub Project cleanup
-- **Current branch:** feature/setup-better-auth
+- **Current active issue:** #17 Create User Profiles Schema
+- **Current phase:** local implementation completed, awaiting user review
+- **Current branch:** feature/issue-17-user-profiles
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
@@ -20,7 +20,6 @@
 
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
-- Do not touch Issue #17 / user_profiles during Issue #29 cleanup
 
 ## Current State
 
