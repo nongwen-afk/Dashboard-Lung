@@ -4,3 +4,4 @@ export * from "./routes";
 export * from "./vehicles";
 export * from "./drivers";
 export * from "./assignments";
+export * from "./events";
