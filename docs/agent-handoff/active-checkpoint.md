@@ -46,10 +46,10 @@
 - Merge commit: f7609bc06b8e117a751192e2fcd34d771417115a
 - This preserved the dev file tree exactly.
 - Verification passed:
-  - pnpm build
-  - pnpm typecheck
-  - pnpm format:check
-  - pnpm lint
+  - npm run build
+  - npm run typecheck
+  - npm run format:check
+  - npm run lint
   - git diff --check
 - dev was pushed to origin successfully.
 - Future release PRs should be created fresh from dev into main with a release title, for example: `release: v0.1.0 - Initial Project Setup`

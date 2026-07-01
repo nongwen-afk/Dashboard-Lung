@@ -12,11 +12,11 @@ Decision Support System for EV Bus Dispatch Operations.
 - Supabase
 - Drizzle ORM
 - Better Auth
-- pnpm
+- npm
 
 ## Architecture Decisions
 
-- Use `pnpm` as the package manager
+- Use `npm` as the package manager
 - Use Next.js Route Handlers and Server Actions for backend logic
 - Use Supabase PostgreSQL as the primary database
 - Use Drizzle ORM for schema, migrations, and type-safe queries
@@ -30,19 +30,19 @@ Decision Support System for EV Bus Dispatch Operations.
 Install dependencies:
 
 ```bash
-pnpm install
+npm install
 ```
 
 Start development server:
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 Build project:
 
 ```bash
-pnpm build
+npm run build
 ```
 
 ## Code Quality
@@ -50,16 +50,16 @@ pnpm build
 Run quality checks before creating a pull request:
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm build
-pnpm format:check
+npm run lint
+npm run typecheck
+npm run build
+npm run format:check
 ```
 
 Format code automatically:
 
 ```bash
-pnpm format
+npm run format
 ```
 
 All team members should run these commands before submitting code.

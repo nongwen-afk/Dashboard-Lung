@@ -6,7 +6,7 @@ Use TypeScript.
 
 ## Package Manager
 
-Use pnpm.
+Use npm.
 
 ## Formatting
 
@@ -15,8 +15,8 @@ Use Prettier.
 Commands:
 
 ```bash
-pnpm format
-pnpm format:check
+npm run format
+npm run format:check
 ```
 
 ## Quality Checks
@@ -24,10 +24,10 @@ pnpm format:check
 Before creating a PR, run:
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm build
-pnpm format:check
+npm run lint
+npm run typecheck
+npm run build
+npm run format:check
 ```
 
 ## Components

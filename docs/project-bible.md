@@ -221,7 +221,7 @@ Deployment:
 
 Package Manager:
 
-- pnpm
+- npm
 
 Code Quality:
 
