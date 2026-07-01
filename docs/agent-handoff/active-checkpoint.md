@@ -1,8 +1,8 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #19 Create Vehicle Schema
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-19-vehicle-schema
+- **Current active issue:** None (Ready for Next Task)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
@@ -25,6 +25,17 @@
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
 - The project uses **npm** only. Do not use pnpm.
+
+## Completed Maintenance Note: Issue #19 (Vehicle Schema)
+
+- Issue #19 (Create Vehicle Schema) was completed and closed (Project Status: Done).
+- PR #60 was merged into `dev`.
+- Branch `feature/issue-19-vehicle-schema` was deleted.
+- Vehicle schema added as master data for dispatch MVP.
+- `vehicles` table includes `uuid` id, unique `vehicle_code`, unique `license_plate`, required `capacity`, `vehicle_status` enum, `created_at`, `updated_at`.
+- `vehicle_status` values are `available`, `running`, `maintenance`, `breakdown`, `inactive`.
+- No `route_id` or `primary_driver_id` was added.
+- No placeholder relations were added.
 
 ## Completed Maintenance Note: Issue #18 (Route Schema)
 
