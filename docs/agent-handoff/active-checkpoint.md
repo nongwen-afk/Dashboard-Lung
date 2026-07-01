@@ -1,8 +1,8 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #27 Create Recommendation Schema
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-27-recommendation-schema
+- **Current active issue:** None (Ready for Next Task)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
@@ -25,6 +25,26 @@
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
 - The project uses **npm** only. Do not use pnpm.
+
+## Completed Maintenance Note: Issue #27 (Recommendation Schema)
+
+- Issue #27 (Create Recommendation Schema) was completed and closed (Project Status: Done).
+- PR #64 was merged into `dev`.
+- Branch `feature/issue-27-recommendation-schema` was deleted.
+- Recommendation schema added for storing algorithm output and dispatcher decisions.
+- `recommendations` table includes `uuid` id, `assignment_id`, `event_id`, `recommendation_type` enum, `reason`, `confidence`, `metadata` jsonb, `algorithm_version`, `recommendation_status` enum, `created_at`, `resolved_at`, `resolved_by`.
+- `recommendation_type` values are `replace_driver`, `replace_vehicle`, `change_route`, `assign_reserve_driver`, `other`.
+- `recommendation_status` values are `pending`, `accepted`, `rejected`, `expired`.
+- `assignment_id` is required.
+- `event_id` is nullable.
+- `confidence` is nullable decimal precision 3 scale 2.
+- `metadata` is nullable jsonb for flexible algorithm-team output.
+- `algorithm_version` is nullable text.
+- `resolved_by` references Better Auth `user.id`.
+- no algorithm logic was implemented.
+- `created_by` and `updated_at` were intentionally not added.
+- suggested/replacement driver, vehicle, and route FK fields were intentionally postponed until the algorithm contract is finalized.
+- indexes and constraints were deferred to Issue #32.
 
 ## Completed Maintenance Note: Issue #22 (Event Schema)
 
