@@ -1,10 +1,12 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** None (Ready for Next Task)
-- **Current phase:** Awaiting next issue assessment
-- **Current branch:** dev
+- **Current active issue:** #31 Create Database Migration
+- **Current phase:** local implementation completed, awaiting user review
+- **Current branch:** feature/issue-31-database-migration
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
+
+**Note:** No new migration is expected because the existing migration chain (0000-0007) is complete and verified.
 
 ## Next Candidate Work:
 
