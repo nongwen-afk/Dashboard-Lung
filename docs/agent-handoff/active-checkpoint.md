@@ -1,12 +1,10 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #31 Create Database Migration
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-31-database-migration
+- **Current active issue:** None (Ready for Next Task)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
-
-**Note:** No new migration is expected because the existing migration chain (0000-0007) is complete and verified.
 
 ## Next Candidate Work:
 
@@ -27,6 +25,21 @@
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
 - The project uses **npm** only. Do not use pnpm.
+
+## Completed Maintenance Note: Issue #31 (Create Database Migration)
+
+- Issue #31 (Create Database Migration) was completed and closed (Project Status: Done).
+- PR #66 was merged into `dev`.
+- Branch `feature/issue-31-database-migration` was deleted.
+- Existing Drizzle migration chain (0000-0007) was verified.
+- No new migration file was created because the schema was fully covered.
+- No schema files or migration files were modified.
+- README and onboarding docs were updated to clarify migration setup flow.
+- Docs now clarify:
+  - `npm run db:migrate` applies existing migrations to a database (used for setup).
+  - `npm run db:generate` is for developers after changing Drizzle schema files.
+  - `npm run db:seed` is optional and only for confirmed safe non-production databases.
+- `npm run db:migrate` and `npm run db:seed` were intentionally not run during implementation.
 
 ## Completed Maintenance Note: Issue #30 (Seed Data)
 
