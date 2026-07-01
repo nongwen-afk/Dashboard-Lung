@@ -1,10 +1,14 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #17 Create User Profiles Schema
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-17-user-profiles
+- **Current active issue:** None (Ready for Next Task)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
+
+## Next Candidate Work:
+
+- Epic #8 Database Design work items (Assessment required before implementation).
 
 ## Which files to read next:
 
@@ -20,22 +24,14 @@
 
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
+- The project uses **npm** only. Do not use pnpm.
 
-## Current State
+## Completed Maintenance Note: Issue #17 (User Profiles)
 
-- Local implementation completed.
-- User review is still pending.
-- Commit is not done.
-- Push is not done.
-- PR is not opened.
-- PR is not merged.
-- Feature branch is not deleted.
-- GitHub Project cleanup is not done.
-
-## Codex Instructions
-
-- **Codex must not perform GitHub cleanup yet.**
-- Codex cleanup is only allowed after the user explicitly confirms the PR/merge/branch-delete status.
+- Issue #17 (Create User Profiles Schema) was completed and closed (Project Status: Done).
+- PR #58 was merged into `dev`.
+- Branch `feature/issue-17-user-profiles` was deleted.
+- Duplicate PR #57 was closed unmerged and should not be touched.
 
 ## Completed Maintenance Note: PR #41 & Main/Dev Sync
 
