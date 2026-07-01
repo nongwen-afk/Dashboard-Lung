@@ -1,8 +1,8 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #20 Create Driver Schema
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-20-driver-schema
+- **Current active issue:** None (Ready for Next Task)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
@@ -25,6 +25,20 @@
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
 - The project uses **npm** only. Do not use pnpm.
+
+## Completed Maintenance Note: Issue #20 (Driver Schema)
+
+- Issue #20 (Create Driver Schema) was completed and closed (Project Status: Done).
+- PR #61 was merged into `dev`.
+- Branch `feature/issue-20-driver-schema` was deleted.
+- Driver schema added as master data for dispatch MVP.
+- `drivers` table includes `uuid` id, unique `employee_code`, `full_name`, `phone`, `driver_type` enum, `driver_status` enum, `created_at`, `updated_at`.
+- `driver_type` values are `primary`, `reserve`.
+- `driver_type` has no default and must be explicitly selected.
+- `driver_status` values are `active`, `leave`, `absent`, `inactive`.
+- `status` defaults to `active`.
+- No `user_id` or `vehicle_id` was added.
+- No placeholder relations were added.
 
 ## Completed Maintenance Note: Issue #19 (Vehicle Schema)
 
