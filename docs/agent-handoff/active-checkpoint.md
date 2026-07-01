@@ -1,8 +1,8 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #22 Create Event Schema
-- **Current phase:** local implementation completed, awaiting user review
-- **Current branch:** feature/issue-22-event-schema
+- **Current active issue:** None (Ready for Next Task)
+- **Current phase:** Awaiting next issue assessment
+- **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
@@ -25,6 +25,20 @@
 - Antigravity must not modify GitHub Issues/Project Board
 - Codex must not modify code unless explicitly approved
 - The project uses **npm** only. Do not use pnpm.
+
+## Completed Maintenance Note: Issue #22 (Event Schema)
+
+- Issue #22 (Create Event Schema) was completed and closed (Project Status: Done).
+- PR #63 was merged into `dev`.
+- Branch `feature/issue-22-event-schema` was deleted.
+- Event schema added as append-only operational logs.
+- `events` table includes `uuid` id, `event_type` enum, `description`, `assignment_id`, `vehicle_id`, `driver_id`, `route_id`, `created_by`, `created_at`.
+- `event_type` values are `driver_leave`, `driver_absent`, `vehicle_breakdown`, `maintenance`, `driver_swap`, `vehicle_swap`, `manual_override`, `recommendation_applied`, `other`.
+- `created_by` references Better Auth `user.id` directly.
+- foreign keys are nullable.
+- `updated_at` was intentionally not added.
+- reverse relations and placeholder relations were not added.
+- indexes and constraints were deferred to Issue #32.
 
 ## Completed Maintenance Note: Issue #21 (Assignment Schema)
 
