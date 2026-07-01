@@ -21,9 +21,15 @@ DATABASE_URL=""
 
 4. Set up database
 
+Note on database commands:
+
+- `npm run db:migrate` applies existing migrations to the database.
+- `npm run db:generate` is for developers generating new migration files after modifying the Drizzle schema.
+- `npm run db:seed` is optional and should only be run against a confirmed safe non-production database.
+
 ```bash
-npm run db:generate
-npm run db:seed
+npm run db:migrate
+# optional: npm run db:seed
 ```
 
 5. Start app

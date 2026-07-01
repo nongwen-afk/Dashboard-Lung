@@ -35,9 +35,13 @@ npm install
 
 Set up database:
 
+- `npm run db:migrate` applies existing schema to the database (use this for setup).
+- `npm run db:generate` creates new migration files (use this only after changing schema files).
+- `npm run db:seed` is optional and must only be run on a safe non-production database.
+
 ```bash
-npm run db:generate
-npm run db:seed
+npm run db:migrate
+# Optional: npm run db:seed
 ```
 
 Start development server:
