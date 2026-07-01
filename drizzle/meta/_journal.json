@@ -15,6 +15,13 @@
       "when": 1782879085128,
       "tag": "0001_talented_chamber",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782880839081,
+      "tag": "0002_panoramic_landau",
+      "breakpoints": true
     }
   ]
 }
