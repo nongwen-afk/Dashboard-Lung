@@ -1,15 +1,34 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #82 Connect Dashboard UI to Database Data
+- **Current active issue:** #83 Connect Drivers and Analytics UI to Database Data
 - **Current phase:** Development
 - **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
 - Epic #76: Dev Database & Mock Data Integration (In progress)
-  - Next candidate: #82 Connect Dashboard UI to Database Data
-  - Child issues #82-#84 are Todo.
-  - Child issues #77-#81 are Done/Closed.
+  - Next candidate: #83 Connect Drivers and Analytics UI to Database Data
+  - Child issues #83-#84 are Todo.
+  - Child issues #77-#82 are Done/Closed.
+
+## Completed Setup: Issue #82 (Connect Dashboard UI to Database Data)
+
+- Issue #82 Connect Dashboard UI to Database Data is Done/Closed.
+- PR #87 merged into `dev`.
+- Branch `feature/issue-82-dashboard-db-data` was deleted remotely.
+- Dashboard UI now hydrates from database-backed server actions.
+- Added `lib/data-mapper.ts` to map DB rows to the existing Dashboard UI/store shape.
+- `fleetStore` updated to support `hydrateFleetData`, `isLoading`, and `error` states.
+- Fixed demo date "2026-07-01" is intentionally used.
+- Drivers and Analytics pages intentionally deferred to #83.
+- Schema/migration files were NOT modified.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were NOT run.
+- Production DB was NOT touched.
+- Better Auth remains paused.
+- Mock auth UI remains.
+- Epic #76 remains In progress.
+- Epic #8 remains open and must not be closed without explicit user approval.
+- Next active candidate is #83 Connect Drivers and Analytics UI to Database Data.
 
 ## Completed Setup: Issue #81 (Server Actions for Fleet Master Data)
 

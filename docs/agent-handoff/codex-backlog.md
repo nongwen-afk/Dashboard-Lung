@@ -29,6 +29,26 @@ This file tracks all GitHub Issue / Project Board work that Codex needs to do la
 
 ## Current Pending GitHub Project Work
 
+### Completed: Issue #82 (Connect Dashboard UI to Database Data)
+
+Code status:
+
+- Branch: feature/issue-82-dashboard-db-data
+- PR: #87 feat(data): connect dashboard to fleet database data
+- Merged to dev: yes
+- Feature branch deleted: yes (remote) / yes (local)
+- Verification: Passed (build, lint, typecheck, format, diff)
+- Files changed summary: Added lib/data-mapper.ts. Modified fleetStore.ts to support hydration/loading/error state. Modified DashboardView.tsx to fetch db data concurrently via server actions on mount.
+
+GitHub cleanup needed for Codex:
+
+- Update issue checklist/body: Note DB-backed dashboard details, fixed demo date 2026-07-01, mapper/store hydration, and safety notes.
+- Post completion comment: Summarize PR #87 and safety notes.
+- Move Project Status: Done
+- Close issue: Yes
+- Parent/Epic updates: Epic #76 remains In progress.
+- Notes/constraints: Drivers and Analytics pages intentionally deferred to #83. No schema/migration files changed. No db:migrate/db:seed/db:seed:mock were run. Epic #8 remains open.
+
 ### Completed: UI Port from pleum
 
 Code status:
