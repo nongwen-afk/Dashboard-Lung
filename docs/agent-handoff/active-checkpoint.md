@@ -1,15 +1,30 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** None
-- **Current phase:** Awaiting next planning / release decision
+- **Current active issue:** #80 Seed Dev Database with MVP Demo Data
+- **Current phase:** Development
 - **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
 - Epic #76: Dev Database & Mock Data Integration (In progress)
-  - Next candidate: #79 Create Full Mock Data DB Seed Script
-  - Child issues #79-#84 are Todo.
-  - Child issues #77-#78 are Done/Closed.
+  - Next candidate: #80 Seed Dev Database with MVP Demo Data
+  - Child issues #80-#84 are Todo.
+  - Child issues #77-#79 are Done/Closed.
+
+## Completed Setup: Issue #79 (Mock Data DB Seed Script)
+
+- Issue #79 Create Full Mock Data DB Seed Script is Done/Closed.
+- PR #85 merged into `dev`.
+- Branch `feature/issue-79-mock-seed-script` was deleted.
+- Added `src/db/seed-mock.ts` script for full mock data seeding.
+- Added `db:seed:mock` to npm scripts.
+- `db:seed` and `db:seed:mock` were intentionally NOT run yet.
+- Neon dev database is migrated but has no seed data yet.
+- Production DB was not touched.
+- Better Auth remains paused.
+- Mock auth UI remains.
+- Epic #76 remains In progress.
+- Epic #8 remains open and must not be closed without explicit user approval.
 
 ## Completed Setup: Dev Database Migration
 
