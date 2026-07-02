@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { MapArea } from "@/components/dashboard/MapArea";
@@ -8,8 +9,76 @@ import { ReplaceDriverModal } from "@/components/modals/ReplaceDriverModal";
 import { Toast } from "@/components/ui/Toast";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { MobilePanel } from "@/components/dashboard/MobilePanel";
+import { useFleetStore } from "@/lib/store/fleetStore";
+import {
+  getRoutesAction,
+  getVehiclesAction,
+  getDriversAction,
+  getAssignmentsByDateAction,
+} from "@/src/actions/fleet";
+import { mapRoutes, mapDriversAndReserves } from "@/lib/data-mapper";
+import { Loader2 } from "lucide-react";
 
 export function DashboardView() {
+  const { isLoading, error, hydrateFleetData } = useFleetStore();
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [routesRes, vehiclesRes, driversRes, assignmentsRes] = await Promise.all([
+          getRoutesAction(),
+          getVehiclesAction(),
+          getDriversAction(),
+          getAssignmentsByDateAction("2026-07-01"),
+        ]);
+
+        if (
+          !routesRes.success ||
+          !vehiclesRes.success ||
+          !driversRes.success ||
+          !assignmentsRes.success
+        ) {
+          throw new Error("Failed to fetch one or more fleet datasets");
+        }
+
+        const mappedRoutes = mapRoutes(routesRes.data || []);
+        const { drivers: mappedDrivers, reserveDrivers: mappedReserves } = mapDriversAndReserves(
+          driversRes.data || [],
+          assignmentsRes.data || []
+        );
+
+        hydrateFleetData(mappedRoutes, mappedDrivers, mappedReserves);
+      } catch (err) {
+        console.error("Dashboard hydration error:", err);
+        useFleetStore.setState({ error: "Failed to load dashboard data.", isLoading: false });
+      }
+    }
+    loadData();
+  }, [hydrateFleetData]);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-100 flex-col gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+        <p className="text-slate-600 font-medium">Loading Fleet Data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen w-screen items-center justify-center bg-gray-100 flex-col gap-4">
+        <p className="text-red-500 font-medium text-lg">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-100">
       {/* Desktop sidebar — hidden on mobile */}
