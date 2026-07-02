@@ -1,15 +1,32 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #81 Implement Server Actions for Fleet Master Data
+- **Current active issue:** #82 Connect Dashboard UI to Database Data
 - **Current phase:** Development
 - **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
 - Epic #76: Dev Database & Mock Data Integration (In progress)
-  - Next candidate: #81 Implement Server Actions for Fleet Master Data
-  - Child issues #81-#84 are Todo.
-  - Child issues #77-#80 are Done/Closed.
+  - Next candidate: #82 Connect Dashboard UI to Database Data
+  - Child issues #82-#84 are Todo.
+  - Child issues #77-#81 are Done/Closed.
+
+## Completed Setup: Issue #81 (Server Actions for Fleet Master Data)
+
+- Issue #81 Implement Server Actions for Fleet Master Data is Done/Closed.
+- PR #86 merged into `dev`.
+- Branch `feature/issue-81-fleet-server-actions` was deleted remotely.
+- Created `src/services/fleet.ts` with Drizzle DB queries (using manual SQL joins).
+- Created `src/actions/fleet.ts` with `use server` wrappers for frontend consumption.
+- Exposed routes, vehicles, drivers, and date-filtered assignments.
+- UI intentionally NOT connected yet.
+- Schema/migration files were NOT modified.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were NOT run.
+- Production DB was NOT touched.
+- Better Auth remains paused.
+- Mock auth UI remains.
+- Epic #76 remains In progress.
+- Epic #8 remains open and must not be closed without explicit user approval.
 
 ## Completed Setup: Issue #80 (Seed Dev Database)
 
