@@ -2,15 +2,14 @@
 
 import dynamic from "next/dynamic";
 
-const DashboardView = dynamic(
-  () => import("@/components/dashboard/DashboardView").then((mod) => mod.DashboardView),
-  { ssr: false }
-);
+const MainApp = dynamic(() => import("@/components/MainApp").then((mod) => mod.MainApp), {
+  ssr: false,
+});
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
-      <DashboardView />
+      <MainApp />
     </main>
   );
 }
