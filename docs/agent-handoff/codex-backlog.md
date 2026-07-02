@@ -31,31 +31,22 @@ This file tracks all GitHub Issue / Project Board work that Codex needs to do la
 
 ### Pending: UI Port from pleum
 
-Known facts:
+Code status:
 
-- Branch pleum exists locally and remotely.
-- Latest known commit: 06737fc4c8ab59c5c7abb6a57f0059ac7a061158
-- pleum has no merge base with dev.
-- pleum uses src/app and src/components.
-- dev uses root app and root components.
-- Direct merge is unsafe.
-- Manual port only.
-- Do not create or keep src/app.
-- Keep root app as the only Next.js App Router directory.
-- Do not copy package/config/_1 files from pleum.
-- Reusable parts: UI components, mock data, public assets, page ideas.
+- Branch: feature/port-pleum-ui
+- PR: #69 feat(ui): port dashboard foundation from pleum
+- Merged to dev: yes
+- Feature branch deleted: yes (both local and remote)
+- Verification: Passed (build, lint, typecheck, format, diff)
+- Files changed summary: UI components ported manually, safe Next 15 structure used, no schema or auth modification.
 
 Expected GitHub work for Codex:
 
-- Confirm whether [EPIC] MVP Dashboard UI was created.
-- Confirm child issues were created:
-  - Setup UI Dependencies & Base Configurations
-  - Port Mock Data & State Management
-  - Port Main Dashboard UI
-  - Port Drivers & Analytics Pages
-  - Resolve App Router Conflicts & Final UI Integration
-- If not created, Codex should create them later when available and user-approved.
-- Do not mark any UI issue Done until merged into dev and verified.
+- Codex needs to create/update UI Epic and child issues if not already done
+- Codex needs to mark the UI port work according to actual merge state (Done)
+- Codex should not close Epic #8 unless user explicitly approves
+- Codex should not modify code
+- Codex should update GitHub Project/Issues retroactively based on this backlog
 
 ---
 

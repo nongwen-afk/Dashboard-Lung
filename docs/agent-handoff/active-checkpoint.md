@@ -1,6 +1,6 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** None (Ready for Epic #8 completion review)
+- **Current active issue:** None / awaiting GitHub cleanup and next planning
 - **Current phase:** Awaiting next issue assessment
 - **Current branch:** dev
 - **Base branch:** dev
@@ -8,9 +8,22 @@
 
 ## Next Candidate Work:
 
-- UI port from branch pleum.
-- Branch pleum must not be merged directly.
-- UI work should be manually ported from pleum into dev.
+- Next features planning (Epic #9 Setup Better Auth, etc)
+
+## Completed Maintenance Note: UI Port from pleum
+
+- PR #69 feat(ui): port dashboard foundation from pleum merged into dev
+- remote feature/port-pleum-ui deleted
+- local feature/port-pleum-ui deleted successfully
+- UI from pleum was manually ported safely
+- pleum was not merged directly
+- root app/ remains the only App Router directory
+- src/app was not created
+- mock auth is UI-only and does not replace Better Auth
+- Better Auth/auth API/schema/migrations/seed data were not modified
+- db:migrate and db:seed were not run
+- Epic #8 remains open and must not be closed without explicit user approval
+- dev should not be merged to main yet unless user explicitly approves release
 
 ## Which files to read next:
 
