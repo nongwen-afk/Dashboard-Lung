@@ -41,12 +41,29 @@ function extractNumericId(code: string): number {
   return num;
 }
 
+/**
+ * Safely find the UI mapping for a route name from the database.
+ * Matches both English keys and Thai names safely.
+ */
+function getRouteMapping(dbRouteName: string) {
+  if (ROUTE_UI_MAPPING[dbRouteName]) return ROUTE_UI_MAPPING[dbRouteName];
+
+  for (const key in ROUTE_UI_MAPPING) {
+    const mapping = ROUTE_UI_MAPPING[key];
+    if (mapping.labelTh === dbRouteName || mapping.label === dbRouteName) {
+      return mapping;
+    }
+  }
+
+  throw new Error(`Unknown route mapping for DB route name: ${dbRouteName}`);
+}
+
 export function mapRoutes(dbRoutes: any[]): Route[] {
-  return dbRoutes.map((dbRoute) => {
-    const mapping = ROUTE_UI_MAPPING[dbRoute.name] || ROUTE_UI_MAPPING["Line 1"];
+  const routes = dbRoutes.map((dbRoute) => {
+    const mapping = getRouteMapping(dbRoute.name);
 
     // In MVP, passengerLoad is mocked.
-    const passengerLoad = dbRoute.name === "Line 1" ? 72 : dbRoute.name === "Line 2" ? 55 : 40;
+    const passengerLoad = mapping.id === "L1" ? 72 : mapping.id === "L2" ? 55 : 40;
 
     // Count vehicles assigned to this route if we wanted to (currently mock is 5)
     // For now, keep the mock count for visual parity, or we can use DB. We'll use 5 to match mock.
@@ -63,6 +80,17 @@ export function mapRoutes(dbRoutes: any[]): Route[] {
       vehicles: vehiclesCount,
     };
   });
+
+  // Lightweight validation to catch duplicate route keys early
+  const routeIds = new Set<string>();
+  for (const r of routes) {
+    if (routeIds.has(r.id)) {
+      throw new Error(`Duplicate route ID detected after mapping: ${r.id}`);
+    }
+    routeIds.add(r.id);
+  }
+
+  return routes;
 }
 
 export function mapVehicles(dbVehicles: any[], dbAssignments: any[]): Vehicle[] {
@@ -76,8 +104,12 @@ export function mapVehicles(dbVehicles: any[], dbAssignments: any[]): Vehicle[] 
 
     let routeId: RouteId = "L1";
     if (assignment) {
-      const mapping = ROUTE_UI_MAPPING[assignment.route.name];
-      if (mapping) routeId = mapping.id;
+      try {
+        const mapping = getRouteMapping(assignment.route.name);
+        if (mapping) routeId = mapping.id;
+      } catch (err) {
+        console.warn(err);
+      }
     }
 
     return {
@@ -126,8 +158,12 @@ export function mapDriversAndReserves(
 
       if (assignment) {
         routeName = assignment.route.name;
-        const mapping = ROUTE_UI_MAPPING[assignment.route.name];
-        if (mapping) routeId = mapping.id;
+        try {
+          const mapping = getRouteMapping(assignment.route.name);
+          if (mapping) routeId = mapping.id;
+        } catch (err) {
+          console.warn(err);
+        }
 
         vehicleCode = assignment.vehicle.vehicleCode;
         capacity = assignment.vehicle.capacity;
