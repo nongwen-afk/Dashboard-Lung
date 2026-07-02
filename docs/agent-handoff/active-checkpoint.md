@@ -1,15 +1,40 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #84 Document Dev Database and Mock Data Workflow
-- **Current phase:** Development
+- **Current active issue:** Epic #76 Closure Review
+- **Current phase:** Documentation
 - **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
 - Epic #76: Dev Database & Mock Data Integration (In progress)
-  - Next candidate: #84 Document Dev Database and Mock Data Workflow
-  - Child issue #84 is Todo.
-  - Child issues #77-#83 are Done/Closed.
+  - Next candidate: Epic #76 Closure Review
+  - Child issues #77-#84 are Done/Closed.
+
+## Completed Setup: Issue #84 (Document Dev Database and Mock Data Workflow)
+
+- Issue #84 Document Dev Database and Mock Data Workflow is Done/Closed.
+- PR #89 merged into `dev`.
+- Branch `feature/issue-84-document-db-workflow` was deleted remotely.
+- Neon is now documented as canonical database provider.
+- Neon main = Production.
+- Neon dev = Preview/local development.
+- Vercel DATABASE_URL setup documented:
+  - Production = Neon main
+  - Preview = Neon dev for all preview branches
+- Local `.env.local` should use Neon dev.
+- `db:migrate` safety workflow documented.
+- `db:seed:mock` safety workflow documented.
+- Fixed demo date 2026-07-01 documented.
+- Seeded Neon dev data documented: 3 routes, 15 vehicles, 17 drivers, 207 assignments.
+- UI-only mock data documented.
+- Better Auth remains paused.
+- Mock Auth UI remains active.
+- No application, package, schema, or migration files were modified.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were NOT run.
+- Production DB was NOT touched.
+- Epic #76 remains Open / In progress for now.
+- Epic #8 remains open and must not be closed without explicit user approval.
+- Next active candidate is Epic #76 closure review, not a new implementation issue.
 
 ## Completed Setup: Issue #83 (Connect Drivers and Analytics UI to Database Data)
 

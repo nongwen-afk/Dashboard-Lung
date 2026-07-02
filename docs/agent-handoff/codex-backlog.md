@@ -29,6 +29,26 @@ This file tracks all GitHub Issue / Project Board work that Codex needs to do la
 
 ## Current Pending GitHub Project Work
 
+### Completed: Issue #84 (Document Dev Database and Mock Data Workflow)
+
+Code status:
+
+- Branch: feature/issue-84-document-db-workflow
+- PR: #89 docs(db): document neon dev mock data workflow
+- Merged to dev: yes
+- Feature branch deleted: yes (remote) / yes (local)
+- Verification: Passed (build, lint, typecheck, format, diff)
+- Files changed summary: Updated docs/onboarding.md, docs/deployment.md, docs/project-bible.md, and .env.example with Neon canonical status, dev/main branch strategies, safe Vercel DATABASE_URL handling, db:migrate/db:seed:mock safety boundaries, explicit dev seed dataset documentation, and mock data status.
+
+Codex GitHub Cleanup Completed:
+
+- Issue checklist/body updated: Noted the completion of all docs updates, explicitly stated safety boundaries, the 2026-07-01 fixed date, and safe `.env.example`.
+- Completion comment posted: Summarized PR #89 and noted no DB commands were actually executed.
+- Project Status: Moved to Done.
+- Issue Closed: Yes.
+- Parent/Epic updates: Epic #76 remains In progress, ready for closure review.
+- Notes/constraints preserved: Better Auth remains paused. Mock Auth UI remains. Epic #8 remains open. Production DB was strictly not touched.
+
 ### Completed: Issue #83 (Connect Drivers and Analytics UI to Database Data)
 
 Code status:
