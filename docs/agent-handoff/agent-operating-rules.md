@@ -3,12 +3,13 @@
 ## Repository Location
 
 Canonical working directory:
-/Users/microwen/Desktop/projects_lung/dashboard-lung
+/Users/microwen/Desktop/Projects_lung/dashboard-lung
 
 Retired broken repository:
 /Users/microwen/Desktop/project-lung/dashboard-lung
 
 Rules:
+
 - Always use the canonical working directory.
 - Never use the retired broken repository.
 - Before doing work, run `pwd`, `git status`, and `git branch --show-current`.
@@ -40,6 +41,7 @@ Rules:
 ## Antigravity Role
 
 Antigravity should:
+
 - Work on code implementation.
 - Inspect local files.
 - Run safe verification.
@@ -50,6 +52,7 @@ Antigravity should:
 - Avoid GitHub Issue/Project writes unless explicitly instructed and supported.
 
 Antigravity must not:
+
 - Modify GitHub Issues or Project Board by default.
 - Close epics/issues.
 - Mark work Done on GitHub.
@@ -59,6 +62,7 @@ Antigravity must not:
 ## Codex Role
 
 Codex should:
+
 - Handle GitHub Issues and GitHub Project Board.
 - Read `docs/agent-handoff/active-checkpoint.md`.
 - Read `docs/agent-handoff/codex-backlog.md`.
@@ -68,6 +72,7 @@ Codex should:
 - Move issues to Done only when the work is merged into `dev` and verified.
 
 Codex must not:
+
 - Modify code unless explicitly instructed.
 - Create commits.
 - Push.
@@ -88,12 +93,15 @@ Codex must not:
 ## Handoff Rules
 
 After every completed code task, update:
+
 - docs/agent-handoff/active-checkpoint.md
 
 If GitHub cleanup is pending, update:
+
 - docs/agent-handoff/codex-backlog.md
 
 The handoff should record:
+
 - active issue or task
 - branch
 - PR number if any
@@ -107,7 +115,8 @@ The handoff should record:
 ## Current Project State
 
 Record:
-- Fresh repo path is `/Users/microwen/Desktop/projects_lung/dashboard-lung`.
+
+- Fresh repo path is `/Users/microwen/Desktop/Projects_lung/dashboard-lung`.
 - Release PR #75 has been merged into `main`.
 - Latest known main release commit: `9c77d82`.
 - `dev` is clean and tracking `origin/dev`.

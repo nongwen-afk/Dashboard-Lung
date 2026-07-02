@@ -24,9 +24,9 @@
 
 ## Which files to read next:
 
-- [docs/agent-handoff/issues/issue-29-better-auth.md](file:///Users/microwen/Desktop/project-lung/dashboard-lung/docs/agent-handoff/issues/issue-29-better-auth.md)
-- [docs/agent-handoff/prompts/codex-github-cleanup.md](file:///Users/microwen/Desktop/project-lung/dashboard-lung/docs/agent-handoff/prompts/codex-github-cleanup.md)
-- [docs/agent-handoff/codex-backlog.md](file:///Users/microwen/Desktop/project-lung/dashboard-lung/docs/agent-handoff/codex-backlog.md)
+- [docs/agent-handoff/issues/issue-29-better-auth.md](file:///Users/microwen/Desktop/Projects_lung/dashboard-lung/docs/agent-handoff/issues/issue-29-better-auth.md)
+- [docs/agent-handoff/prompts/codex-github-cleanup.md](file:///Users/microwen/Desktop/Projects_lung/dashboard-lung/docs/agent-handoff/prompts/codex-github-cleanup.md)
+- [docs/agent-handoff/codex-backlog.md](file:///Users/microwen/Desktop/Projects_lung/dashboard-lung/docs/agent-handoff/codex-backlog.md)
 
 ## Agent role split / Current State:
 
@@ -42,6 +42,7 @@
 - The project uses **npm** only. Do not use pnpm.
 - Epic #8 Database Design is complete at 12/12, 100%, but must remain open until explicit user approval.
 - Do not merge dev into main yet.
+- MUST NOT use the retired broken repository (/Users/microwen/Desktop/project-lung/dashboard-lung). Only use the canonical path (/Users/microwen/Desktop/Projects_lung/dashboard-lung).
 
 ## Completed Maintenance Note: Issue #32 (Create Database Indexes)
 
