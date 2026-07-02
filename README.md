@@ -1,35 +1,83 @@
-Project Lung
+# Project Lung
 
 Decision Support System for EV Bus Dispatch Operations.
 
-Tech Stack
+## Tech Stack
 
-* Next.js 16
-* React 19
-* TypeScript
-* Tailwind CSS v4
-* shadcn/ui
-* Supabase
-* Drizzle ORM
-* Better Auth
-* pnpm
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui
+- Supabase
+- Drizzle ORM
+- Better Auth
+- npm
 
-Getting Started
+## Architecture Decisions
+
+- Use `npm` as the package manager
+- Use Next.js Route Handlers and Server Actions for backend logic
+- Use Supabase PostgreSQL as the primary database
+- Use Drizzle ORM for schema, migrations, and type-safe queries
+- Use Better Auth for authentication and role-based access control
+- Use Role-Based Access Control (RBAC) for Admin and Dispatcher roles
+- Use Vercel for deployment
+- Use ESLint and Prettier for code quality
+
+## Getting Started
 
 Install dependencies:
 
-pnpm install
+```bash
+npm install
+```
+
+Set up database:
+
+- `npm run db:migrate` applies existing schema to the database (use this for setup).
+- `npm run db:generate` creates new migration files (use this only after changing schema files).
+- `npm run db:seed` is optional and must only be run on a safe non-production database.
+
+```bash
+npm run db:migrate
+# Optional: npm run db:seed
+```
 
 Start development server:
 
-pnpm dev
+```bash
+npm run dev
+```
 
 Build project:
 
-pnpm build
+```bash
+npm run build
+```
 
-Project Structure
+## Code Quality
 
+Run quality checks before creating a pull request:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+npm run format:check
+```
+
+Format code automatically:
+
+```bash
+npm run format
+```
+
+All team members should run these commands before submitting code.
+
+## Project Structure
+
+```text
 src/
 ├── app/
 ├── components/
@@ -40,3 +88,4 @@ src/
 ├── types/
 ├── constants/
 └── utils/
+```

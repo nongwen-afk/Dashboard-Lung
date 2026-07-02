@@ -1,0 +1,223 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2300" height="1600" viewBox="0 0 2300 1600">
+  <defs>
+    <style>
+      .bg { fill: #ffffff; }
+      .title { font-family: Arial, sans-serif; font-size: 44px; font-weight: 800; fill: #111827; }
+      .subtitle { font-family: Arial, sans-serif; font-size: 20px; fill: #4b5563; }
+      .lane { fill: #f8fafc; stroke: #e5e7eb; stroke-width: 2; rx: 18; }
+      .lane-title { font-family: Arial, sans-serif; font-size: 18px; font-weight: 800; fill: #374151; letter-spacing: .6px; }
+      .table { fill: #ffffff; stroke: #111827; stroke-width: 2; }
+      .header { fill: #111827; }
+      .table-title { font-family: Arial, sans-serif; font-size: 22px; font-weight: 800; fill: #ffffff; }
+      .field { font-family: Arial, sans-serif; font-size: 16px; fill: #111827; }
+      .line { stroke: #1f2937; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .softline { stroke: #6b7280; stroke-width: 2.5; stroke-dasharray: 9 8; fill: none; marker-end: url(#arrow-soft); }
+      .rel-label { font-family: Arial, sans-serif; font-size: 15px; fill: #111827; font-weight: 800; }
+      .label-bg { fill: #ffffff; stroke: #d1d5db; stroke-width: 1; }
+      .note-box { fill: #f3f4f6; stroke: #d1d5db; stroke-width: 1.5; rx: 12; }
+      .note-title { font-family: Arial, sans-serif; font-size: 19px; font-weight: 800; fill: #111827; }
+      .note { font-family: Arial, sans-serif; font-size: 15px; fill: #374151; }
+      .section-note { font-family: Arial, sans-serif; font-size: 15px; fill: #6b7280; }
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#1f2937"/>
+    </marker>
+    <marker id="arrow-soft" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="2300" height="1600"/>
+  <text class="title" x="80" y="75">Project Lung — ER Diagram v1</text>
+  <text class="subtitle" x="80" y="108">Readable relationship map with labels moved away from entity fields</text>
+
+  <rect class="lane" x="60" y="150" width="2180" height="315"/>
+  <text class="lane-title" x="95" y="190">MASTER DATA</text>
+  <text class="section-note" x="250" y="190">Stable reference data used by daily operations</text>
+
+  <rect class="lane" x="60" y="520" width="2180" height="285"/>
+  <text class="lane-title" x="95" y="560">PRIMARY DRIVER HISTORY</text>
+  <text class="section-note" x="350" y="560">Long-term vehicle ↔ driver relationship, separated from daily assignments</text>
+
+  <rect class="lane" x="60" y="865" width="2180" height="430"/>
+  <text class="lane-title" x="95" y="905">DAILY OPERATIONS / DECISION &amp; LOGS</text>
+  <text class="section-note" x="450" y="905">Assignments are the operational center; Events and Recommendations attach to assignments</text>
+
+  <g id="users">
+<rect class="table" x="110" y="225" width="260" height="190" rx="14"/>
+<rect class="header" x="110" y="225" width="260" height="48" rx="14"/>
+<text class="table-title" x="134" y="256">users</text>
+<text class="field" x="134" y="303">PK id</text>
+<text class="field" x="134" y="329">name</text>
+<text class="field" x="134" y="355">email</text>
+<text class="field" x="134" y="381">role</text>
+</g>
+  <g id="drivers">
+<rect class="table" x="500" y="205" width="310" height="235" rx="14"/>
+<rect class="header" x="500" y="205" width="310" height="48" rx="14"/>
+<text class="table-title" x="524" y="236">drivers</text>
+<text class="field" x="524" y="283">PK id</text>
+<text class="field" x="524" y="309">employee_code</text>
+<text class="field" x="524" y="335">full_name</text>
+<text class="field" x="524" y="361">phone</text>
+<text class="field" x="524" y="387">driver_type</text>
+<text class="field" x="524" y="413">status</text>
+</g>
+  <g id="vehicles">
+<rect class="table" x="930" y="205" width="310" height="235" rx="14"/>
+<rect class="header" x="930" y="205" width="310" height="48" rx="14"/>
+<text class="table-title" x="954" y="236">vehicles</text>
+<text class="field" x="954" y="283">PK id</text>
+<text class="field" x="954" y="309">vehicle_code</text>
+<text class="field" x="954" y="335">license_plate</text>
+<text class="field" x="954" y="361">capacity</text>
+<text class="field" x="954" y="387">status</text>
+</g>
+  <g id="routes">
+<rect class="table" x="1360" y="220" width="310" height="215" rx="14"/>
+<rect class="header" x="1360" y="220" width="310" height="48" rx="14"/>
+<text class="table-title" x="1384" y="251">routes</text>
+<text class="field" x="1384" y="298">PK id</text>
+<text class="field" x="1384" y="324">name</text>
+<text class="field" x="1384" y="350">origin</text>
+<text class="field" x="1384" y="376">destination</text>
+<text class="field" x="1384" y="402">is_active</text>
+</g>
+
+  <g id="vehicle_primary_drivers">
+<rect class="table" x="780" y="585" width="480" height="200" rx="14"/>
+<rect class="header" x="780" y="585" width="480" height="48" rx="14"/>
+<text class="table-title" x="804" y="616">vehicle_primary_drivers</text>
+<text class="field" x="804" y="663">PK id</text>
+<text class="field" x="804" y="689">FK vehicle_id → vehicles.id</text>
+<text class="field" x="804" y="715">FK driver_id → drivers.id</text>
+<text class="field" x="804" y="741">start_date</text>
+<text class="field" x="804" y="767">end_date nullable</text>
+<text class="field" x="804" y="793">is_active</text>
+</g>
+
+  <g id="assignments">
+<rect class="table" x="780" y="955" width="480" height="265" rx="14"/>
+<rect class="header" x="780" y="955" width="480" height="48" rx="14"/>
+<text class="table-title" x="804" y="986">assignments</text>
+<text class="field" x="804" y="1033">PK id</text>
+<text class="field" x="804" y="1059">assignment_date</text>
+<text class="field" x="804" y="1085">departure_time</text>
+<text class="field" x="804" y="1111">FK vehicle_id → vehicles.id</text>
+<text class="field" x="804" y="1137">FK driver_id → drivers.id</text>
+<text class="field" x="804" y="1163">FK route_id → routes.id</text>
+<text class="field" x="804" y="1189">status / note</text>
+</g>
+
+  <g id="events">
+<rect class="table" x="120" y="960" width="430" height="270" rx="14"/>
+<rect class="header" x="120" y="960" width="430" height="48" rx="14"/>
+<text class="table-title" x="144" y="991">events</text>
+<text class="field" x="144" y="1038">PK id</text>
+<text class="field" x="144" y="1064">event_type</text>
+<text class="field" x="144" y="1090">description</text>
+<text class="field" x="144" y="1116">FK assignment_id nullable</text>
+<text class="field" x="144" y="1142">FK vehicle_id / driver_id nullable</text>
+<text class="field" x="144" y="1168">FK route_id / created_by nullable</text>
+</g>
+  <g id="recommendations">
+<rect class="table" x="1510" y="960" width="470" height="270" rx="14"/>
+<rect class="header" x="1510" y="960" width="470" height="48" rx="14"/>
+<text class="table-title" x="1534" y="991">recommendations</text>
+<text class="field" x="1534" y="1038">PK id</text>
+<text class="field" x="1534" y="1064">FK assignment_id → assignments.id</text>
+<text class="field" x="1534" y="1090">recommendation_type</text>
+<text class="field" x="1534" y="1116">reason / confidence</text>
+<text class="field" x="1534" y="1142">status</text>
+<text class="field" x="1534" y="1168">resolved_at / resolved_by nullable</text>
+</g>
+
+  <!-- Primary driver history lines -->
+  <path class="line" d="M 655 440 L 655 510 L 900 510 L 900 585"/>
+  
+    <g>
+      <rect class="label-bg" x="660" y="471" width="275" height="30" rx="8"/>
+      <text class="rel-label" x="670" y="492">drivers → primary records (1:N)</text>
+    </g>
+
+  <path class="line" d="M 1085 440 L 1085 510 L 1100 510 L 1100 585"/>
+  
+    <g>
+      <rect class="label-bg" x="1120" y="471" width="285" height="30" rx="8"/>
+      <text class="rel-label" x="1130" y="492">vehicles → primary records (1:N)</text>
+    </g>
+
+  <!-- Master data to assignments, labels separated from each other -->
+  <path class="line" d="M 600 440 L 600 835 L 900 835 L 900 955"/>
+  
+    <g>
+      <rect class="label-bg" x="380" y="704" width="245" height="30" rx="8"/>
+      <text class="rel-label" x="390" y="725">drivers → assignments (1:N)</text>
+    </g>
+
+  <path class="line" d="M 1160 440 L 1160 835 L 1085 835 L 1085 955"/>
+  
+    <g>
+      <rect class="label-bg" x="1215" y="704" width="260" height="30" rx="8"/>
+      <text class="rel-label" x="1225" y="725">vehicles → assignments (1:N)</text>
+    </g>
+
+  <path class="line" d="M 1515 435 L 1515 835 L 1200 835 L 1200 955"/>
+  
+    <g>
+      <rect class="label-bg" x="1545" y="704" width="245" height="30" rx="8"/>
+      <text class="rel-label" x="1555" y="725">routes → assignments (1:N)</text>
+    </g>
+
+  <!-- Bottom operation lines routed below boxes -->
+  <path class="softline" d="M 900 1220 L 900 1268 L 335 1268 L 335 1230"/>
+  
+    <g>
+      <rect class="label-bg" x="455" y="1227" width="330" height="30" rx="8"/>
+      <text class="rel-label" x="465" y="1248">assignments → events (1:N, nullable)</text>
+    </g>
+
+  <path class="line" d="M 1125 1220 L 1125 1268 L 1745 1268 L 1745 1230"/>
+  
+    <g>
+      <rect class="label-bg" x="1350" y="1227" width="330" height="30" rx="8"/>
+      <text class="rel-label" x="1360" y="1248">assignments → recommendations (1:N)</text>
+    </g>
+
+  <!-- Users relationships: labels separated from assignment labels -->
+  <path class="softline" d="M 240 225 L 240 135 L 2160 135 L 2160 1268 L 1885 1268 L 1885 1230"/>
+  
+    <g>
+      <rect class="label-bg" x="1510" y="95" width="430" height="30" rx="8"/>
+      <text class="rel-label" x="1520" y="116">users → recommendations (resolved_by, nullable)</text>
+    </g>
+
+  <path class="softline" d="M 240 415 L 240 905 L 310 905 L 310 960"/>
+  
+    <g>
+      <rect class="label-bg" x="110" y="624" width="330" height="30" rx="8"/>
+      <text class="rel-label" x="120" y="645">users → events (created_by, nullable)</text>
+    </g>
+
+  <!-- Constraints only, no relationships behind it -->
+  <rect class="note-box" x="1760" y="220" width="410" height="215"/>
+  <text class="note-title" x="1785" y="255">Constraints</text>
+  <text class="note" x="1785" y="287">• 1 active primary driver per vehicle</text>
+  <text class="note" x="1785" y="317">• 1 active primary vehicle per driver</text>
+  <text class="note" x="1785" y="347">• Unique vehicle + date + departure time</text>
+  <text class="note" x="1785" y="377">• Unique driver + date + departure time</text>
+  <text class="note" x="1785" y="407">• Review Better Auth user table naming</text>
+
+  <!-- How to read moved down into bottom area so it does not cover mid-lane labels -->
+  <rect class="note-box" x="90" y="1340" width="1050" height="150"/>
+  <text class="note-title" x="120" y="1376">How to read this</text>
+  <text class="note" x="120" y="1408">1. Master data lives at the top. Primary-driver history is separate from daily assignments.</text>
+  <text class="note" x="120" y="1438">2. Assignments are the center of daily operations. Events are flexible logs with nullable context.</text>
+  <text class="note" x="120" y="1468">3. Recommendations require dispatcher approval and can be unresolved while pending.</text>
+
+  <rect class="note-box" x="1180" y="1340" width="1020" height="150"/>
+  <text class="note-title" x="1210" y="1376">Line guide</text>
+  <text class="note" x="1210" y="1408">Solid lines show core required relationships.</text>
+  <text class="note" x="1210" y="1438">Dashed lines show nullable/context relationships.</text>
+  <text class="note" x="1210" y="1468">Labels are placed outside entity fields to avoid hiding table data.</text>
+</svg>
