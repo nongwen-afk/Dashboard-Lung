@@ -29,9 +29,9 @@ export function ReserveDriverCard({ driver }: ReserveDriverCardProps) {
       style={
         isSelected && !isAssigned
           ? {
-              background: "linear-gradient(135deg, rgba(255,237,213,0.95), rgba(254,215,170,0.8))",
-              border: "1.5px solid rgba(249,115,22,0.4)",
-              boxShadow: "0 4px 16px rgba(234,88,12,0.15), inset 0 1px 0 rgba(255,255,255,0.9)",
+              background: "linear-gradient(135deg, rgba(37,99,235,0.07), rgba(59,130,246,0.04))",
+              border: "1.5px solid rgba(37,99,235,0.35)",
+              boxShadow: "0 4px 16px rgba(37,99,235,0.14), inset 0 1px 0 rgba(255,255,255,0.9)",
             }
           : isAssigned
           ? {
@@ -64,7 +64,7 @@ export function ReserveDriverCard({ driver }: ReserveDriverCardProps) {
       {isSelected && !isAssigned && (
         <div
           className="absolute inset-0 rounded-xl pointer-events-none"
-          style={{ background: "linear-gradient(135deg, rgba(249,115,22,0.05) 0%, transparent 60%)" }}
+          style={{ background: "linear-gradient(135deg, rgba(37,99,235,0.05) 0%, transparent 60%)" }}
         />
       )}
 
@@ -105,8 +105,8 @@ export function ReserveDriverCard({ driver }: ReserveDriverCardProps) {
       {/* Selected badge */}
       {isSelected && !isAssigned && (
         <div className="mt-2 flex items-center justify-center gap-1 relative z-10">
-          <CheckCircle2 className="w-3 h-3 text-[#ea580c]" />
-          <span className="text-[0.75rem] text-[#ea580c] font-bold">Selected</span>
+          <CheckCircle2 className="w-3 h-3 text-[#1e3a8a]" />
+          <span className="text-[0.75rem] text-[#1e3a8a] font-bold">Selected</span>
         </div>
       )}
     </div>
