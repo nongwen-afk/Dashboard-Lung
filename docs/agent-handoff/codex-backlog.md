@@ -29,6 +29,26 @@ This file tracks all GitHub Issue / Project Board work that Codex needs to do la
 
 ## Current Pending GitHub Project Work
 
+### Completed: Issue #83 (Connect Drivers and Analytics UI to Database Data)
+
+Code status:
+
+- Branch: feature/issue-83-drivers-analytics-db-data
+- PR: #88 feat(data): connect drivers and analytics to fleet data
+- Merged to dev: yes
+- Feature branch deleted: yes (remote) / yes (local)
+- Verification: Passed (build, lint, typecheck, format, diff)
+- Files changed summary: Added hooks/useHydrateFleet.ts for shared DB hydration. Refactored DashboardView, DriverDashboard, and AnalyticsDashboard to use the shared hook. Updated data-mapper.ts with safe Thai route name mapping and fail-fast validation.
+
+GitHub cleanup needed for Codex:
+
+- Update issue checklist/body: Note shared hydration hook, DB-backed Drivers/Analytics, fixed demo date 2026-07-01, Thai route mapping fix, and safety notes.
+- Post completion comment: Summarize PR #88 and safety notes.
+- Move Project Status: Done
+- Close issue: Yes
+- Parent/Epic updates: Epic #76 remains In progress.
+- Notes/constraints: Charts, timetables, utilization stats remain mock. No schema/migration files changed. No db:migrate/db:seed/db:seed:mock were run. Epic #8 remains open.
+
 ### Completed: Issue #82 (Connect Dashboard UI to Database Data)
 
 Code status:

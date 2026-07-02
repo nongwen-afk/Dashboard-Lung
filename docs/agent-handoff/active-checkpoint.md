@@ -1,15 +1,35 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** #83 Connect Drivers and Analytics UI to Database Data
+- **Current active issue:** #84 Document Dev Database and Mock Data Workflow
 - **Current phase:** Development
 - **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
 - Epic #76: Dev Database & Mock Data Integration (In progress)
-  - Next candidate: #83 Connect Drivers and Analytics UI to Database Data
-  - Child issues #83-#84 are Todo.
-  - Child issues #77-#82 are Done/Closed.
+  - Next candidate: #84 Document Dev Database and Mock Data Workflow
+  - Child issue #84 is Todo.
+  - Child issues #77-#83 are Done/Closed.
+
+## Completed Setup: Issue #83 (Connect Drivers and Analytics UI to Database Data)
+
+- Issue #83 Connect Drivers and Analytics UI to Database Data is Done/Closed.
+- PR #88 merged into `dev`.
+- Branch `feature/issue-83-drivers-analytics-db-data` was deleted remotely.
+- Dashboard, Drivers, and Analytics pages now share a common `useHydrateFleet` DB hydration hook.
+- Drivers page (`DriverDashboard`) uses DB-backed fleet data.
+- Analytics page (`AnalyticsDashboard`) uses DB-backed routes for its table.
+- Analytics charts, timetables, utilization stats, and GPS maps remain mock/UI-only.
+- Fixed demo date "2026-07-01" is intentionally used.
+- Fixed duplicate route key bug (Thai DB names map correctly to stable UI IDs `L1`, `L2`, `L3` with fail-fast validation).
+- Schema/migration files were NOT modified.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were NOT run.
+- Production DB was NOT touched.
+- Better Auth remains paused.
+- Mock auth UI remains.
+- Epic #76 remains In progress.
+- Epic #8 remains open and must not be closed without explicit user approval.
+- Next active candidate is #84 Document Dev Database and Mock Data Workflow.
 
 ## Completed Setup: Issue #82 (Connect Dashboard UI to Database Data)
 
