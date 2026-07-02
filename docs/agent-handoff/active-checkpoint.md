@@ -10,6 +10,18 @@
 
 - Next features planning (Epic #9 Setup Better Auth, etc)
 
+## Completed Setup: Vercel Deployment
+
+- Vercel project created: `dashboard-lung`.
+- Production URL: https://dashboard-lung.vercel.app
+- Production branch: `main` (latest commit `9c77d82`).
+- `dev` and feature branches should be used for preview deployments.
+- Build command: `npm run build`.
+- Install command: `npm install` (Vercel default).
+- Required environment variables (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`) are configured securely in Vercel.
+- `db:migrate` and `db:seed` are NOT run as part of the Vercel build.
+- Epic #8 remains open unless user explicitly approves closing.
+
 ## Completed Maintenance Note: UI Port from pleum
 
 - Codex cleanup for UI port is complete.
