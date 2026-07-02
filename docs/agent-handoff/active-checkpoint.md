@@ -6,9 +6,22 @@
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
-## Next Candidate Work:
+- Epic #76: Dev Database & Mock Data Integration (In progress)
+  - Next candidate: #79 Create Full Mock Data DB Seed Script
+  - Child issues #79-#84 are Todo.
+  - Child issues #77-#78 are Done/Closed.
 
-- Next features planning (Epic #9 Setup Better Auth, etc)
+## Completed Setup: Dev Database Migration
+
+- Dev DB (dashboard-lung-dev) created and migrated.
+- Production/Preview `DATABASE_URL` separated.
+- Vercel Preview for branch `dev` uses Dev DB.
+- Local `.env.local` uses Dev DB.
+- Migrations 0000-0008 applied successfully to Dev DB (`npm run db:migrate`).
+- `db:seed` was not run.
+- Production DB was not touched.
+- Better Auth remains paused.
+- Epic #8 remains open unless user explicitly approves closing.
 
 ## Completed Setup: Vercel Deployment
 
