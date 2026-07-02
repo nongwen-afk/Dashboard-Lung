@@ -13,8 +13,10 @@ import {
   CartesianGrid,
   Legend,
 } from "recharts";
-import { TrendingUp, Clock, Bus, Activity } from "lucide-react";
-import { CHART_DATA, ROUTES } from "@/lib/mock-data";
+import { TrendingUp, Clock, Bus, Activity, Loader2 } from "lucide-react";
+import { CHART_DATA } from "@/lib/mock-data";
+import { useFleetStore } from "@/lib/store/fleetStore";
+import { useHydrateFleet } from "@/hooks/useHydrateFleet";
 import { ScheduleSimulator } from "./ScheduleSimulator";
 
 const BAR_COLORS = {
@@ -38,6 +40,32 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function AnalyticsDashboard() {
+  const { isLoading, error } = useHydrateFleet();
+  const routes = useFleetStore((state) => state.routes);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center flex-col gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+        <p className="text-slate-600 font-medium">Loading Analytics Data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center flex-col gap-4">
+        <p className="text-red-500 font-medium text-lg">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* KPIs */}
@@ -135,7 +163,7 @@ export function AnalyticsDashboard() {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {ROUTES.map((route, i) => (
+              {routes.map((route, i) => (
                 <tr
                   key={route.id}
                   className="border-b border-slate-50 hover:bg-slate-50 transition-colors"
