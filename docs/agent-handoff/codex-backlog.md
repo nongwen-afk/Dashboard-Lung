@@ -29,7 +29,7 @@ This file tracks all GitHub Issue / Project Board work that Codex needs to do la
 
 ## Current Pending GitHub Project Work
 
-### Pending: UI Port from pleum
+### Completed: UI Port from pleum
 
 Code status:
 
@@ -40,13 +40,17 @@ Code status:
 - Verification: Passed (build, lint, typecheck, format, diff)
 - Files changed summary: UI components ported manually, safe Next 15 structure used, no schema or auth modification.
 
-Expected GitHub work for Codex:
+Codex GitHub Cleanup Completed:
 
-- Codex needs to create/update UI Epic and child issues if not already done
-- Codex needs to mark the UI port work according to actual merge state (Done)
-- Codex should not close Epic #8 unless user explicitly approves
-- Codex should not modify code
-- Codex should update GitHub Project/Issues retroactively based on this backlog
+- UI Epic #68 reused/updated and closed.
+- Child issues created and closed:
+  - #70 Resolve App Router Conflicts & Final UI Integration
+  - #71 Setup UI Dependencies & Base Configurations
+  - #72 Port Mock Data & State Management
+  - #73 Port Main Dashboard UI
+  - #74 Port Drivers & Analytics Pages
+- Labels, Projects, and Completion comments updated on GitHub.
+- Rule preserved: Epic #8 must not be closed without explicit user approval.
 
 ---
 

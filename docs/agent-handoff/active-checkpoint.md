@@ -1,7 +1,7 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** None / awaiting GitHub cleanup and next planning
-- **Current phase:** Awaiting next issue assessment
+- **Current active issue:** None
+- **Current phase:** Awaiting next planning / release decision
 - **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
@@ -12,18 +12,15 @@
 
 ## Completed Maintenance Note: UI Port from pleum
 
-- PR #69 feat(ui): port dashboard foundation from pleum merged into dev
-- remote feature/port-pleum-ui deleted
-- local feature/port-pleum-ui deleted successfully
-- UI from pleum was manually ported safely
-- pleum was not merged directly
-- root app/ remains the only App Router directory
-- src/app was not created
-- mock auth is UI-only and does not replace Better Auth
-- Better Auth/auth API/schema/migrations/seed data were not modified
-- db:migrate and db:seed were not run
-- Epic #8 remains open and must not be closed without explicit user approval
-- dev should not be merged to main yet unless user explicitly approves release
+- Codex cleanup for UI port is complete.
+- UI Epic #68 is Done/Closed.
+- Child issues #70-#74 are Done/Closed.
+- PR #69 was already merged into dev.
+- feature/port-pleum-ui remote branch was deleted.
+- local feature/port-pleum-ui was deleted.
+- UI from pleum was manually ported safely.
+- Epic #8 remains open and must not be closed without explicit user approval.
+- dev should not be merged to main yet unless user explicitly approves release.
 
 ## Which files to read next:
 
