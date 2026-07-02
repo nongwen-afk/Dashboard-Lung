@@ -68,13 +68,13 @@ export function MobilePanel() {
       <div
         className="absolute left-0 right-0 bottom-0 z-[800] flex flex-col"
         style={{
-          height: "88vh", // Use constant height to prevent layout reflows during animation
+          height: "calc(100% - 16px)", // Use constant height relative to container to prevent layout reflows
           transform: `translateY(${SHEET_HEIGHTS[sheetState]})`,
           transition: "transform 0.4s cubic-bezier(0.32, 0.72, 0, 1)",
           willChange: "transform",
-          borderRadius: "20px 20px 0 0",
+          borderRadius: "24px 24px 0 0",
           background: "linear-gradient(180deg, #ffffff 0%, #f8f9fc 100%)",
-          boxShadow: "0 -8px 40px rgba(26,26,46,0.18), 0 -1px 0 rgba(26,26,46,0.06)",
+          boxShadow: "0 -8px 40px rgba(10,15,30,0.25), 0 -1px 0 rgba(255,255,255,0.3)",
           overflow: "hidden",
         }}
       >
@@ -85,18 +85,21 @@ export function MobilePanel() {
           onTouchEnd={handleTouchEnd}
           onClick={toggle}
           style={{
-            background: "linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%)",
-            borderRadius: "20px 20px 0 0",
+            background: "linear-gradient(145deg, #0a0f1c 0%, #131b2f 50%, #111827 100%)",
+            borderRadius: "24px 24px 0 0",
+            borderTop: "1px solid rgba(255,255,255,0.1)",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
           }}
         >
           {/* Drag pill */}
-          <div className="flex justify-center pt-3 pb-1">
+          <div className="flex justify-center pt-2 pb-1.5">
             <div
               style={{
                 width: "40px",
                 height: "4px",
                 borderRadius: "2px",
-                background: "rgba(255,255,255,0.25)",
+                background: "rgba(255,255,255,0.2)",
+                boxShadow: "inset 0 1px 1px rgba(255,255,255,0.1), 0 1px 2px rgba(0,0,0,0.3)",
               }}
             />
           </div>
@@ -104,49 +107,33 @@ export function MobilePanel() {
           <div className="flex items-center justify-between px-4 pb-3">
             <div className="flex items-center gap-2.5">
               <div
-                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 relative overflow-hidden"
                 style={{
-                  background: "linear-gradient(135deg, rgba(37,99,235,0.9), rgba(59,130,246,0.9))",
-                  boxShadow: "0 2px 10px rgba(37,99,235,0.35)",
+                  background: "linear-gradient(135deg, #2563eb, #1d4ed8)",
+                  boxShadow: "0 3px 8px rgba(37,99,235,0.4), inset 0 1px 0 rgba(255,255,255,0.3)",
                 }}
               >
-                <Users style={{ width: "14px", height: "14px", color: "white" }} />
+                <div className="absolute inset-0 bg-gradient-to-b from-white/20 to-transparent pointer-events-none" />
+                <Users style={{ width: "15px", height: "15px", color: "white", filter: "drop-shadow(0 1px 1px rgba(0,0,0,0.2))" }} />
               </div>
               <div>
-                <p className="text-white font-bold" style={{ fontSize: "13px", lineHeight: 1.2 }}>
-                  Fleet &amp; Reserve Pool
+                <p className="text-white font-bold tracking-wide" style={{ fontSize: "13px", lineHeight: 1.2, textShadow: "0 1px 2px rgba(0,0,0,0.5)" }}>
+                  Fleet &amp; Reserve
                 </p>
-                <p style={{ fontSize: "10px", color: "#94a3b8", marginTop: "1px" }}>
+                <p style={{ fontSize: "10px", color: "#94a3b8", marginTop: "1px", letterSpacing: "0.01em" }}>
                   การจัดการกองรถและคนสำรอง
                 </p>
               </div>
             </div>
-
-            {/* Toggle icon */}
-            <button
-              onClick={(e) => { e.stopPropagation(); toggle(); }}
-              className="flex items-center justify-center rounded-full"
-              style={{
-                width: "28px",
-                height: "28px",
-                background: "rgba(255,255,255,0.1)",
-                border: "1px solid rgba(255,255,255,0.15)",
-              }}
-            >
-              {sheetState === "full" ? (
-                <ChevronDown style={{ width: "14px", height: "14px", color: "white" }} />
-              ) : (
-                <ChevronUp style={{ width: "14px", height: "14px", color: "white" }} />
-              )}
-            </button>
           </div>
 
-          {/* Bottom gradient line */}
+          {/* Bottom decorative line */}
           <div
-            className="h-[0.0625rem]"
+            className="h-[2px]"
             style={{
               background:
-                "linear-gradient(90deg, transparent, rgba(37,99,235,0.30), rgba(71,85,105,0.25), transparent)",
+                "linear-gradient(90deg, transparent, rgba(59,130,246,0.6), rgba(139,92,246,0.5), transparent)",
+              boxShadow: "0 1px 4px rgba(59,130,246,0.3)",
             }}
           />
         </div>
@@ -189,7 +176,7 @@ export function MobilePanel() {
               className="border-t pt-4"
               style={{ borderColor: "rgba(26,26,46,0.06)" }}
             >
-              <DriverTable />
+              <DriverTable compact />
             </div>
           </div>
         </div>

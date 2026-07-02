@@ -13,7 +13,7 @@ const ROUTE_COLORS: Record<string, string> = {
   "Line 3": "#16a34a",
 };
 
-export function DriverTable() {
+export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
   const {
     routeFilter, statusFilter, searchQuery,
     setRouteFilter, setStatusFilter, setSearchQuery,
@@ -21,7 +21,7 @@ export function DriverTable() {
   } = useFleetStore();
 
   const filtered = useFilteredDrivers();
-  const exp = panelsCollapsed; // shorthand
+  const exp = panelsCollapsed && !compact; // shorthand
 
   return (
     <div>
@@ -115,16 +115,32 @@ export function DriverTable() {
               }}
             >
               {(exp
-                ? ["Lin.", "Name", "Vehicle", "Status", "Cap.", ""]
-                : ["Lin.", "Name", "Drivers", "Cap.", ""]
-              ).map((h) => (
-                <th
-                  key={h}
-                  className={`font-bold text-slate-400 text-left px-2 uppercase tracking-wide ${exp ? "text-[0.75rem] py-2.5" : "text-[0.675rem] py-2"}`}
-                >
-                  {h}
-                </th>
-              ))}
+                ? [
+                    { label: "Lin.", w: "w-px" },
+                    { label: "Name", w: "w-full" },
+                    { label: "Vehicle", w: "w-px" },
+                    { label: "Status", w: "w-px" },
+                    { label: "Cap.", w: "w-px" },
+                    { label: "", w: "w-px" },
+                  ]
+                : [
+                    { label: "Lin.", w: "w-px" },
+                    { label: "Name", w: "w-full" },
+                    { label: "Vehicle", w: "w-px" },
+                    { label: "", w: "w-px" },
+                  ]
+              ).map((col, i, arr) => {
+                const isFirst = i === 0;
+                const isLast = i === arr.length - 1;
+                return (
+                  <th
+                    key={col.label || i}
+                    className={`font-bold text-slate-400 text-left uppercase tracking-wide ${col.w} ${exp ? "text-[0.75rem] py-2.5" : "text-[0.675rem] py-2"} ${isFirst ? "pl-4 pr-2" : isLast ? "pl-2 pr-4 text-right" : "px-2"}`}
+                  >
+                    {col.label}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -155,7 +171,7 @@ export function DriverTable() {
                     }}
                   >
                     {/* Line badge */}
-                    <td className="px-2 py-1.5 w-[10%]">
+                    <td className="pl-4 pr-2 py-2 w-px whitespace-nowrap">
                       <span
                         className={`inline-block whitespace-nowrap font-bold text-white px-1.5 py-0.5 rounded ${exp ? "text-[0.75rem]" : "text-[0.6rem]"}`}
                         style={{
@@ -167,36 +183,46 @@ export function DriverTable() {
                       </span>
                     </td>
                     {/* Name */}
-                    <td className="px-2 py-1.5">
+                    <td className="px-2 py-2 w-full">
                       <div className="flex items-center gap-1.5">
                         <Avatar name={d.name} size="xs" color={isLeave ? "#94a3b8" : rc} />
-                        <div className="min-w-0">
-                          <span className={`block leading-tight ${isLeave ? "text-gray-400" : "text-[#0f172a] font-medium"} ${exp ? "text-[0.9rem]" : "text-[0.75rem]"}`}>
+                        <div className="min-w-0 flex-1">
+                          <span className={`block leading-tight break-words ${isLeave ? "text-gray-400" : "text-[#0f172a] font-medium"} ${exp ? "text-[0.9rem]" : "text-[0.75rem]"}`}>
                             {d.name} {d.surname}
                           </span>
-                          <span className={exp ? "text-[0.675rem] text-gray-400" : "text-[0.5625rem] text-gray-400"}>{d.code}</span>
+                          <span className={`block ${exp ? "text-[0.675rem]" : "text-[0.5625rem]"} text-gray-400`}>{d.code}</span>
                         </div>
                       </div>
                     </td>
-                    {/* Vehicle */}
-                    <td className={`px-2 py-1.5 text-gray-500 ${exp ? "text-[0.825rem]" : "text-[0.675rem]"}`}>{d.vehicle}</td>
-                    {/* Status column — only in expanded mode */}
-                    {exp && (
-                      <td className="px-2 py-1.5">
-                        <StatusBadge status={d.status as "Active" | "Leave"} />
+                    {/* Vehicle & Capacity */}
+                    {exp ? (
+                      <>
+                        <td className={`px-2 py-2 text-gray-500 whitespace-nowrap w-px ${exp ? "text-[0.825rem]" : "text-[0.675rem]"}`}>{d.vehicle}</td>
+                        <td className="px-2 py-2 w-px whitespace-nowrap">
+                          <StatusBadge status={d.status as "Active" | "Leave"} />
+                        </td>
+                        <td className="px-2 py-2 w-px whitespace-nowrap">
+                          <div className="w-20">
+                            <ProgressBar value={d.capacity} height="h-1.5" />
+                            <p className="text-[0.675rem] text-gray-400 mt-0.5">{d.capacity}%</p>
+                          </div>
+                        </td>
+                      </>
+                    ) : (
+                      <td className="px-2 py-2 w-px whitespace-nowrap">
+                        <div className="flex flex-col gap-1 items-start">
+                          <span className="text-[0.675rem] font-medium text-[#0f172a]">{d.vehicle}</span>
+                          <div className="w-12">
+                            <ProgressBar value={d.capacity} height="h-1" />
+                            <p className="text-[0.525rem] text-gray-400 mt-0.5">{d.capacity}%</p>
+                          </div>
+                        </div>
                       </td>
                     )}
-                    {/* Capacity bar */}
-                    <td className="px-2 py-1.5">
-                      <div className={exp ? "w-20" : "w-10"}>
-                        <ProgressBar value={d.capacity} height={exp ? "h-1.5" : "h-1"} />
-                        <p className={exp ? "text-[0.675rem] text-gray-400 mt-0.5" : "text-[0.525rem] text-gray-400 mt-0.5"}>{d.capacity}%</p>
-                      </div>
-                    </td>
                     {/* Action */}
-                    <td className="px-2 py-1.5">
+                    <td className="pl-2 pr-4 py-2 text-right w-px whitespace-nowrap">
                       {isLeave ? (
-                        <span className={`text-gray-400 font-semibold ${exp ? "text-[0.75rem]" : "text-[0.6rem]"}`}>On Leave</span>
+                        <span className={`inline-block text-gray-400 font-semibold ${exp ? "text-[0.75rem]" : "text-[0.6rem]"}`}>On Leave</span>
                       ) : (
                         <button
                           onClick={() => openModal(d.id)}
@@ -204,14 +230,6 @@ export function DriverTable() {
                           style={{
                             background: "linear-gradient(135deg, #1e3a8a, #1e40af)",
                             boxShadow: "0 2px 8px rgba(37,99,235,0.30)",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(37,99,235,0.45)";
-                            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 2px 8px rgba(37,99,235,0.30)";
-                            (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
                           }}
                         >
                           Replace
