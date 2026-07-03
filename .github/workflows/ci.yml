@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Formatting
+        run: npm run format:check
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Build Project
+        run: npm run build
+        env:
+          # Next.js build might require some stubbed variables depending on the configuration.
+          # Providing basic ones just in case.
+          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+      - name: Verify Database Schema Generation
+        run: npm run db:generate
+        env:
+          # A mock DATABASE_URL is strictly required by drizzle.config.ts to execute.
+          # drizzle-kit generate does NOT connect to the DB; it merely compares files.
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+
+      - name: Verify Clean Git Tree
+        run: git diff --check
