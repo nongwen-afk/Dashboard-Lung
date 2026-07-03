@@ -14,6 +14,14 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    # These are CI-only dummy values for build/config validation.
+    # They must NEVER be used for production. No real secrets should be added here.
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+      BETTER_AUTH_SECRET: "ci-only-dummy-secret-do-not-use-in-production"
+      BETTER_AUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -38,17 +46,9 @@ jobs:
 
       - name: Build Project
         run: npm run build
-        env:
-          # Next.js build might require some stubbed variables depending on the configuration.
-          # Providing basic ones just in case.
-          NEXT_PUBLIC_APP_URL: "http://localhost:3000"
 
       - name: Verify Database Schema Generation
         run: npm run db:generate
-        env:
-          # A mock DATABASE_URL is strictly required by drizzle.config.ts to execute.
-          # drizzle-kit generate does NOT connect to the DB; it merely compares files.
-          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
 
       - name: Verify Clean Git Tree
         run: git diff --check
