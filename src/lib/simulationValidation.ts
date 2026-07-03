@@ -81,7 +81,7 @@ export function validateSimulation(
     const label = ROUTE_META[route].label;
     const numDrivers = result.totalDrivers;
     const departures = result.departures;
-    const tripDur = config.tripDurationMin;
+    const tripDur = config.tripDurations[route];
 
     // ── CHECK 1: No drivers ───────────────────────────────────────────
     if (numDrivers === 0) {
@@ -150,12 +150,12 @@ export function validateSimulation(
 
     // ── CHECK 6: Rest time physically impossible ──────────────────────
     // If rest is forced every X hours but trip takes Y min, and interval is tiny
-    if (config.restAfterHours * 60 < config.tripDurationMin * 2) {
+    if (config.restAfterHours * 60 < tripDur * 2) {
       push({
         route, level: "error", code: "REST_IMPOSSIBLE",
         title: "กฎพักขัดแย้งกัน",
-        detail: `กำหนดพักบังคับหลัง ${config.restAfterHours} ชม. (${config.restAfterHours * 60} นาที) แต่ระยะเวลา/รอบ = ${config.tripDurationMin} นาที — ไม่สามารถพักได้ในช่วงสั้นนี้`,
-        suggestion: `ตั้ง "พักบังคับหลัง" ให้ ≥ ${Math.ceil((config.tripDurationMin * 2) / 60)} ชั่วโมง`,
+        detail: `กำหนดพักบังคับหลัง ${config.restAfterHours} ชม. (${config.restAfterHours * 60} นาที) แต่ระยะเวลา/รอบ = ${tripDur} นาที — ไม่สามารถพักได้ในช่วงสั้นนี้`,
+        suggestion: `ตั้ง "พักบังคับหลัง" ให้ ≥ ${Math.ceil((tripDur * 2) / 60)} ชั่วโมง`,
       });
     }
 

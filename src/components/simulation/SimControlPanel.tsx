@@ -99,7 +99,7 @@ export function SimControlPanel({ config, multiResult, onChange, onReset }: Prop
                 : { background: "#f8fafc", color: "#64748b", border: "1px solid #e2e8f0" }
               }
             >
-              {d === "weekday" ? "🗓️ จ–ศ" : "🌅 ส–อา"}
+              {d === "weekday" ? "จ–ศ" : "ส–อา"}
             </button>
           ))}
         </div>
@@ -107,10 +107,13 @@ export function SimControlPanel({ config, multiResult, onChange, onReset }: Prop
         {/* ── Work rules ── */}
         <SectionLabel>กฎการทำงาน</SectionLabel>
 
-        <Slider label="OT Threshold" value={config.otThresholdHours} min={4} max={12} unit=" ชม." color="#f97316" onChange={v => onChange({ otThresholdHours: v })} hint="เกินกี่ชั่วโมงถึงนับ OT" />
-        <Slider label="พักบังคับหลัง" value={config.restAfterHours} min={2} max={6} unit=" ชม." color="#06b6d4" onChange={v => onChange({ restAfterHours: v })} hint="ทำงานต่อเนื่องกี่ชม. ถึงพัก 30 นาที" />
-        <Slider label="ระยะเวลา/รอบ" value={config.tripDurationMin} min={10} max={40} unit=" นาที" color="#8b5cf6" onChange={v => onChange({ tripDurationMin: v })} hint="เวลาที่ใช้ต่อรอบ (ไป-กลับ)" />
-        <Slider label="ค่า OT ต่อครั้ง" value={config.otPayPerSession} min={100} max={1000} step={50} unit=" ฿" color="#ec4899" onChange={v => onChange({ otPayPerSession: v })} />
+        <Slider label="OT Threshold" value={config.otThresholdHours} min={4} max={12} unit=" ชม." color="#64748b" onChange={v => onChange({ otThresholdHours: v })} hint="เกินกี่ชั่วโมงถึงนับ OT" />
+        <Slider label="พักบังคับหลัง" value={config.restAfterHours} min={2} max={6} unit=" ชม." color="#64748b" onChange={v => onChange({ restAfterHours: v })} hint="ทำงานต่อเนื่องกี่ชม. ถึงพัก 30 นาที" />
+        <SectionLabel>ระยะเวลา/รอบ (นาที)</SectionLabel>
+        <Slider label="สายสีเขียว" value={config.tripDurations.green} min={10} max={40} unit=" น." color="#64748b" onChange={v => onChange({ tripDurations: { ...config.tripDurations, green: v } })} hint="เวลาที่ใช้ต่อรอบ (ไป-กลับ) สายสีเขียว" />
+        <Slider label="สายสีน้ำเงิน" value={config.tripDurations.blue} min={10} max={40} unit=" น." color="#64748b" onChange={v => onChange({ tripDurations: { ...config.tripDurations, blue: v } })} hint="เวลาที่ใช้ต่อรอบ (ไป-กลับ) สายสีน้ำเงิน" />
+        <Slider label="สายสีแดง" value={config.tripDurations.red} min={10} max={40} unit=" น." color="#64748b" onChange={v => onChange({ tripDurations: { ...config.tripDurations, red: v } })} hint="เวลาที่ใช้ต่อรอบ (ไป-กลับ) สายสีแดง" />
+        <Slider label="ค่า OT ต่อครั้ง" value={config.otPayPerSession} min={100} max={1000} step={50} unit=" ฿" color="#64748b" onChange={v => onChange({ otPayPerSession: v })} />
 
         {/* ── Cross-line toggle ── */}
         <SectionLabel>ตัวเลือกพิเศษ</SectionLabel>
@@ -134,7 +137,7 @@ export function SimControlPanel({ config, multiResult, onChange, onReset }: Prop
           onClick={onReset}
           className="w-full py-2.5 rounded-xl text-[0.6875rem] font-bold transition-all duration-200 mb-5 bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100"
         >
-          ↺ รีเซ็ตค่าเริ่มต้น
+          รีเซ็ตค่าเริ่มต้น
         </button>
 
         {/* ── Per-driver workload bars ── */}

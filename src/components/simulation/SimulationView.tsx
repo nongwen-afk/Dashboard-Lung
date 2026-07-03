@@ -142,7 +142,7 @@ export function SimulationView() {
                 showStats ? "bg-indigo-50 text-indigo-600 border-indigo-200" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"
               }`}
             >
-              <span>📊</span> วิเคราะห์ข้อมูล
+              วิเคราะห์ข้อมูล
             </button>
 
             {/* Validation Alerts Toggle Button */}
@@ -155,7 +155,6 @@ export function SimulationView() {
                     : "bg-amber-50 text-amber-600 border-amber-200 hover:bg-amber-100"
                 }`}
               >
-                <span className={validationSummary.hasError ? "animate-pulse" : ""}>⚠️</span>
                 {validationSummary.errorCount > 0 ? `${validationSummary.errorCount} ปัญหา` : `${validationSummary.warningCount} แจ้งเตือน`}
               </button>
             )}
@@ -186,7 +185,7 @@ export function SimulationView() {
             <div className="flex-1 min-h-0 overflow-hidden">
               <SimGanttBoard
                 multiResult={multiResult}
-                tripDurationMin={config.tripDurationMin}
+                tripDurations={config.tripDurations}
                 otThresholdHours={config.otThresholdHours}
                 activeView={activeView}
               />

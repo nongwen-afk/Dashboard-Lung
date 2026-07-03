@@ -14,7 +14,7 @@ import {
 
 interface Props {
   multiResult: MultiRouteSimResult;
-  tripDurationMin: number;
+  tripDurations: Record<RouteKey, number>;
   otThresholdHours: number;
   activeView: "all" | "green" | "blue" | "red";
 }
@@ -79,7 +79,7 @@ function computeLayout(multiResult: MultiRouteSimResult, activeView: string, con
   return { groups, totalWidth: x };
 }
 
-export function SimGanttBoard({ multiResult, tripDurationMin, otThresholdHours, activeView }: Props) {
+export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, activeView }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
@@ -260,6 +260,7 @@ export function SimGanttBoard({ multiResult, tripDurationMin, otThresholdHours, 
               {drivers.map((driver, di) => {
                 const colLeft = left + di * colW;
                 const otStartMin = driver.startMin + otThresholdMin;
+                const routeTripDuration = tripDurations[route];
 
                 return (
                   <div key={driver.driverIndex} className="absolute top-0 bottom-0" style={{ left: colLeft, width: colW, zIndex: 3 }}>
@@ -287,7 +288,7 @@ export function SimGanttBoard({ multiResult, tripDurationMin, otThresholdHours, 
                     {/* Trip blocks */}
                     {driver.trips.map(trip => {
                       const top = minToPx(trip.departureMin);
-                      const h = Math.max(8, tripDurationMin * PX_PER_MIN - 2);
+                      const h = Math.max(8, routeTripDuration * PX_PER_MIN - 2);
                       if (top < 0) return null;
                       const ot = trip.isOT;
                       const rush = trip.isRushHour;
@@ -426,7 +427,7 @@ export function SimGanttBoard({ multiResult, tripDurationMin, otThresholdHours, 
                 </span>
               </div>
               <p className="text-[0.5625rem] text-slate-500 font-bold">🚌 รอบที่ {tooltip.trip.tripIndex + 1}</p>
-              <p className="text-[0.5625rem] text-slate-600 mt-0.5">⏱ {minToTime(tooltip.trip.departureMin)} → {minToTime(tooltip.trip.departureMin + tripDurationMin)}</p>
+              <p className="text-[0.5625rem] text-slate-600 mt-0.5">⏱ {minToTime(tooltip.trip.departureMin)} → {minToTime(tooltip.trip.departureMin + tripDurations[tooltip.route])}</p>
               <div className="flex gap-1.5 mt-1.5 flex-wrap">
                 {tooltip.trip.isRushHour && <span className="px-1.5 py-0.5 rounded text-[0.45rem] font-black" style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444" }}>⚡ RUSH</span>}
                 {tooltip.trip.isOT && <span className="px-1.5 py-0.5 rounded text-[0.45rem] font-black" style={{ background: "rgba(245,158,11,0.15)", color: "#d97706" }}>💰 OT</span>}

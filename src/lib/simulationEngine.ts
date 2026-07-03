@@ -395,7 +395,7 @@ export interface SharedSimConfig {
   otThresholdHours: number;
   restAfterHours: number;
   crossLineAssist: boolean;
-  tripDurationMin: number;
+  tripDurations: Record<RouteKey, number>;
   otPayPerSession: number;
 }
 
@@ -436,7 +436,7 @@ export function defaultSharedConfig(): SharedSimConfig {
     otThresholdHours: 8,
     restAfterHours: 4,
     crossLineAssist: false,
-    tripDurationMin: 20,
+    tripDurations: { green: 20, blue: 25, red: 20 },
     otPayPerSession: 400,
   };
 }
@@ -451,7 +451,7 @@ export function runAllRoutes(
     if (customDriverNames.length === 0) {
       // No drivers assigned — return empty result
       return {
-        config: { route, numDrivers: 0, numOTDrivers: 0, customDriverNames: [], ...shared, crossLineAssist: false },
+        config: { route, numDrivers: 0, numOTDrivers: 0, customDriverNames: [], ...shared, tripDurationMin: shared.tripDurations[route], crossLineAssist: false },
         departures: ROUTE_DEPARTURES[route][shared.dayType],
         drivers: [],
         totalTrips: ROUTE_DEPARTURES[route][shared.dayType].length,
@@ -475,7 +475,7 @@ export function runAllRoutes(
       otThresholdHours: shared.otThresholdHours,
       restAfterHours: shared.restAfterHours,
       crossLineAssist: shared.crossLineAssist && route === "green",
-      tripDurationMin: shared.tripDurationMin,
+      tripDurationMin: shared.tripDurations[route],
       otPayPerSession: shared.otPayPerSession,
     });
   };
