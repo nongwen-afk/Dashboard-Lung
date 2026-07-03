@@ -9,7 +9,7 @@ Decision Support System for EV Bus Dispatch Operations.
 - TypeScript
 - Tailwind CSS v4
 - shadcn/ui
-- Supabase
+- Neon PostgreSQL
 - Drizzle ORM
 - Better Auth
 - npm
@@ -18,7 +18,7 @@ Decision Support System for EV Bus Dispatch Operations.
 
 - Use `npm` as the package manager
 - Use Next.js Route Handlers and Server Actions for backend logic
-- Use Supabase PostgreSQL as the primary database
+- Use Neon PostgreSQL as the primary canonical database
 - Use Drizzle ORM for schema, migrations, and type-safe queries
 - Use Better Auth for authentication and role-based access control
 - Use Role-Based Access Control (RBAC) for Admin and Dispatcher roles
@@ -35,14 +35,41 @@ npm install
 
 Set up database:
 
-- `npm run db:migrate` applies existing schema to the database (use this for setup).
+- **Important**: Neon `main` branch is Production. Neon `dev` branch is Preview/Local development.
+- Your local `.env.local` must point to Neon `dev`. Vercel automatically splits Production and Preview environments.
+- `npm run db:migrate` applies existing schema to the database.
 - `npm run db:generate` creates new migration files (use this only after changing schema files).
-- `npm run db:seed` is optional and must only be run on a safe non-production database.
+- `npm run db:seed:mock` generates deterministic demo mock data (fixed date: 2026-07-01). **This must NEVER be run on Production.**
 
 ```bash
 npm run db:migrate
-# Optional: npm run db:seed
+# Optional (dev only): npm run db:seed:mock
 ```
+
+## Current Application State
+
+**Database-Backed Features**:
+
+- Dashboard UI
+- Drivers Page
+- Analytics Routes & Fleet Data
+
+**UI-Only Mock Features**:
+
+- Charts & Timetables
+- Utilization Stats & Performance Metrics
+- GPS/Map Animation
+
+**Authentication**:
+
+- Better Auth integration remains currently paused.
+- A Mock Auth UI remains active as the gatekeeper.
+
+For full details on the workflow, environment setups, and project constraints, please read:
+
+- `docs/onboarding.md`
+- `docs/deployment.md`
+- `docs/project-bible.md`
 
 Start development server:
 
