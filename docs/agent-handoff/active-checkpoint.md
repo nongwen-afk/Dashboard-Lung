@@ -6,6 +6,19 @@
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
+## Completed Maintenance Note: Release v0.2.0
+
+- PR #90 release: v0.2.0 - Database & Mock Data Integration was merged into `main`.
+- Main merge commit: `f325b6d220bf9e00a3a520b68b8b6a997a9ef06c`.
+- `dev` branch remains active.
+- Production Neon main schema migration was explicitly completed BEFORE merge.
+- Production DB was NOT seeded with mock data.
+- `db:seed` and `db:seed:mock` were completely forbidden and unexecuted.
+- Better Auth remains paused.
+- Mock Auth UI remains active.
+- Epic #8 remains open and must not be closed without explicit user approval.
+- The Vercel Production deployment correctly serves the latest database integration updates.
+
 - Epic #76: Dev Database & Mock Data Integration (Done/Closed)
   - All child issues #77-#84 are Done/Closed.
 
