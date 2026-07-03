@@ -2,19 +2,20 @@
 
 import {
   LayoutDashboard,
-  MapPin,
   Bus,
   Users,
   BarChart3,
+  FlaskConical,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const NAV_ITEMS = [
-  { icon: LayoutDashboard, label: "หน้าหลัก", href: "/" },
-  { icon: Users,           label: "คนขับ",    href: "/drivers" },
-  { icon: BarChart3,       label: "วิเคราะห์", href: "/analytics" },
+  { icon: LayoutDashboard, label: "หน้าหลัก",   href: "/" },
+  { icon: Users,           label: "คนขับ",     href: "/drivers" },
+  { icon: BarChart3,       label: "วิเคราะห์",  href: "/analytics" },
+  { icon: FlaskConical,    label: "Sim",       href: "/simulation" },
 ];
 
 export function MobileBottomNav() {

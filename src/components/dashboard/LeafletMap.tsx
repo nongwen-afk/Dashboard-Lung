@@ -244,14 +244,15 @@ export function LeafletMap() {
         for(let i=0; i<5; i++) {
           const driver = routeDrivers.length > 0 ? routeDrivers[i % routeDrivers.length] : null;
 
+          const initialDisplaySpeed = Math.random() < 0.05 ? Math.floor(Math.random() * 15) + 81 : Math.floor(Math.random() * 35) + 40;
           const busObj = {
             marker: null as any,
             route,
             progress: i * 0.20,
-            speed: 0.00015 + (Math.random() * 0.00010),
+            speed: initialDisplaySpeed > 80 ? 0.00060 : 0.00015, // Highly exaggerated speed difference
             direction: 1,
             driverId: driver ? driver.id : null,
-            displaySpeed: Math.random() < 0.05 ? Math.floor(Math.random() * 15) + 81 : Math.floor(Math.random() * 35) + 40,
+            displaySpeed: initialDisplaySpeed,
             isSpeeding: false,
             innerEl: null as HTMLElement | null,
             badgeEl: null as HTMLElement | null,
@@ -394,6 +395,9 @@ export function LeafletMap() {
               b.displaySpeed = Math.max(40, Math.min(79, b.displaySpeed + change));
             }
           }
+
+          // Update actual visual speed to make the difference extremely obvious
+          b.speed = b.displaySpeed > 80 ? 0.00060 : 0.00015;
 
           if (b.displaySpeed > 80) {
             if (!b.isSpeeding) {

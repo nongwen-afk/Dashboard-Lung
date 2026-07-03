@@ -1,0 +1,197 @@
+// ====================================================================
+// Simulation Validation — Real-time feasibility checker
+// ====================================================================
+
+import {
+  ROUTE_META,
+  ROUTE_DEPARTURES,
+  type MultiRouteSimResult,
+  type AssignmentMap,
+  type SharedSimConfig,
+  type RouteKey,
+} from "./simulationEngine";
+
+// ── Types ─────────────────────────────────────────────────────────────
+
+export type ValidationLevel = "error" | "warning" | "info" | "ok";
+
+export interface RouteValidation {
+  route: RouteKey;
+  level: ValidationLevel;
+  code: string;
+  title: string;
+  detail: string;
+  suggestion?: string;
+}
+
+export interface ValidationSummary {
+  issues: RouteValidation[];
+  byRoute: Record<RouteKey, RouteValidation[]>;
+  errorCount: number;
+  warningCount: number;
+  hasError: boolean;
+  hasWarning: boolean;
+  overallLevel: ValidationLevel;
+}
+
+// ── Internal helpers ──────────────────────────────────────────────────
+
+/** Max number of trips that overlap within a tripDur-minute window (= min concurrent drivers needed) */
+function maxConcurrentTrips(departures: number[], tripDur: number): number {
+  let max = 0;
+  for (const dep of departures) {
+    const count = departures.filter(d => d >= dep && d < dep + tripDur).length;
+    max = Math.max(max, count);
+  }
+  return max;
+}
+
+/** Minimum gap (minutes) between any two consecutive departures */
+function minIntervalMinutes(departures: number[]): number {
+  if (departures.length < 2) return Infinity;
+  let min = Infinity;
+  for (let i = 1; i < departures.length; i++) {
+    min = Math.min(min, departures[i] - departures[i - 1]);
+  }
+  return min;
+}
+
+/** How many trips fall in a time window */
+function tripsInWindow(departures: number[], startMin: number, endMin: number): number {
+  return departures.filter(d => d >= startMin && d < endMin).length;
+}
+
+// ── Main validator ────────────────────────────────────────────────────
+
+export function validateSimulation(
+  multiResult: MultiRouteSimResult,
+  assignments: AssignmentMap,
+  config: SharedSimConfig
+): ValidationSummary {
+  const issues: RouteValidation[] = [];
+  const byRoute: Record<RouteKey, RouteValidation[]> = { green: [], blue: [], red: [] };
+
+  const push = (v: RouteValidation) => {
+    issues.push(v);
+    byRoute[v.route].push(v);
+  };
+
+  for (const route of ["green", "blue", "red"] as RouteKey[]) {
+    const result = multiResult[route];
+    const label = ROUTE_META[route].label;
+    const numDrivers = result.totalDrivers;
+    const departures = result.departures;
+    const tripDur = config.tripDurationMin;
+
+    // ── CHECK 1: No drivers ───────────────────────────────────────────
+    if (numDrivers === 0) {
+      push({
+        route, level: "error", code: "NO_DRIVERS",
+        title: "ไม่มีคนขับ",
+        detail: `${label} ยังไม่มีคนขับถูกจัดสาย`,
+        suggestion: "ลากการ์ดคนขับจาก Pool หรือสายอื่นมาวางที่สายนี้",
+      });
+      continue; // skip further checks
+    }
+
+    // ── CHECK 2: Minimum concurrent drivers needed ────────────────────
+    const maxConcurrent = maxConcurrentTrips(departures, tripDur);
+    if (maxConcurrent > numDrivers) {
+      push({
+        route, level: "error", code: "INSUFFICIENT_PEAK",
+        title: `ต้องการ ≥ ${maxConcurrent} คน (มีแค่ ${numDrivers})`,
+        detail: `ช่วง Rush Hour มีรอบออกถี่ทุก ${minIntervalMinutes(departures)} นาที แต่ตั้งเวลาต่อรอบ ${tripDur} นาที — ต้องการคนขับพร้อมกันสูงสุด ${maxConcurrent} คน ขาดอีก ${maxConcurrent - numDrivers} คน`,
+        suggestion: `เพิ่มคนขับอีก ${maxConcurrent - numDrivers} คน หรือลด "ระยะเวลา/รอบ" ให้เหลือ ≤ ${Math.floor(minIntervalMinutes(departures) * numDrivers)} นาที`,
+      });
+    }
+
+    // ── CHECK 3: Trip duration vs minimum interval ────────────────────
+    const minInterval = minIntervalMinutes(departures);
+    if (isFinite(minInterval) && tripDur > minInterval * numDrivers) {
+      // Only push if not already captured by CHECK 2
+      if (maxConcurrent <= numDrivers) {
+        push({
+          route, level: "warning", code: "TRIP_TOO_LONG",
+          title: `ระยะเวลา/รอบ ${tripDur} นาที อาจนานเกินไป`,
+          detail: `ช่วงที่ถี่ที่สุดออกรถทุก ${minInterval} นาที — ${numDrivers} คนรับได้สูงสุดรอบละ ${minInterval * numDrivers} นาที (ปัจจุบัน ${tripDur} นาที)`,
+          suggestion: `ลด "ระยะเวลา/รอบ" ให้ ≤ ${Math.floor(minInterval * numDrivers)} นาที หรือเพิ่มคนขับ`,
+        });
+      }
+    }
+
+    // ── CHECK 4: Low coverage ─────────────────────────────────────────
+    const uncovered = Math.round(result.totalTrips * (1 - result.coverageRate / 100));
+    if (result.coverageRate < 60) {
+      push({
+        route, level: "error", code: "VERY_LOW_COVERAGE",
+        title: `ครอบคลุมเพียง ${result.coverageRate.toFixed(0)}% (${uncovered} รอบตกหล่น)`,
+        detail: `จาก ${result.totalTrips} รอบ มีคนขับรับได้ ${result.totalTrips - uncovered} รอบ เหลือตกหล่น ${uncovered} รอบ`,
+        suggestion: "เพิ่มจำนวนคนขับในสายนี้หรือลดความถี่รอบวิ่ง",
+      });
+    } else if (result.coverageRate < 90) {
+      push({
+        route, level: "warning", code: "LOW_COVERAGE",
+        title: `ครอบคลุม ${result.coverageRate.toFixed(0)}% (${uncovered} รอบตกหล่น)`,
+        detail: `คนขับ ${numDrivers} คนรับรอบได้ ${result.totalTrips - uncovered}/${result.totalTrips} รอบ`,
+        suggestion: "ควรเพิ่มคนขับ 1–2 คนเพื่อให้ครอบคลุมได้ ≥ 95%",
+      });
+    }
+
+    // ── CHECK 5: OT overload ──────────────────────────────────────────
+    const otRatio = result.totalTrips > 0 ? result.totalOTCount / result.totalTrips : 0;
+    if (otRatio > 0.4) {
+      push({
+        route, level: "warning", code: "HEAVY_OT",
+        title: `OT สูง ${(otRatio * 100).toFixed(0)}% ของรอบ`,
+        detail: `${result.totalOTCount} จาก ${result.totalTrips} รอบเป็น OT — ค่าใช้จ่ายเพิ่ม ฿${result.totalOTPay.toLocaleString()}/วัน`,
+        suggestion: "เพิ่มคนขับเพื่อลด OT หรือลด OT Threshold",
+      });
+    }
+
+    // ── CHECK 6: Rest time physically impossible ──────────────────────
+    // If rest is forced every X hours but trip takes Y min, and interval is tiny
+    if (config.restAfterHours * 60 < config.tripDurationMin * 2) {
+      push({
+        route, level: "error", code: "REST_IMPOSSIBLE",
+        title: "กฎพักขัดแย้งกัน",
+        detail: `กำหนดพักบังคับหลัง ${config.restAfterHours} ชม. (${config.restAfterHours * 60} นาที) แต่ระยะเวลา/รอบ = ${config.tripDurationMin} นาที — ไม่สามารถพักได้ในช่วงสั้นนี้`,
+        suggestion: `ตั้ง "พักบังคับหลัง" ให้ ≥ ${Math.ceil((config.tripDurationMin * 2) / 60)} ชั่วโมง`,
+      });
+    }
+
+    // ── CHECK 7: Rush hour specific — morning peak adequacy ──────────
+    const morningRushTrips = tripsInWindow(departures, 6 * 60 + 30, 9 * 60);
+    const morningMaxConcurrent = maxConcurrentTrips(
+      departures.filter(d => d >= 6 * 60 + 30 && d < 9 * 60),
+      tripDur
+    );
+    if (morningMaxConcurrent > numDrivers && result.coverageRate >= 60) {
+      // Only warn if not already in error for general case
+      if (!byRoute[route].some(v => v.code === "INSUFFICIENT_PEAK")) {
+        push({
+          route, level: "warning", code: "RUSH_AM_TIGHT",
+          title: `Rush AM ตึง (${morningRushTrips} รอบใน 2.5 ชม.)`,
+          detail: `ช่วง 06:30–09:00 มี ${morningRushTrips} รอบ ต้องการ ${morningMaxConcurrent} คนพร้อมกัน`,
+          suggestion: "ควรมีคนขับ Cross-Line จากสายอื่นมาช่วยช่วง Rush AM",
+        });
+      }
+    }
+
+    // ── CHECK 8: All good ─────────────────────────────────────────────
+    const routeIssues = byRoute[route];
+    if (routeIssues.length === 0) {
+      push({
+        route, level: "ok", code: "OK",
+        title: "แผนสมเหตุสมผล ✓",
+        detail: `${numDrivers} คน ครอบคลุม ${result.coverageRate.toFixed(1)}% จาก ${result.totalTrips} รอบ`,
+      });
+    }
+  }
+
+  const errorCount   = issues.filter(v => v.level === "error").length;
+  const warningCount = issues.filter(v => v.level === "warning").length;
+  const overallLevel: ValidationLevel =
+    errorCount > 0 ? "error" : warningCount > 0 ? "warning" : "ok";
+
+  return { issues, byRoute, errorCount, warningCount, hasError: errorCount > 0, hasWarning: warningCount > 0, overallLevel };
+}
