@@ -6,9 +6,159 @@
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
-## Next Candidate Work:
+- Epic #76: Dev Database & Mock Data Integration (Done/Closed)
+  - All child issues #77-#84 are Done/Closed.
 
-- Next features planning (Epic #9 Setup Better Auth, etc)
+## Completed Setup: Epic #76 (Dev Database & Mock Data Integration)
+
+- Epic #76 was completely verified and closed (Project Status: Done).
+- Neon is now the canonical database provider.
+- Neon main = Production.
+- Neon dev = Preview/local development.
+- Vercel DATABASE_URL workflow is documented.
+- Neon dev DB was migrated and seeded.
+- Seeded Neon dev data: 3 routes, 15 vehicles, 17 drivers, 207 assignments for 2026-07-01.
+- Dashboard, Drivers, and Analytics use DB-backed fleet data where in scope.
+- Charts, timetables, utilization stats, GPS/map animation, and performance metrics remain mock/UI-only.
+- Better Auth remains paused.
+- Mock Auth UI remains active.
+- Production DB was not touched.
+
+## Completed Setup: Issue #84 (Document Dev Database and Mock Data Workflow)
+
+- Issue #84 Document Dev Database and Mock Data Workflow is Done/Closed.
+- PR #89 merged into `dev`.
+- Branch `feature/issue-84-document-db-workflow` was deleted remotely.
+- Neon is now documented as canonical database provider.
+- Neon main = Production.
+- Neon dev = Preview/local development.
+- Vercel DATABASE_URL setup documented:
+  - Production = Neon main
+  - Preview = Neon dev for all preview branches
+- Local `.env.local` should use Neon dev.
+- `db:migrate` safety workflow documented.
+- `db:seed:mock` safety workflow documented.
+- Fixed demo date 2026-07-01 documented.
+- Seeded Neon dev data documented: 3 routes, 15 vehicles, 17 drivers, 207 assignments.
+- UI-only mock data documented.
+- Better Auth remains paused.
+- Mock Auth UI remains active.
+- No application, package, schema, or migration files were modified.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were NOT run.
+- Production DB was NOT touched.
+- Epic #76 remains Open / In progress for now.
+- Epic #8 remains open and must not be closed without explicit user approval.
+- Next active candidate is Epic #76 closure review, not a new implementation issue.
+
+## Completed Setup: Issue #83 (Connect Drivers and Analytics UI to Database Data)
+
+- Issue #83 Connect Drivers and Analytics UI to Database Data is Done/Closed.
+- PR #88 merged into `dev`.
+- Branch `feature/issue-83-drivers-analytics-db-data` was deleted remotely.
+- Dashboard, Drivers, and Analytics pages now share a common `useHydrateFleet` DB hydration hook.
+- Drivers page (`DriverDashboard`) uses DB-backed fleet data.
+- Analytics page (`AnalyticsDashboard`) uses DB-backed routes for its table.
+- Analytics charts, timetables, utilization stats, and GPS maps remain mock/UI-only.
+- Fixed demo date "2026-07-01" is intentionally used.
+- Fixed duplicate route key bug (Thai DB names map correctly to stable UI IDs `L1`, `L2`, `L3` with fail-fast validation).
+- Schema/migration files were NOT modified.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were NOT run.
+- Production DB was NOT touched.
+- Better Auth remains paused.
+- Mock auth UI remains.
+- Epic #76 remains In progress.
+- Epic #8 remains open and must not be closed without explicit user approval.
+- Next active candidate is #84 Document Dev Database and Mock Data Workflow.
+
+## Completed Setup: Issue #82 (Connect Dashboard UI to Database Data)
+
+- Issue #82 Connect Dashboard UI to Database Data is Done/Closed.
+- PR #87 merged into `dev`.
+- Branch `feature/issue-82-dashboard-db-data` was deleted remotely.
+- Dashboard UI now hydrates from database-backed server actions.
+- Added `lib/data-mapper.ts` to map DB rows to the existing Dashboard UI/store shape.
+- `fleetStore` updated to support `hydrateFleetData`, `isLoading`, and `error` states.
+- Fixed demo date "2026-07-01" is intentionally used.
+- Drivers and Analytics pages intentionally deferred to #83.
+- Schema/migration files were NOT modified.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were NOT run.
+- Production DB was NOT touched.
+- Better Auth remains paused.
+- Mock auth UI remains.
+- Epic #76 remains In progress.
+- Epic #8 remains open and must not be closed without explicit user approval.
+- Next active candidate is #83 Connect Drivers and Analytics UI to Database Data.
+
+## Completed Setup: Issue #81 (Server Actions for Fleet Master Data)
+
+- Issue #81 Implement Server Actions for Fleet Master Data is Done/Closed.
+- PR #86 merged into `dev`.
+- Branch `feature/issue-81-fleet-server-actions` was deleted remotely.
+- Created `src/services/fleet.ts` with Drizzle DB queries (using manual SQL joins).
+- Created `src/actions/fleet.ts` with `use server` wrappers for frontend consumption.
+- Exposed routes, vehicles, drivers, and date-filtered assignments.
+- UI intentionally NOT connected yet.
+- Schema/migration files were NOT modified.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were NOT run.
+- Production DB was NOT touched.
+- Better Auth remains paused.
+- Mock auth UI remains.
+- Epic #76 remains In progress.
+- Epic #8 remains open and must not be closed without explicit user approval.
+
+## Completed Setup: Issue #80 (Seed Dev Database)
+
+- Issue #80 Seed Dev Database with MVP Demo Data is Done/Closed.
+- Neon Dev DB was seeded successfully with mock data.
+- Exact seed counts: 3 routes, 15 vehicles, 17 drivers, 207 assignments (Date: 2026-07-01).
+- `db:seed:mock` was run ONLY on the Neon Dev database.
+- `db:migrate` and `db:seed` were intentionally NOT run during this step.
+- Production DB was NOT touched.
+- No files were modified during the seed execution.
+- No secrets were printed.
+- Better Auth remains paused.
+- Mock auth UI remains.
+- Epic #76 remains In progress.
+- Epic #8 remains open and must not be closed without explicit user approval.
+
+## Completed Setup: Issue #79 (Mock Data DB Seed Script)
+
+- Issue #79 Create Full Mock Data DB Seed Script is Done/Closed.
+- PR #85 merged into `dev`.
+- Branch `feature/issue-79-mock-seed-script` was deleted.
+- Added `src/db/seed-mock.ts` script for full mock data seeding.
+- Added `db:seed:mock` to npm scripts.
+- `db:seed` and `db:seed:mock` were intentionally NOT run yet.
+- Neon dev database is migrated but has no seed data yet.
+- Production DB was not touched.
+- Better Auth remains paused.
+- Mock auth UI remains.
+- Epic #76 remains In progress.
+- Epic #8 remains open and must not be closed without explicit user approval.
+
+## Completed Setup: Dev Database Migration
+
+- Dev DB (dashboard-lung-dev) created and migrated.
+- Production/Preview `DATABASE_URL` separated.
+- Vercel Preview for branch `dev` uses Dev DB.
+- Local `.env.local` uses Dev DB.
+- Migrations 0000-0008 applied successfully to Dev DB (`npm run db:migrate`).
+- `db:seed` was not run.
+- Production DB was not touched.
+- Better Auth remains paused.
+- Epic #8 remains open unless user explicitly approves closing.
+
+## Completed Setup: Vercel Deployment
+
+- Vercel project created: `dashboard-lung`.
+- Production URL: https://dashboard-lung.vercel.app
+- Production branch: `main` (latest commit `9c77d82`).
+- `dev` and feature branches should be used for preview deployments.
+- Build command: `npm run build`.
+- Install command: `npm install` (Vercel default).
+- Required environment variables (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`) are configured securely in Vercel.
+- `db:migrate` and `db:seed` are NOT run as part of the Vercel build.
+- Epic #8 remains open unless user explicitly approves closing.
 
 ## Completed Maintenance Note: UI Port from pleum
 
@@ -24,9 +174,9 @@
 
 ## Which files to read next:
 
-- [docs/agent-handoff/issues/issue-29-better-auth.md](file:///Users/microwen/Desktop/project-lung/dashboard-lung/docs/agent-handoff/issues/issue-29-better-auth.md)
-- [docs/agent-handoff/prompts/codex-github-cleanup.md](file:///Users/microwen/Desktop/project-lung/dashboard-lung/docs/agent-handoff/prompts/codex-github-cleanup.md)
-- [docs/agent-handoff/codex-backlog.md](file:///Users/microwen/Desktop/project-lung/dashboard-lung/docs/agent-handoff/codex-backlog.md)
+- [docs/agent-handoff/issues/issue-29-better-auth.md](file:///Users/microwen/Desktop/Projects_lung/dashboard-lung/docs/agent-handoff/issues/issue-29-better-auth.md)
+- [docs/agent-handoff/prompts/codex-github-cleanup.md](file:///Users/microwen/Desktop/Projects_lung/dashboard-lung/docs/agent-handoff/prompts/codex-github-cleanup.md)
+- [docs/agent-handoff/codex-backlog.md](file:///Users/microwen/Desktop/Projects_lung/dashboard-lung/docs/agent-handoff/codex-backlog.md)
 
 ## Agent role split / Current State:
 
@@ -42,6 +192,7 @@
 - The project uses **npm** only. Do not use pnpm.
 - Epic #8 Database Design is complete at 12/12, 100%, but must remain open until explicit user approval.
 - Do not merge dev into main yet.
+- MUST NOT use the retired broken repository (/Users/microwen/Desktop/project-lung/dashboard-lung). Only use the canonical path (/Users/microwen/Desktop/Projects_lung/dashboard-lung).
 
 ## Completed Maintenance Note: Issue #32 (Create Database Indexes)
 

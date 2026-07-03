@@ -10,7 +10,6 @@ import type {
   RouteRotationConfig,
   RouteId,
 } from "@/types";
-import { DRIVERS, RESERVE_DRIVERS, ROUTES } from "@/lib/mock-data";
 
 export interface SpeedingLog {
   id: string;
@@ -65,12 +64,16 @@ interface FleetState {
   setRotationConfig: (routeId: RouteId, config: RouteRotationConfig) => void;
   addSpeedingLog: (log: Omit<SpeedingLog, "id" | "time">) => void;
   clearSpeedingLogs: () => void;
+
+  isLoading: boolean;
+  error: string | null;
+  hydrateFleetData: (routes: Route[], drivers: Driver[], reserveDrivers: ReserveDriver[]) => void;
 }
 
 export const useFleetStore = create<FleetState>((set, get) => ({
-  drivers: [...DRIVERS],
-  reserveDrivers: [...RESERVE_DRIVERS],
-  routes: [...ROUTES],
+  drivers: [],
+  reserveDrivers: [],
+  routes: [],
   transferHistory: [],
   selectedReserve: null,
   pendingDriverId: null,
@@ -86,6 +89,11 @@ export const useFleetStore = create<FleetState>((set, get) => ({
   userRole: "dispatcher",
   isLoggedIn: false,
   currentUser: null,
+  isLoading: true, // Start loading true to show spinner initially
+  error: null,
+
+  hydrateFleetData: (routes, drivers, reserveDrivers) =>
+    set({ routes, drivers, reserveDrivers, isLoading: false, error: null }),
 
   loginDispatcher: () => set({ isLoggedIn: true, userRole: "dispatcher", currentUser: null }),
 

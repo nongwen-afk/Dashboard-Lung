@@ -1,25 +1,52 @@
 "use client";
 
 import React, { useState } from "react";
-import { DRIVERS } from "@/lib/mock-data";
+import { useFleetStore } from "@/lib/store/fleetStore";
+import { useHydrateFleet } from "@/hooks/useHydrateFleet";
 import { Driver } from "@/types";
 import { DriverDetailsModal } from "./DriverDetailsModal";
-import { Search, ShieldCheck, Clock, Users } from "lucide-react";
+import { Search, ShieldCheck, Clock, Users, Loader2 } from "lucide-react";
 
 export function DriverDashboard() {
+  const { isLoading, error } = useHydrateFleet();
+  const drivers = useFleetStore((state) => state.drivers);
+
   const [search, setSearch] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
-  const filteredDrivers = DRIVERS.filter((d) =>
+  if (isLoading) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center flex-col gap-4">
+        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+        <p className="text-slate-600 font-medium">Loading Drivers Data...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-64 w-full items-center justify-center flex-col gap-4">
+        <p className="text-red-500 font-medium text-lg">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  const filteredDrivers = drivers.filter((d) =>
     `${d.name} ${d.surname} ${d.code} ${d.vehicle}`.toLowerCase().includes(search.toLowerCase())
   );
 
   // Overall Stats Calculation
-  const totalActive = DRIVERS.filter((d) => d.status === "Active").length;
+  const totalActive = drivers.filter((d) => d.status === "Active").length;
   const avgOnTime =
-    DRIVERS.reduce((acc, d) => acc + (d.performance?.onTimeRate || 0), 0) / DRIVERS.length;
+    drivers.reduce((acc, d) => acc + (d.performance?.onTimeRate || 0), 0) / (drivers.length || 1);
   const avgDelay =
-    DRIVERS.reduce((acc, d) => acc + (d.performance?.avgDelay || 0), 0) / DRIVERS.length;
+    drivers.reduce((acc, d) => acc + (d.performance?.avgDelay || 0), 0) / (drivers.length || 1);
 
   return (
     <div className="space-y-6">
@@ -32,7 +59,7 @@ export function DriverDashboard() {
           <div>
             <p className="text-sm text-slate-500 font-medium">พนักงานพร้อมวิ่ง</p>
             <p className="text-2xl font-bold text-slate-800">
-              {totalActive} / {DRIVERS.length} คน
+              {totalActive} / {drivers.length} คน
             </p>
           </div>
         </div>

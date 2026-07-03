@@ -208,12 +208,12 @@ Backend:
 
 Database:
 
-- Supabase PostgreSQL
+- Neon PostgreSQL
 - Drizzle ORM
 
 Authentication:
 
-- Better Auth
+- Better Auth (Currently Paused)
 
 Deployment:
 
@@ -230,8 +230,8 @@ Code Quality:
 
 ## 12. Branch Strategy
 
-- `main` = stable / demo-ready
-- `dev` = active integration branch
+- `main` = stable / demo-ready (Production)
+- `dev` = active integration branch (Preview)
 - `feature/*` = feature work
 - `chore/*` = setup/config work
 - `docs/*` = documentation work
@@ -266,3 +266,27 @@ Future features may include:
 - Mobile PWA support
 - Multi-depot support
 - Real-time updates
+
+## 15. Current Project State
+
+### Database Integration
+
+- **Database Provider**: Neon PostgreSQL is the canonical database provider. Supabase is no longer used.
+- **Database-Backed UI**: Fleet master data is enabled for Dashboard, Drivers, and Analytics where in scope.
+- **Seeded Neon Dev Data**:
+  - 3 routes
+  - 15 vehicles
+  - 17 drivers
+  - 207 assignments
+  - Fixed assignment date: `2026-07-01`
+- **UI-Only Mock Data**: The following features remain mock/UI-only:
+  - `CHART_DATA`
+  - `TIMETABLES`
+  - `UTILIZATION_DATA`
+  - GPS/map animations
+  - Performance metrics
+
+### Authentication
+
+- Better Auth integration remains paused.
+- The Mock Auth UI remains the current active access method.
