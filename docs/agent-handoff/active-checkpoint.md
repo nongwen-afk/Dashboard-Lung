@@ -6,6 +6,22 @@
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
+## Completed Setup: Playwright Smoke Test
+
+- Playwright smoke test completed.
+- PR merged into `dev`.
+- Remote `feature/playwright-smoke-test` deleted.
+- Local `feature/playwright-smoke-test` exists and is fully merged and safe to delete.
+- `test:e2e` script added.
+- Playwright is local-only and not in GitHub Actions CI yet.
+- Basic CI remains active.
+- Better Auth remains paused.
+- Mock Auth UI remains active.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were strictly NOT run.
+- Epic #8 remains open/untouched.
+- Current active issue: None.
+- Next candidate: decide between adding Playwright to CI later, Sentry, Better Auth, or CRUD/Admin UI.
+
 ## Completed Setup: Basic CI Workflow
 
 - Basic CI completed.
@@ -16,7 +32,6 @@
 - CI uses dummy env values only (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`).
 - No real secrets were added.
 - `db:migrate`, `db:seed`, and `db:seed:mock` were strictly NOT run.
-- Next active candidate is Playwright smoke test.
 - Better Auth remains paused.
 - Mock Auth UI remains active.
 - Epic #8 remains open/untouched.
