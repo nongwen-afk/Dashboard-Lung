@@ -1,14 +1,28 @@
 # Active Agent Handoff Checkpoint
 
-- **Current active issue:** Epic #76 Closure Review
-- **Current phase:** Documentation
+- **Current active issue:** None
+- **Current phase:** Awaiting next planning / release decision
 - **Current branch:** dev
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
-- Epic #76: Dev Database & Mock Data Integration (In progress)
-  - Next candidate: Epic #76 Closure Review
-  - Child issues #77-#84 are Done/Closed.
+- Epic #76: Dev Database & Mock Data Integration (Done/Closed)
+  - All child issues #77-#84 are Done/Closed.
+
+## Completed Setup: Epic #76 (Dev Database & Mock Data Integration)
+
+- Epic #76 was completely verified and closed (Project Status: Done).
+- Neon is now the canonical database provider.
+- Neon main = Production.
+- Neon dev = Preview/local development.
+- Vercel DATABASE_URL workflow is documented.
+- Neon dev DB was migrated and seeded.
+- Seeded Neon dev data: 3 routes, 15 vehicles, 17 drivers, 207 assignments for 2026-07-01.
+- Dashboard, Drivers, and Analytics use DB-backed fleet data where in scope.
+- Charts, timetables, utilization stats, GPS/map animation, and performance metrics remain mock/UI-only.
+- Better Auth remains paused.
+- Mock Auth UI remains active.
+- Production DB was not touched.
 
 ## Completed Setup: Issue #84 (Document Dev Database and Mock Data Workflow)
 

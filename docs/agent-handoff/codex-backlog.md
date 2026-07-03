@@ -29,6 +29,22 @@ This file tracks all GitHub Issue / Project Board work that Codex needs to do la
 
 ## Current Pending GitHub Project Work
 
+### Completed: Epic #76 (Dev Database & Mock Data Integration)
+
+Code status:
+
+- All child issues #77-#84 are completed and merged into `dev`.
+- Verification: Passed (build, lint, typecheck, format, diff)
+
+Codex GitHub Cleanup Completed:
+
+- Epic checklist/body updated.
+- Completion comment posted.
+- Project Status: Moved to Done.
+- Epic Closed: Yes.
+- Child issues closed: 8 of 8 completed.
+- Notes/constraints preserved: Epic #8 remains open. Production DB was strictly not touched.
+
 ### Completed: Issue #84 (Document Dev Database and Mock Data Workflow)
 
 Code status:
