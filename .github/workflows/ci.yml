@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+  pull_request:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    # These are CI-only dummy values for build/config validation.
+    # They must NEVER be used for production. No real secrets should be added here.
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/postgres"
+      BETTER_AUTH_SECRET: "ci-only-dummy-secret-do-not-use-in-production"
+      BETTER_AUTH_URL: "http://localhost:3000"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Formatting
+        run: npm run format:check
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Type Check
+        run: npm run typecheck
+
+      - name: Build Project
+        run: npm run build
+
+      - name: Verify Database Schema Generation
+        run: npm run db:generate
+
+      - name: Verify Clean Git Tree
+        run: git diff --check
