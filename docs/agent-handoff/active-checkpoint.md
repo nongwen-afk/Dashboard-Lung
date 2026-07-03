@@ -6,6 +6,21 @@
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
+## Completed Setup: Basic CI Workflow
+
+- Basic CI completed.
+- PR #92 was merged into `dev`.
+- GitHub Actions CI passed.
+- Vercel passed.
+- CI workflow added at `.github/workflows/ci.yml`.
+- CI uses dummy env values only (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`).
+- No real secrets were added.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were strictly NOT run.
+- Next active candidate is Playwright smoke test.
+- Better Auth remains paused.
+- Mock Auth UI remains active.
+- Epic #8 remains open/untouched.
+
 ## Completed Maintenance Note: Release v0.2.0
 
 - PR #90 release: v0.2.0 - Database & Mock Data Integration was merged into `main`.
