@@ -6,6 +6,22 @@
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
+## Completed Setup: Simulation UI Port
+
+- Simulation UI port from `pleum` branch completed.
+- Direct merge of `pleum` was rejected due to unrelated git history.
+- Manual port strategy used to copy exactly 11 simulation files and modify `Sidebar.tsx`.
+- Simulation components (`SimulationView`, `SimGanttBoard`, etc.) and logic engine added under `app/simulation`, `components/simulation`, and `lib`.
+- Branch `feature/port-simulation-ui` was merged into `dev`.
+- Local and remote `feature/port-simulation-ui` were cleanly deleted.
+- Branch `pleum` was preserved as an untouched reference.
+- DB schema, migrations, server actions, services, and CI files were completely untouched.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were strictly NOT run.
+- `dev` is clean and up to date.
+- Playwright remains local-only.
+- Basic CI remains active.
+- Epic #8 remains open/untouched.
+
 ## Completed Setup: Playwright Smoke Test
 
 - Playwright smoke test completed.
