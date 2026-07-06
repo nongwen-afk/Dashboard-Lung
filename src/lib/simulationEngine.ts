@@ -608,8 +608,8 @@ export function runAllRoutes(
     let customDriverNames = allActiveDrivers.slice(driverPointer, driverPointer + count);
     driverPointer += count;
     
-    // 4. Always rotate locally within route if simulationDay > 1 (shifts start times)
-    if (customDriverNames.length > 0 && shared.simulationDay > 1) {
+    // 4. Rotate locally within route if simulationDay > 1 AND toggle is enabled
+    if (customDriverNames.length > 0 && shared.simulationDay > 1 && shared.enableDayOff) {
       const offset = (shared.simulationDay - 1) % customDriverNames.length;
       customDriverNames = [...customDriverNames.slice(offset), ...customDriverNames.slice(0, offset)];
     }
@@ -634,9 +634,7 @@ export function runAllRoutes(
     }
 
     const departures = ROUTE_DEPARTURES[route][shared.dayType];
-    // Enforce 1 day off per week ONLY if enableDayOff is true
-    const driversOff = shared.enableDayOff ? Math.ceil(customDriverNames.length / 6) : 0;
-    const maxWorkingDrivers = Math.max(1, customDriverNames.length - driversOff);
+    const maxWorkingDrivers = customDriverNames.length;
 
     return runSimulation({
       route,

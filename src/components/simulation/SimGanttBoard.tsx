@@ -103,15 +103,11 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
   const otThresholdMin = otThresholdHours * 60;
 
   const showTripTooltip = useCallback((trip: TripAssignment, driver: DriverShift, route: RouteKey, e: React.MouseEvent) => {
-    const r = containerRef.current?.getBoundingClientRect();
-    if (!r) return;
-    setTooltip({ kind: "trip", trip, driver, route, x: e.clientX - r.left, y: e.clientY - r.top });
+    setTooltip({ kind: "trip", trip, driver, route, x: e.clientX, y: e.clientY });
   }, []);
 
   const showBreakTooltip = useCallback((brk: BreakEvent, driver: DriverShift, route: RouteKey, e: React.MouseEvent) => {
-    const r = containerRef.current?.getBoundingClientRect();
-    if (!r) return;
-    setTooltip({ kind: "break", brk, driver, route, x: e.clientX - r.left, y: e.clientY - r.top });
+    setTooltip({ kind: "break", brk, driver, route, x: e.clientX, y: e.clientY });
   }, []);
 
   const hideTooltip = useCallback(() => setTooltip(null), []);

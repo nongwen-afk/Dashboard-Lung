@@ -146,12 +146,12 @@ const PRESETS: { label: string; desc: string; values: Preset }[] = [
     desc: "เน้นลด OT ทุกสาย",
     values: {
       breakMode: "sheet",
-      fairnessMode: "fewest-trips",
-      shortStaffPolicy: "drop",
-      otThresholdHours: 6,
+      fairnessMode: "earliest-free",
+      shortStaffPolicy: "overlap",
+      otThresholdHours: 8, // เปลี่ยนจาก 6 เป็น 8 เพื่อลดการเกิด OT โดยไม่จำเป็น
       restAfterHours: 4,
       otPayPerSession: 400,
-      enableDayOff: true,
+      enableDayOff: false, // ไม่บังคับหยุด เพื่อให้มีคนขับเพียงพอและไม่เกิด OT
     },
   },
   {
@@ -169,15 +169,15 @@ const PRESETS: { label: string; desc: string; values: Preset }[] = [
   },
   {
     label: "Peak Hour Focus",
-    desc: "วนแบบ Round-Robin เน้น Rush Hour",
+    desc: "อิงเวลาชีท เน้นจ่ายงานเร็วที่สุด",
     values: {
-      breakMode: "cumulative",
-      fairnessMode: "round-robin",
+      breakMode: "sheet", // ใช้เวลาพักตามชีทเพื่อไม่ให้ตรงกับช่วงเร่งด่วน
+      fairnessMode: "earliest-free", // ให้คนที่ว่างเร็วที่สุดรับงาน เพื่อลด Overlap
       shortStaffPolicy: "overlap",
       otThresholdHours: 8,
       restAfterHours: 4,
-      crossLineAssist: true,
-      rotateRoutes: true,
+      crossLineAssist: false, // ปิดการช่วยสายข้ามเพราะกวนสัดส่วนคนขับหลัก
+      rotateRoutes: false, // ปิดวนสายที่ทำให้คิวเสียสมดุล
     },
   },
 ];
@@ -214,11 +214,6 @@ export function SimControlPanel({ config, multiResult, onChange, onReset }: Prop
     { value: "fewest-trips", label: "น้อยที่สุดก่อน", hint: "คนวิ่งน้อยสุดได้คิวถัดไป (แฟร์)" },
     { value: "round-robin", label: "วนตามลำดับ", hint: "วนชื่อตามลำดับตายตัว" },
     { value: "earliest-free", label: "ว่างก่อนได้งาน", hint: "ใครว่างก่อนได้คิวก่อนเลย" },
-  ];
-
-  const shortStaffOptions: SegmentOption<ShortStaffPolicy>[] = [
-    { value: "overlap", label: "ยัดทับ + แจ้งเตือน", hint: "บล็อก Gantt สีแดง — รอบไม่หาย" },
-    { value: "drop", label: "ตัดรอบ + แจ้งเตือน", hint: "Coverage ลด แต่ไม่มี overlap" },
   ];
 
   return (
@@ -323,20 +318,11 @@ export function SimControlPanel({ config, multiResult, onChange, onReset }: Prop
           accent="#6366f1"
         />
 
-        {/* ── Short-staff policy ── */}
-        <SectionLabel>กรณีคนขับไม่พอ</SectionLabel>
-        <SegmentedControl<ShortStaffPolicy>
-          options={shortStaffOptions}
-          value={config.shortStaffPolicy}
-          onChange={v => onChange({ shortStaffPolicy: v })}
-          accent="#ef4444"
-        />
-
         {/* ── Rotation options ── */}
         <SectionLabel>การหมุนเวียน</SectionLabel>
         <Toggle
-          label="หมุนเวียนวันหยุด (วนวัน)"
-          hint="บังคับจัด 1 วันหยุด/สัปดาห์ ให้คนท้ายคิว"
+          label="หมุนเวียนวัน (วนรายชื่อ)"
+          hint="สลับคิวคนขับตามวัน (หมุนเวียนคิวแบบเดิม)"
           value={config.enableDayOff}
           color="#16a34a"
           onChange={() => onChange({ enableDayOff: !config.enableDayOff })}
