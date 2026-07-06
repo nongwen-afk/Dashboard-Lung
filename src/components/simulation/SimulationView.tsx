@@ -16,6 +16,7 @@ import { SimGanttBoard } from "./SimGanttBoard";
 import { SimStatsBar } from "./SimStatsBar";
 import { DriverAssignmentBoard } from "./DriverAssignmentBoard";
 import { SimValidationAlerts } from "./SimValidationAlerts";
+import { SimScheduleTable } from "./SimScheduleTable";
 import { validateSimulation } from "@/lib/simulationValidation";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
@@ -28,6 +29,7 @@ export function SimulationView() {
   const [activeView, setActiveView] = useState<SimActiveView>("all");
   const [showAlerts, setShowAlerts] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showSchedule, setShowSchedule] = useState(false);
 
   // Reactive simulation — re-runs instantly whenever assignments or config changes
   const multiResult: MultiRouteSimResult = useMemo(
@@ -74,7 +76,7 @@ export function SimulationView() {
         >
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center text-lg relative overflow-hidden flex-shrink-0 bg-indigo-100 shadow-sm">
-              <span className="relative z-10">🎛️</span>
+              <span className="relative z-10 text-indigo-600 font-black text-xs">SIM</span>
             </div>
             <div>
               <h1 className="text-sm font-bold text-slate-800 leading-none">Simulation</h1>
@@ -115,7 +117,7 @@ export function SimulationView() {
                   className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[0.5rem] font-bold"
                   style={{ background: `${ROUTE_META[r].color}15`, border: `1px solid ${ROUTE_META[r].color}30` }}
                 >
-                  <span>{r === "green" ? "🟢" : r === "blue" ? "🔵" : "🔴"}</span>
+                  <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: ROUTE_META[r].color }} />
                   <span style={{ color: ROUTE_META[r].color }}>{multiResult[r].totalDrivers}คน</span>
                   <span style={{ color: covColor }}>{cov.toFixed(0)}%</span>
                 </div>
@@ -124,7 +126,7 @@ export function SimulationView() {
 
             {poolCount > 0 && (
               <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[0.5rem] font-bold bg-slate-100 border border-slate-200 text-slate-600">
-                📦 Pool {poolCount}คน
+                Pool {poolCount}คน
               </div>
             )}
 
@@ -134,6 +136,14 @@ export function SimulationView() {
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
               Live · {totalCoverage}%
             </div>
+
+            {/* Schedule Toggle Button */}
+            <button
+              onClick={() => setShowSchedule(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[0.5rem] font-bold border bg-white text-slate-500 border-slate-200 hover:bg-slate-50 transition-all"
+            >
+              ตารางเวรคนขับ
+            </button>
 
             {/* Stats Toggle Button */}
             <button
@@ -200,7 +210,7 @@ export function SimulationView() {
                 >
                   <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                     <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                      <span>⚠️</span> ผลการตรวจสอบแผน
+                      ผลการตรวจสอบแผน
                     </h3>
                     <button onClick={() => setShowAlerts(false)} className="text-slate-400 hover:text-slate-600 text-xl font-bold leading-none">&times;</button>
                   </div>
@@ -220,12 +230,32 @@ export function SimulationView() {
                 >
                   <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
                     <h3 className="font-bold text-slate-800 flex items-center gap-3 text-lg">
-                      <span className="text-2xl">📊</span> วิเคราะห์ข้อมูลการเดินรถ (Analytics)
+                      วิเคราะห์ข้อมูลการเดินรถ (Analytics)
                     </h3>
                     <button onClick={() => setShowStats(false)} className="text-slate-400 hover:text-slate-600 text-3xl font-bold leading-none">&times;</button>
                   </div>
                   <div className="flex-1 overflow-auto p-6 bg-slate-100">
                     <SimStatsBar multiResult={multiResult} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Schedule Modal Overlay */}
+            {showSchedule && (
+              <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-6" onClick={() => setShowSchedule(false)}>
+                <div 
+                  className="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-full flex flex-col overflow-hidden border border-slate-200"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <h3 className="font-bold text-slate-800 flex items-center gap-3 text-lg">
+                      ตารางเวรคนขับ
+                    </h3>
+                    <button onClick={() => setShowSchedule(false)} className="text-slate-400 hover:text-slate-600 text-3xl font-bold leading-none">&times;</button>
+                  </div>
+                  <div className="flex-1 overflow-auto bg-white">
+                    <SimScheduleTable multiResult={multiResult} tripDurations={config.tripDurations} />
                   </div>
                 </div>
               </div>

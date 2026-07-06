@@ -9,6 +9,7 @@ import {
   type AssignmentMap,
   type SharedSimConfig,
   type RouteKey,
+  maxConcurrentTrips,
 } from "./simulationEngine";
 
 // ── Types ─────────────────────────────────────────────────────────────
@@ -35,16 +36,6 @@ export interface ValidationSummary {
 }
 
 // ── Internal helpers ──────────────────────────────────────────────────
-
-/** Max number of trips that overlap within a tripDur-minute window (= min concurrent drivers needed) */
-function maxConcurrentTrips(departures: number[], tripDur: number): number {
-  let max = 0;
-  for (const dep of departures) {
-    const count = departures.filter(d => d >= dep && d < dep + tripDur).length;
-    max = Math.max(max, count);
-  }
-  return max;
-}
 
 /** Minimum gap (minutes) between any two consecutive departures */
 function minIntervalMinutes(departures: number[]): number {
@@ -94,14 +85,34 @@ export function validateSimulation(
       continue; // skip further checks
     }
 
-    // ── CHECK 2: Minimum concurrent drivers needed ────────────────────
-    const maxConcurrent = maxConcurrentTrips(departures, tripDur);
-    if (maxConcurrent > numDrivers) {
+    // ── CHECK 2: Minimum concurrent drivers & Weekly Rest Required ───────
+    const maxConcurrentWeekday = maxConcurrentTrips(ROUTE_DEPARTURES[route]["weekday"], tripDur);
+    const maxConcurrentWeekend = maxConcurrentTrips(ROUTE_DEPARTURES[route]["weekend"], tripDur);
+    const weeklyShiftsNeeded = (5 * maxConcurrentWeekday) + (2 * maxConcurrentWeekend);
+    const requiredTotalDrivers = Math.ceil(weeklyShiftsNeeded / 6);
+    const maxConcurrentToday = maxConcurrentTrips(departures, tripDur);
+
+    if (numDrivers < Math.max(requiredTotalDrivers, maxConcurrentToday)) {
+      if (numDrivers < requiredTotalDrivers && numDrivers >= maxConcurrentToday) {
+        push({
+          route, level: "error", code: "INSUFFICIENT_WEEKLY",
+          title: `ต้องการ ≥ ${requiredTotalDrivers} คน เพื่อให้มีวันหยุด (มี ${numDrivers})`,
+          detail: `จัดตารางให้ทุกคนได้หยุด 1 วัน/สัปดาห์ ต้องใช้ ${requiredTotalDrivers} คน (วันธรรมดาใช้ ${maxConcurrentWeekday} วันหยุดใช้ ${maxConcurrentWeekend}) — ขาดอีก ${requiredTotalDrivers - numDrivers} คน`,
+          suggestion: `เพิ่มคนขับอีก ${requiredTotalDrivers - numDrivers} คน หรือลดรอบวิ่ง`,
+        });
+      } else {
+        push({
+          route, level: "error", code: "INSUFFICIENT_PEAK",
+          title: `ต้องการ ≥ ${maxConcurrentToday} คน ในวันนี้ (มีแค่ ${numDrivers})`,
+          detail: `ช่วงที่มีรอบถี่ต้องการคนขับพร้อมกัน ${maxConcurrentToday} คน แต่มีเพียง ${numDrivers} คน (ถ้าคำนวณเผื่อวันหยุด 1 วันด้วย ต้องมีรวม ${requiredTotalDrivers} คน)`,
+          suggestion: `เพิ่มคนขับอีกอย่างน้อย ${Math.max(requiredTotalDrivers, maxConcurrentToday) - numDrivers} คน`,
+        });
+      }
+    } else if (numDrivers === requiredTotalDrivers) {
       push({
-        route, level: "error", code: "INSUFFICIENT_PEAK",
-        title: `ต้องการ ≥ ${maxConcurrent} คน (มีแค่ ${numDrivers})`,
-        detail: `ช่วง Rush Hour มีรอบออกถี่ทุก ${minIntervalMinutes(departures)} นาที แต่ตั้งเวลาต่อรอบ ${tripDur} นาที — ต้องการคนขับพร้อมกันสูงสุด ${maxConcurrent} คน ขาดอีก ${maxConcurrent - numDrivers} คน`,
-        suggestion: `เพิ่มคนขับอีก ${maxConcurrent - numDrivers} คน หรือลด "ระยะเวลา/รอบ" ให้เหลือ ≤ ${Math.floor(minIntervalMinutes(departures) * numDrivers)} นาที`,
+        route, level: "info", code: "PERFECT_FIT",
+        title: "จำนวนคนขับพอดี (มีวันหยุด 1 วัน/สัปดาห์)",
+        detail: `ด้วยคนขับ ${numDrivers} คน เพียงพอต่อรอบวิ่งปัจจุบันและจัดสรรวันหยุดได้ลงตัว`,
       });
     }
 
@@ -109,7 +120,7 @@ export function validateSimulation(
     const minInterval = minIntervalMinutes(departures);
     if (isFinite(minInterval) && tripDur > minInterval * numDrivers) {
       // Only push if not already captured by CHECK 2
-      if (maxConcurrent <= numDrivers) {
+      if (maxConcurrentToday <= numDrivers) {
         push({
           route, level: "warning", code: "TRIP_TOO_LONG",
           title: `ระยะเวลา/รอบ ${tripDur} นาที อาจนานเกินไป`,
@@ -119,21 +130,28 @@ export function validateSimulation(
       }
     }
 
-    // ── CHECK 4: Low coverage ─────────────────────────────────────────
+    // ── CHECK 4: Low coverage / Overlapping trips ─────────────────────────────────────────
     const uncovered = Math.round(result.totalTrips * (1 - result.coverageRate / 100));
-    if (result.coverageRate < 60) {
+    if (result.overlappedTrips > 0) {
+      push({
+        route, level: "error", code: "OVERLAPPED_TRIPS",
+        title: `เวลาทับซ้อนกัน ${result.overlappedTrips} รอบ (จัดคนไม่พอ)`,
+        detail: `มหาลัยกำหนดให้มี ${result.totalTrips} รอบ แต่คนขับมีจำกัดและรอบเวลาติดกันเกินไป ทำให้เกิดเวลาทับซ้อน ${result.overlappedTrips} รอบ (ต้องรับผู้โดยสารช้ากว่ากำหนด)`,
+        suggestion: "จำเป็นต้องเพิ่มจำนวนคนขับในสายนี้เพื่อแก้ไขเวลาทับซ้อน",
+      });
+    } else if (result.coverageRate < 60) {
       push({
         route, level: "error", code: "VERY_LOW_COVERAGE",
         title: `ครอบคลุมเพียง ${result.coverageRate.toFixed(0)}% (${uncovered} รอบตกหล่น)`,
         detail: `จาก ${result.totalTrips} รอบ มีคนขับรับได้ ${result.totalTrips - uncovered} รอบ เหลือตกหล่น ${uncovered} รอบ`,
         suggestion: "เพิ่มจำนวนคนขับในสายนี้หรือลดความถี่รอบวิ่ง",
       });
-    } else if (result.coverageRate < 90) {
+    } else if (result.coverageRate < 100) {
       push({
-        route, level: "warning", code: "LOW_COVERAGE",
-        title: `ครอบคลุม ${result.coverageRate.toFixed(0)}% (${uncovered} รอบตกหล่น)`,
-        detail: `คนขับ ${numDrivers} คนรับรอบได้ ${result.totalTrips - uncovered}/${result.totalTrips} รอบ`,
-        suggestion: "ควรเพิ่มคนขับ 1–2 คนเพื่อให้ครอบคลุมได้ ≥ 95%",
+        route, level: "warning", code: "PARTIAL_COVERAGE",
+        title: `รอบวิ่งตกหล่น ${uncovered} รอบ (ครอบคลุม ${result.coverageRate.toFixed(0)}%)`,
+        detail: `จาก ${result.totalTrips} รอบ มีคนขับรับได้ ${result.totalTrips - uncovered} รอบ เนื่องจากคนขับมีคิวงานทับซ้อนหรือกำลังพัก`,
+        suggestion: "เพิ่มจำนวนคนขับหรือปรับลดเวลาต่อรอบ (Trip Duration)",
       });
     }
 

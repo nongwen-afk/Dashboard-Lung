@@ -83,6 +83,9 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
+  const [showBreaks, setShowBreaks] = useState(true);
+  const [showOverlap, setShowOverlap] = useState(true);
+  const [showIdle, setShowIdle] = useState(false);
 
   // Track container width for dynamic columns
   useEffect(() => {
@@ -157,7 +160,7 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
                 }}
               >
                 <span className="text-[0.5625rem] font-black" style={{ color: meta.color }}>
-                  {route === "green" ? "🟢" : route === "blue" ? "🔵" : "🔴"} {meta.label}
+                  {meta.label}
                 </span>
                 <span className="text-[0.45rem] font-semibold" style={{ color: meta.color }}>
                   {result.totalTrips}รอบ · ครอบ{result.coverageRate.toFixed(0)}%
@@ -292,25 +295,30 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
                       if (top < 0) return null;
                       const ot = trip.isOT;
                       const rush = trip.isRushHour;
+                      const isOvlp = trip.isOverlapping && showOverlap;
                       return (
                         <div
                           key={trip.tripIndex}
                           className="absolute rounded-md cursor-pointer hover:z-20 hover:brightness-125 transition-all duration-100"
                           style={{
                             left: 5, right: 5, top, height: h,
-                            background: ot
+                            background: isOvlp
+                              ? "repeating-linear-gradient(45deg, #fef2f2, #fef2f2 4px, #fecaca 4px, #fecaca 8px)"
+                              : ot
                               ? "linear-gradient(135deg, #fbbf24, #f59e0b)"
                               : rush
                               ? `linear-gradient(135deg, ${meta.color}ee, ${meta.color}cc)`
                               : `linear-gradient(135deg, ${meta.color}cc, ${meta.color}99)`,
-                            border: `1px solid rgba(255,255,255,0.4)`,
+                            border: isOvlp ? `1.5px dashed #ef4444` : `1px solid rgba(255,255,255,0.4)`,
                             borderRadius: '6px',
-                            boxShadow: ot 
+                            boxShadow: isOvlp
+                              ? "0 0 12px rgba(239, 68, 68, 0.6), inset 0 1px 0 rgba(255,255,255,0.6)"
+                              : ot 
                               ? "0 4px 10px rgba(245, 158, 11, 0.4), inset 0 1px 0 rgba(255,255,255,0.6)"
                               : rush
                               ? `0 4px 10px ${meta.color}55, inset 0 1px 0 rgba(255,255,255,0.5)`
                               : `0 2px 6px ${meta.color}22, inset 0 1px 0 rgba(255,255,255,0.4)`,
-                            zIndex: 10,
+                            zIndex: isOvlp ? 20 : 10,
                             display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden",
                           }}
                           onMouseEnter={e => showTripTooltip(trip, driver, route, e)}
@@ -327,7 +335,7 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
                     })}
 
                     {/* Break blocks */}
-                    {driver.breaks.map((brk, bi) => {
+                    {showBreaks && driver.breaks.map((brk, bi) => {
                       const top = minToPx(brk.startMin);
                       const h = (brk.endMin - brk.startMin) * PX_PER_MIN - 2;
                       if (top < 0 || h <= 0) return null;
@@ -339,7 +347,28 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
                           onMouseEnter={e => showBreakTooltip(brk, driver, route, e)}
                           onMouseLeave={hideTooltip}
                         >
-                          <span className="text-[0.4rem] font-black text-center px-0.5" style={{ color: "#78350f", lineHeight: 1.2 }}>☕ พัก{"\n"}30 นาที</span>
+                          <span className="text-[0.4rem] font-black text-center px-0.5" style={{ color: "#78350f", lineHeight: 1.2 }}>พัก{"\n"}30 นาที</span>
+                        </div>
+                      );
+                    })}
+
+                    {/* Idle gap indicators */}
+                    {showIdle && driver.trips.length > 1 && driver.trips.slice(0, -1).map((trip, ti) => {
+                      const nextTrip = driver.trips[ti + 1];
+                      const idleStart = trip.departureMin + tripDurations[route];
+                      const idleEnd = nextTrip.departureMin;
+                      const idleDur = idleEnd - idleStart;
+                      if (idleDur <= 0) return null;
+                      const top = minToPx(idleStart);
+                      const h = idleDur * PX_PER_MIN;
+                      if (h < 4) return null;
+                      return (
+                        <div
+                          key={`idle${ti}`}
+                          className="absolute pointer-events-none"
+                          style={{ left: 5, right: 5, top, height: h, background: "repeating-linear-gradient(45deg,transparent,transparent 3px,rgba(148,163,184,0.12) 3px,rgba(148,163,184,0.12) 6px)", border: "1px dashed rgba(148,163,184,0.35)", borderRadius: 4, zIndex: 8, display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >
+                          {h > 20 && <span className="text-[0.35rem] text-slate-400 font-bold">รอ {idleDur}น.</span>}
                         </div>
                       );
                     })}
@@ -382,10 +411,11 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
         })()}
       </div>
 
-      {/* ── Legend ── */}
+      {/* ── Legend + filter bar ── */}
       <div
-        className="sticky bottom-0 flex items-center gap-4 px-4 py-1.5 border-t flex-wrap z-30 bg-white border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+        className="sticky bottom-0 flex items-center gap-3 px-4 py-1.5 border-t flex-wrap z-30 bg-white border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
       >
+        {/* Route coverage badges */}
         {(["green", "blue", "red"] as RouteKey[]).filter(r => activeView === "all" || activeView === r).map(r => (
           <div key={r} className="flex items-center gap-1">
             <div className="w-4 h-3 rounded-sm" style={{ background: ROUTE_META[r].color }} />
@@ -396,14 +426,31 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
           <div className="w-4 h-3 rounded-sm" style={{ background: "#f59e0b" }} />
           <span className="text-[0.45rem] text-slate-600 font-bold">OT</span>
         </div>
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-3 rounded-sm" style={{ background: "#fde047", border: "1px solid #f59e0b" }} />
-          <span className="text-[0.45rem] text-slate-600 font-bold">พัก 30 นาที</span>
-        </div>
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-0.5 rounded-sm" style={{ background: "rgba(249,115,22,0.85)" }} />
-          <span className="text-[0.45rem] text-slate-600 font-bold">OT Threshold</span>
-        </div>
+
+        {/* Divider */}
+        <div className="h-4 w-px bg-slate-200 mx-1" />
+
+        {/* Filter toggles */}
+        <span className="text-[0.45rem] text-slate-400 font-bold uppercase tracking-wide">แสดง:</span>
+        {([
+          { key: "breaks", label: "พัก", active: showBreaks, toggle: () => setShowBreaks(v => !v), color: "#f59e0b" },
+          { key: "overlap", label: "Overlap", active: showOverlap, toggle: () => setShowOverlap(v => !v), color: "#ef4444" },
+          { key: "idle", label: "รอคิว", active: showIdle, toggle: () => setShowIdle(v => !v), color: "#94a3b8" },
+        ] as const).map(f => (
+          <button
+            key={f.key}
+            onClick={f.toggle}
+            className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.45rem] font-bold border transition-all"
+            style={
+              f.active
+                ? { background: `${f.color}18`, border: `1px solid ${f.color}50`, color: f.color }
+                : { background: "#f8fafc", border: "1px solid #e2e8f0", color: "#94a3b8" }
+            }
+          >
+            {f.label}
+          </button>
+        ))}
+
         <div className="ml-auto text-[0.45rem] text-slate-500 font-bold">เลื่อน ↕↔ เพื่อดูทั้งหมด</div>
       </div>
 
@@ -426,11 +473,12 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
                   {ROUTE_META[tooltip.route].label}
                 </span>
               </div>
-              <p className="text-[0.5625rem] text-slate-500 font-bold">🚌 รอบที่ {tooltip.trip.tripIndex + 1}</p>
-              <p className="text-[0.5625rem] text-slate-600 mt-0.5">⏱ {minToTime(tooltip.trip.departureMin)} → {minToTime(tooltip.trip.departureMin + tripDurations[tooltip.route])}</p>
+              <p className="text-[0.5625rem] text-slate-500 font-bold">รอบที่ {tooltip.trip.tripIndex + 1}</p>
+              <p className="text-[0.5625rem] text-slate-600 mt-0.5">{minToTime(tooltip.trip.departureMin)} → {minToTime(tooltip.trip.departureMin + tripDurations[tooltip.route])}</p>
               <div className="flex gap-1.5 mt-1.5 flex-wrap">
-                {tooltip.trip.isRushHour && <span className="px-1.5 py-0.5 rounded text-[0.45rem] font-black" style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444" }}>⚡ RUSH</span>}
-                {tooltip.trip.isOT && <span className="px-1.5 py-0.5 rounded text-[0.45rem] font-black" style={{ background: "rgba(245,158,11,0.15)", color: "#d97706" }}>💰 OT</span>}
+                {tooltip.trip.isOverlapping && <span className="px-1.5 py-0.5 rounded text-[0.45rem] font-black" style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444", border: "1px dashed #ef4444" }}>เวลาทับซ้อน</span>}
+                {tooltip.trip.isRushHour && <span className="px-1.5 py-0.5 rounded text-[0.45rem] font-black" style={{ background: "rgba(239,68,68,0.15)", color: "#ef4444" }}>RUSH</span>}
+                {tooltip.trip.isOT && <span className="px-1.5 py-0.5 rounded text-[0.45rem] font-black" style={{ background: "rgba(245,158,11,0.15)", color: "#d97706" }}>OT</span>}
               </div>
             </>
           )}
@@ -440,7 +488,7 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
                 <div className="w-2 h-2 rounded-full bg-yellow-400" />
                 <p className="text-[0.625rem] font-black text-slate-800">{tooltip.driver.name}</p>
               </div>
-              <p className="text-[0.5625rem] font-bold text-yellow-600">☕ เวลาพัก 30 นาที</p>
+              <p className="text-[0.5625rem] font-bold text-yellow-600">เวลาพัก 30 นาที</p>
               <p className="text-[0.5625rem] text-slate-600 mt-0.5">{minToTime(tooltip.brk.startMin)} → {minToTime(tooltip.brk.endMin)}</p>
             </>
           )}
