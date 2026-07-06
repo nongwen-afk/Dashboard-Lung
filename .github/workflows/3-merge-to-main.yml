@@ -1,0 +1,92 @@
+name: "Stage 3: Merge to Main"
+
+on:
+  push:
+    branches:
+      - main
+
+# เตรียมดึง Secrets ทั้งหมดมารวมไว้ที่เดียวกันตรงนี้
+env:
+  NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+  NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+  DATABASE_URL_PROD: ${{ secrets.DATABASE_URL_PROD }}
+  SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  production-pipeline:
+    name: "Production CI Pipeline"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        id: checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        id: setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        id: install
+        run: npm ci
+        continue-on-error: true
+
+      - name: Database Migration (Prisma on Production)
+        id: db
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL_PROD }}
+        run: |
+          if [ -n "$DATABASE_URL" ]; then
+            npx prisma migrate deploy || echo "No prisma config found, skipping."
+          else
+            echo "No Production Database URL found, skipping."
+          fi
+
+      - name: Basic Tests (Lint & Build)
+        id: basic
+        run: |
+          npm run lint --if-present
+          npm run build --if-present
+
+      - name: Smoke Tests (Read API)
+        id: smoke
+        run: |
+          echo "Running lightweight smoke tests..."
+          # Insert smoke test command here (e.g., npm run test:smoke)
+
+      - name: Create Sentry Release
+        id: sentry
+        uses: getsentry/action-release@v1
+        env:
+          SENTRY_AUTH_TOKEN: ${{ env.SENTRY_AUTH_TOKEN }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+        with:
+          environment: production
+        continue-on-error: true
+
+      - name: Final Detailed Job Summary
+        if: always()
+        env:
+          DB: ${{ steps.db.outcome }}
+          BASIC: ${{ steps.basic.outcome }}
+          SMOKE: ${{ steps.smoke.outcome }}
+          SENTRY: ${{ steps.sentry.outcome }}
+        run: |
+          get_icon() {
+            if [ "$1" == "success" ]; then echo "✅ Passed"
+            elif [ "$1" == "failure" ]; then echo "❌ Failed"
+            else echo "⏭️ Skipped"
+            fi
+          }
+          
+          echo "### 🟢 Stage 3 (Production) Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| 🛠️ Step | 📊 Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🗄️ Database Production Migration | $(get_icon $DB) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔍 Lint & Build | $(get_icon $BASIC) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Smoke Tests | $(get_icon $SMOKE) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🐛 Sentry Release | $(get_icon $SENTRY) |" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+
+echo "🐶 Husky: ตรวจสอบโค้ดก่อน Commit ด้วย lint-staged..."
+npx lint-staged

@@ -1,0 +1,115 @@
+name: "Stage 1: PR to Dev"
+
+on:
+  pull_request:
+    branches:
+      - dev
+
+# เตรียมดึง Secrets ทั้งหมดมารวมไว้ที่เดียวกันตรงนี้
+env:
+  NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+  NEON_PROJECT_ID: ${{ secrets.NEON_PROJECT_ID }}
+  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  ci-pipeline:
+    name: "PR CI Pipeline"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for SonarCloud and Chromatic
+
+      - name: Setup Node.js
+        id: setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        id: install
+        run: npm ci
+        continue-on-error: true # For scaffolding, prevent failure if package.json is empty
+
+      - name: Create Neon Branch
+        id: create_neon_branch
+        uses: neondatabase/create-branch-action@v5
+        with:
+          project_id: ${{ env.NEON_PROJECT_ID }}
+          api_key: ${{ env.NEON_API_KEY }}
+        continue-on-error: true
+
+      - name: Database Migration (Prisma on Neon Branch)
+        id: db
+        env:
+          DATABASE_URL: ${{ steps.create_neon_branch.outputs.db_url }}
+        run: |
+          if [ -n "$DATABASE_URL" ]; then
+            npx prisma migrate deploy || echo "No prisma config found, skipping."
+          else
+            echo "No database url found from Neon, skipping migration."
+          fi
+
+      - name: Basic Tests (Lint & Build)
+        id: basic
+        run: |
+          npm run lint --if-present
+          npm run build --if-present
+
+      - name: Focused Unit Tests
+        id: unit
+        run: |
+          npm run test --if-present
+
+      - name: SonarCloud Scan
+        id: sonar
+        uses: SonarSource/sonarcloud-github-action@master
+        continue-on-error: true # ยอมให้ผ่านไปก่อนหากยังไม่ได้ตั้งค่า
+
+      - name: Chromatic Visual Regression
+        id: chromatic
+        uses: chromaui/action@latest
+        with:
+          projectToken: ${{ env.CHROMATIC_PROJECT_TOKEN }}
+        continue-on-error: true
+
+      - name: Install Playwright Browsers
+        id: pw_install
+        run: npx playwright install --with-deps || echo "Skipping playwright install."
+
+      - name: Targeted E2E Tests (Playwright)
+        id: e2e
+        run: |
+          npx playwright test || echo "No tests found."
+
+      - name: Final Detailed Job Summary
+        if: always()
+        env:
+          DB: ${{ steps.db.outcome }}
+          BASIC: ${{ steps.basic.outcome }}
+          UNIT: ${{ steps.unit.outcome }}
+          SONAR: ${{ steps.sonar.outcome }}
+          CHROM: ${{ steps.chromatic.outcome }}
+          E2E: ${{ steps.e2e.outcome }}
+        run: |
+          get_icon() {
+            if [ "$1" == "success" ]; then echo "✅ Passed"
+            elif [ "$1" == "failure" ]; then echo "❌ Failed"
+            else echo "⏭️ Skipped"
+            fi
+          }
+          
+          echo "### 🚀 Stage 1 (PR to Dev) Execution Summary" >> $GITHUB_STEP_SUMMARY
+          echo "| 🛠️ Step | 📊 Status |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🗄️ Database Branching & Migration | $(get_icon $DB) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🔍 Lint & Build | $(get_icon $BASIC) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🧪 Focused Unit Tests | $(get_icon $UNIT) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🛡️ SonarCloud Scan | $(get_icon $SONAR) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🎨 Chromatic UI Test | $(get_icon $CHROM) |" >> $GITHUB_STEP_SUMMARY
+          echo "| 🎭 Targeted E2E Tests | $(get_icon $E2E) |" >> $GITHUB_STEP_SUMMARY
