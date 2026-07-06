@@ -1,35 +1,79 @@
-## 🚀 CI/CD & Development Workflow
+# 🚌 Project Lung
+**Decision Support System for EV Bus Dispatch Operations.**
+
+## 🛠️ Tech Stack
+- Next.js 16
+- React 19
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui
+- Neon Database (Postgres)
+- Drizzle ORM
+- Better Auth
+- npm
+
+## 🚀 Getting Started
+
+### 1. Install dependencies
+```bash
+npm install
+```
+
+### 2. Start development server
+```bash
+npm run dev
+```
+
+### 3. Build project
+```bash
+npm run build
+```
+
+## 📂 Project Structure
+```text
+src/
+ ├── app/
+ ├── components/
+ ├── features/
+ ├── lib/
+ ├── hooks/
+ ├── services/
+ ├── types/
+ ├── constants/
+ └── utils/
+```
+
+---
+
+## 🔄 CI/CD & Development Workflow
 
 โปรเจกต์นี้มีการตั้งค่าระบบ CI/CD อัตโนมัติ (GitHub Actions) และระบบตรวจสอบโค้ดก่อน Commit (Husky + lint-staged) เพื่อให้โค้ดของทีมมีมาตรฐานและปราศจากบั๊ก
 
-### 🛠️ 1. การตั้งค่าครั้งแรกสำหรับนักพัฒนา (Local Setup)
-หลังจากดึง (Clone/Pull) โปรเจกต์ลงเครื่องแล้ว ให้รันคำสั่งต่อไปนี้เพื่อเปิดใช้งานระบบตรวจโค้ดอัตโนมัติ (Husky):
+### 🛠️ การตั้งค่าระบบตรวจโค้ดอัตโนมัติ (Husky)
+หลังจากรัน `npm install` แล้ว ให้เตรียมระบบ Husky โดยรัน 2 คำสั่งนี้ (ทำแค่ครั้งแรก):
 
 ```bash
-# ติดตั้ง dependencies ทั้งหมดรวมถึง husky และ lint-staged
-npm install
-
-# (ทำแค่ครั้งแรก) แทรกรหัสสำหรับให้ npm รู้จัก husky
+# 1. แทรกคำสั่ง prepare เข้าไปใน package.json (ใช้ npm แทรกโค้ดได้ปกติครับ)
 npm pkg set scripts.prepare="husky"
 
-# เปิดใช้งาน Husky ในเครื่อง
+# 2. เปิดใช้งาน Husky ในเครื่อง
 npm run prepare
 ```
 > **Note:** ทุกครั้งที่คุณพิมพ์ `git commit` ระบบจะทำการรัน Lint และ Format โค้ดให้เฉพาะไฟล์ที่คุณเพิ่งแก้ไขไปโดยอัตโนมัติ!
 
-### 🔄 2. ขั้นตอนการทำงานของทีม (Git Workflow)
+### 🔄 ขั้นตอนการทำงานของทีม (Git Workflow)
 โปรเจกต์เราแบ่งการทำงานออกเป็น 3 ระยะ:
 1. **Feature Branch (`feature/*`)**: 
    - แตก branch จาก `dev` ทำงานเสร็จให้เปิด Pull Request (PR) ไปที่ `dev`
-   - ระบบจะรันเทส (Unit Test เฉพาะจุด) และสร้าง Preview URL ให้อัตโนมัติ
+   - ระบบจะรันเทส (Unit & E2E) และสร้าง Preview URL ให้อัตโนมัติ (พร้อมจำลอง Database Branch ด้วย Neon)
 2. **Staging Branch (`dev`)**: 
-   - เมื่อโค้ดถูกรวมเข้า `dev` ระบบจะรันเทสเต็มรูปแบบ (Full Test Suite), เช็ค Code Smells ด้วย SonarCloud, และเช็ค UI ด้วย Chromatic
-   - โค้ดจะถูก Deploy ไปที่ Staging Environment พร้อมอัปเดต Database
+   - เมื่อโค้ดถูกรวมเข้า `dev` ระบบจะรันเทสเต็มรูปแบบเช็ค UI ด้วย Chromatic และตรวจ Code Smells ด้วย SonarCloud
+   - โค้ดจะถูก Deploy ไปที่ Staging พร้อมรัน Migration เข้า Staging Database
 3. **Production Branch (`main`)**: 
    - เมื่อพร้อมปล่อยของ ทีมจะสร้าง PR จาก `dev` ไป `main`
-   - ระบบจะทำ Smoke Test และ Deploy ขึ้นเซิร์ฟเวอร์จริง (Production)
+   - ระบบจะทำ Smoke Test, Deploy ขึ้นเซิร์ฟเวอร์จริง (Production) และสร้างบันทึกการปล่อยอัปเดตลง Sentry
 
-### 🔑 3. การตั้งค่า Environment Variables (สำหรับแอดมิน)
+### 🔑 การตั้งค่า Environment Variables (สำหรับผู้ดูแลระบบ)
 เพื่อให้ GitHub Actions ทำงานได้สมบูรณ์ ผู้ดูแลโปรเจกต์ต้องไปเพิ่ม **Secrets** เหล่านี้ในหน้า `Settings > Secrets and variables > Actions` บน GitHub:
 - `NEON_API_KEY`: API Key สำหรับสร้าง Neon Database Branch อัตโนมัติ
 - `NEON_PROJECT_ID`: รหัสโปรเจกต์ Neon
