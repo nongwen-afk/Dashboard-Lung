@@ -16,9 +16,18 @@ export function RouteOverviewPanel() {
   const [timetableRoute, setTimetableRoute] = useState<RouteId>("L1");
 
   const byRoute: Record<string, typeof drivers> = {
-    L1: drivers.filter((d) => d.routeId === "L1").map((d) => getEffectiveDriver(d) || d),
-    L2: drivers.filter((d) => d.routeId === "L2").map((d) => getEffectiveDriver(d) || d),
-    L3: drivers.filter((d) => d.routeId === "L3").map((d) => getEffectiveDriver(d) || d),
+    L1: drivers
+      .filter((d) => d.routeId === "L1")
+      .sort((a, b) => a.vehicle.localeCompare(b.vehicle))
+      .map((d) => getEffectiveDriver(d) || d),
+    L2: drivers
+      .filter((d) => d.routeId === "L2")
+      .sort((a, b) => a.vehicle.localeCompare(b.vehicle))
+      .map((d) => getEffectiveDriver(d) || d),
+    L3: drivers
+      .filter((d) => d.routeId === "L3")
+      .sort((a, b) => a.vehicle.localeCompare(b.vehicle))
+      .map((d) => getEffectiveDriver(d) || d),
   };
 
   const totalActive = drivers.filter((d) => d.status !== "Leave").length;
@@ -161,16 +170,18 @@ export function RouteOverviewPanel() {
         <div
           className={panelsCollapsed ? "grid grid-cols-3 gap-3 items-start" : "flex flex-col gap-3"}
         >
-          {routes.map((route, i) => (
-            <RouteSection
-              key={route.id}
-              route={route}
-              drivers={byRoute[route.id] ?? []}
-              lineNum={i + 1}
-              onShowTimetable={() => openTimetable(route.id)}
-              expanded={panelsCollapsed}
-            />
-          ))}
+          {[...routes]
+            .sort((a, b) => a.id.localeCompare(b.id))
+            .map((route, i) => (
+              <RouteSection
+                key={route.id}
+                route={route}
+                drivers={byRoute[route.id] ?? []}
+                lineNum={i + 1}
+                onShowTimetable={() => openTimetable(route.id)}
+                expanded={panelsCollapsed}
+              />
+            ))}
         </div>
       </div>
 

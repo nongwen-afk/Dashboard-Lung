@@ -8,9 +8,9 @@ import { useFilteredDrivers } from "@/hooks/useFilteredDrivers";
 import { Search, ChevronDown } from "lucide-react";
 
 const ROUTE_COLORS: Record<string, string> = {
-  "Line 1": "#dc2626",
-  "Line 2": "#1e3a8a",
-  "Line 3": "#16a34a",
+  L1: "#dc2626",
+  L2: "#1e3a8a",
+  L3: "#16a34a",
 };
 
 export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
@@ -25,7 +25,9 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
     panelsCollapsed,
   } = useFleetStore();
 
-  const filtered = useFilteredDrivers();
+  const filtered = [...useFilteredDrivers()].sort(
+    (a, b) => a.routeId.localeCompare(b.routeId) || a.vehicle.localeCompare(b.vehicle)
+  );
   const exp = panelsCollapsed && !compact; // shorthand
 
   return (
@@ -168,7 +170,7 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
               </tr>
             ) : (
               filtered.map((d, idx) => {
-                const rc = ROUTE_COLORS[d.route] ?? "#8899bb";
+                const rc = ROUTE_COLORS[d.routeId] ?? "#8899bb";
                 const isLeave = d.status === "Leave";
                 return (
                   <tr
@@ -196,7 +198,7 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
                           boxShadow: `0 1px 4px ${rc}40`,
                         }}
                       >
-                        {d.route.replace("Line", "L")}
+                        {d.routeId.replace("L", "L ")}
                       </span>
                     </td>
                     {/* Name */}
