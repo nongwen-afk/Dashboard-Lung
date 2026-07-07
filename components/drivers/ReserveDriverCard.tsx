@@ -40,24 +40,23 @@ export function ReserveDriverCard({ driver }: ReserveDriverCardProps) {
                 boxShadow: "0 1px 4px rgba(26,26,46,0.05)",
               }
             : {
-                background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,249,252,0.9))",
-                border: "1.5px solid rgba(255,255,255,0.9)",
-                boxShadow: "0 2px 8px rgba(26,26,46,0.07), inset 0 1px 0 rgba(255,255,255,1)",
+                background: "linear-gradient(135deg, #ffffff, #f8fafc)",
+                border: "1.5px solid rgba(226,232,240,0.9)",
+                boxShadow: "0 4px 14px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,1)",
               }
       }
       onMouseEnter={(e) => {
         if (!isAssigned && !isSelected) {
           const el = e.currentTarget as HTMLDivElement;
           el.style.transform = "translateY(-2px)";
-          el.style.boxShadow = "0 8px 24px rgba(26,26,46,0.12), inset 0 1px 0 rgba(255,255,255,1)";
+          el.style.boxShadow = "0 8px 24px rgba(15,23,42,0.12), inset 0 1px 0 rgba(255,255,255,1)";
         }
       }}
       onMouseLeave={(e) => {
         if (!isAssigned && !isSelected) {
           const el = e.currentTarget as HTMLDivElement;
           el.style.transform = "translateY(0)";
-          el.style.boxShadow = "0 2px 8px rgba(26,26,46,0.07), inset 0 1px 0 rgba(255,255,255,1)";
+          el.style.boxShadow = "0 4px 14px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,1)";
         }
       }}
     >
@@ -75,7 +74,7 @@ export function ReserveDriverCard({ driver }: ReserveDriverCardProps) {
       <Avatar
         name={driver.name}
         size={compact ? "sm" : "md"}
-        color="#cbd5e1"
+        color="#f97316"
         className="mx-auto mb-1 relative z-10"
       />
       <p
