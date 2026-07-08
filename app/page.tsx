@@ -1,15 +1,19 @@
-"use client";
+import { fetchInitialFleetData } from "@/lib/server/fleet-data";
+import { FleetDataProvider } from "@/components/FleetDataProvider";
+import { MainApp } from "@/components/MainApp";
 
-import dynamic from "next/dynamic";
+export default async function Home() {
+  const { mappedRoutes, mappedDrivers, mappedReserves } = await fetchInitialFleetData();
 
-const MainApp = dynamic(() => import("@/components/MainApp").then((mod) => mod.MainApp), {
-  ssr: false,
-});
-
-export default function Home() {
   return (
     <main className="min-h-screen bg-background">
-      <MainApp />
+      <FleetDataProvider
+        initialRoutes={mappedRoutes}
+        initialDrivers={mappedDrivers}
+        initialReserves={mappedReserves}
+      >
+        <MainApp />
+      </FleetDataProvider>
     </main>
   );
 }

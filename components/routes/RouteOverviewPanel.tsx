@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RouteSection } from "./RouteSection";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/lib/store/fleetStore";
+import { useSharedFleetData } from "@/components/FleetDataProvider";
 import type { RouteId } from "@/types";
 import { CalendarClock, Activity, Maximize } from "lucide-react";
 import { PanelToggleButton } from "@/components/ui/PanelToggleButton";
@@ -11,7 +12,8 @@ import { PanelToggleButton } from "@/components/ui/PanelToggleButton";
 import { getEffectiveDriver } from "@/lib/shiftRotation";
 
 export function RouteOverviewPanel() {
-  const { routes, drivers, panelsCollapsed, mapOnly, toggleMapOnly } = useFleetStore();
+  const { routes, drivers } = useSharedFleetData();
+  const { panelsCollapsed, mapOnly, toggleMapOnly } = useFleetStore();
   const [timetableOpen, setTimetableOpen] = useState(false);
   const [timetableRoute, setTimetableRoute] = useState<RouteId>("L1");
 

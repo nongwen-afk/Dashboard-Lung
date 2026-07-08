@@ -2,8 +2,12 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { DriverDashboard } from "@/components/drivers/DriverDashboard";
+import { fetchInitialFleetData } from "@/lib/server/fleet-data";
+import { FleetDataProvider } from "@/components/FleetDataProvider";
 
-export default function DriversPage() {
+export default async function DriversPage() {
+  const { mappedRoutes, mappedDrivers, mappedReserves } = await fetchInitialFleetData();
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 text-slate-900">
       {/* Desktop sidebar — hidden on mobile */}
@@ -30,7 +34,13 @@ export default function DriversPage() {
               </p>
             </div>
 
-            <DriverDashboard />
+            <FleetDataProvider
+              initialRoutes={mappedRoutes}
+              initialDrivers={mappedDrivers}
+              initialReserves={mappedReserves}
+            >
+              <DriverDashboard />
+            </FleetDataProvider>
           </div>
         </div>
 

@@ -67,6 +67,7 @@ interface FleetState {
 
   isLoading: boolean;
   error: string | null;
+  hasHydratedFleetData: boolean;
   hydrateFleetData: (routes: Route[], drivers: Driver[], reserveDrivers: ReserveDriver[]) => void;
 }
 
@@ -89,11 +90,20 @@ export const useFleetStore = create<FleetState>((set, get) => ({
   userRole: "dispatcher",
   isLoggedIn: false,
   currentUser: null,
-  isLoading: true, // Start loading true to show spinner initially
+  isLoading: false, // Default false, pages will fetch server-side before render
   error: null,
 
+  hasHydratedFleetData: false,
+
   hydrateFleetData: (routes, drivers, reserveDrivers) =>
-    set({ routes, drivers, reserveDrivers, isLoading: false, error: null }),
+    set({
+      routes,
+      drivers,
+      reserveDrivers,
+      isLoading: false,
+      error: null,
+      hasHydratedFleetData: true,
+    }),
 
   loginDispatcher: () => set({ isLoggedIn: true, userRole: "dispatcher", currentUser: null }),
 
