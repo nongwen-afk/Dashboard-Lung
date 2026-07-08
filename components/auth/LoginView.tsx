@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { useSharedFleetData } from "@/components/FleetDataProvider";
+
 import { Bus, ShieldAlert, User, ChevronRight } from "lucide-react";
 
 export function LoginView() {
   // NOTE: This is a temporary UI-only mock auth flow for demo/navigation parity with pleum.
   // Real authentication will be handled by Better Auth later.
   // Do NOT connect this to the real auth database.
-  const { drivers } = useSharedFleetData();
+  const drivers = useFleetStore((state) => state.drivers);
   const { loginDispatcher, loginDriver } = useFleetStore();
   const [selectedRole, setSelectedRole] = useState<"none" | "dispatcher" | "driver">("none");
   const [selectedDriverId, setSelectedDriverId] = useState<string>("");

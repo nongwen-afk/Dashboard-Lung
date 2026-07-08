@@ -7,7 +7,7 @@ import { DriverTable } from "@/components/drivers/DriverTable";
 import { RouteSection } from "@/components/routes/RouteSection";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { useSharedFleetData } from "@/components/FleetDataProvider";
+
 import type { RouteId } from "@/types";
 
 type SheetState = "peek" | "full";
@@ -18,7 +18,8 @@ const SHEET_HEIGHTS: Record<SheetState, string> = {
 };
 
 export function MobilePanel() {
-  const { routes, drivers } = useSharedFleetData();
+  const drivers = useFleetStore((state) => state.drivers);
+  const routes = useFleetStore((state) => state.routes);
   const {} = useFleetStore(); // Keep import if needed, else remove later
   const [sheetState, setSheetState] = useState<SheetState>("peek");
   const [dragStart, setDragStart] = useState<number | null>(null);

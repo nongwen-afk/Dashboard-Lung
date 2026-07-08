@@ -4,7 +4,7 @@
 
 import { useEffect, useRef } from "react";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { useSharedFleetData } from "@/components/FleetDataProvider";
+
 import { getEffectiveDriver } from "@/lib/shiftRotation";
 
 const ROUTES = [
@@ -98,7 +98,8 @@ export function LeafletMap() {
   const mapInstanceRef = useRef<any>(null);
 
   const busMarkersRef = useRef<any[]>([]);
-  const { drivers } = useSharedFleetData();
+  const drivers = useFleetStore((state) => state.drivers);
+  const routes = useFleetStore((state) => state.routes);
   const { focusDriverId, focusTrigger } = useFleetStore();
 
   useEffect(() => {

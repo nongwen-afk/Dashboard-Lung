@@ -2,11 +2,10 @@
 
 import { ReserveDriverCard } from "./ReserveDriverCard";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { useSharedFleetData } from "@/components/FleetDataProvider";
 import { Users } from "lucide-react";
 
 export function ReservePool() {
-  const { reserveDrivers } = useSharedFleetData();
+  const reserveDrivers = useFleetStore((state) => state.reserveDrivers);
   const { panelsCollapsed } = useFleetStore();
 
   return (

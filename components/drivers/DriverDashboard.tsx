@@ -2,16 +2,27 @@
 
 import React, { useState } from "react";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { useSharedFleetData } from "@/components/FleetDataProvider";
+import { useHydrateFleet } from "@/hooks/useHydrateFleet";
 import { Driver } from "@/types";
 import { DriverDetailsModal } from "./DriverDetailsModal";
-import { Search, ShieldCheck, Clock, Users } from "lucide-react";
+import { Search, ShieldCheck, Clock, Users, Loader2 } from "lucide-react";
 
 export function DriverDashboard() {
-  const { drivers } = useSharedFleetData();
+  const { isLoading } = useHydrateFleet();
+  const drivers = useFleetStore((state) => state.drivers);
 
   const [search, setSearch] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-500">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+        <h2 className="text-xl font-bold text-slate-700">Loading Drivers Data...</h2>
+        <p>กำลังเตรียมข้อมูลบุคลากร</p>
+      </div>
+    );
+  }
 
   const filteredDrivers = drivers.filter((d) =>
     `${d.name} ${d.surname} ${d.code} ${d.vehicle}`.toLowerCase().includes(search.toLowerCase())
