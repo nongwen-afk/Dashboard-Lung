@@ -1,10 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 "use client";
 
 import { useEffect, useRef } from "react";
 import { useFleetStore } from "@/lib/store/fleetStore";
-
 import { getEffectiveDriver } from "@/lib/shiftRotation";
 
 const ROUTES = [
@@ -94,17 +91,15 @@ const ROUTES = [
 
 export function LeafletMap() {
   const mapRef = useRef<HTMLDivElement>(null);
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const mapInstanceRef = useRef<any>(null);
-
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const busMarkersRef = useRef<any[]>([]);
-  const drivers = useFleetStore((state) => state.drivers);
-  const routes = useFleetStore((state) => state.routes);
-  const { focusDriverId, focusTrigger } = useFleetStore();
+  const { drivers, focusDriverId, focusTrigger } = useFleetStore();
 
   useEffect(() => {
     if (!mapRef.current) return;
-
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if ((mapRef.current as any)._leaflet_id) return;
 
     let L: typeof import("leaflet");
@@ -118,7 +113,7 @@ export function LeafletMap() {
       L = (await import("leaflet")).default;
 
       // Remove default icon url to prevent 404s
-
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -126,6 +121,7 @@ export function LeafletMap() {
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (!mapRef.current || (mapRef.current as any)._leaflet_id) return;
 
       const campusBounds = L.latLngBounds(
@@ -173,6 +169,7 @@ export function LeafletMap() {
 
       const busMarkers: {
         marker: import("leaflet").Marker;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         route: any;
         progress: number;
         speed: number;
@@ -248,17 +245,19 @@ export function LeafletMap() {
         for (let i = 0; i < 5; i++) {
           const driver = routeDrivers.length > 0 ? routeDrivers[i % routeDrivers.length] : null;
 
+          const initialDisplaySpeed =
+            Math.random() < 0.05
+              ? Math.floor(Math.random() * 15) + 81
+              : Math.floor(Math.random() * 35) + 40;
           const busObj = {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             marker: null as any,
             route,
             progress: i * 0.2,
-            speed: 0.00015 + Math.random() * 0.0001,
+            speed: initialDisplaySpeed > 80 ? 0.0006 : 0.00015, // Highly exaggerated speed difference
             direction: 1,
             driverId: driver ? driver.id : null,
-            displaySpeed:
-              Math.random() < 0.05
-                ? Math.floor(Math.random() * 15) + 81
-                : Math.floor(Math.random() * 35) + 40,
+            displaySpeed: initialDisplaySpeed,
             isSpeeding: false,
             innerEl: null as HTMLElement | null,
             badgeEl: null as HTMLElement | null,
@@ -406,6 +405,9 @@ export function LeafletMap() {
             }
           }
 
+          // Update actual visual speed to make the difference extremely obvious
+          b.speed = b.displaySpeed > 80 ? 0.0006 : 0.00015;
+
           if (b.displaySpeed > 80) {
             if (!b.isSpeeding) {
               b.isSpeeding = true;
@@ -495,6 +497,7 @@ export function LeafletMap() {
 
   useEffect(() => {
     if (focusDriverId && mapInstanceRef.current && busMarkersRef.current.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const bus = busMarkersRef.current.find((b: any) => b.driverId === focusDriverId);
       if (bus && bus.marker) {
         bus.updatePopup();
