@@ -55,7 +55,8 @@ export function DriverView() {
         assignedDriver,
       };
     })
-    .filter((item) => item.assignedDriver?.id === currentUser.id);
+    // Match by employee code because DB-backed users and mock rotation drivers use different numeric id systems
+    .filter((item) => item.assignedDriver?.code === currentUser.code);
 
   // Find the first upcoming trip for the logged-in driver today
   const nextTrip = isToday ? departuresList.find((dept) => !isPastTrip(dept.time)) : null;
