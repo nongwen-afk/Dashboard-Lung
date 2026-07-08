@@ -2,14 +2,8 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
-import { fetchInitialFleetData } from "@/lib/server/fleet-data";
-import { FleetDataProvider } from "@/components/FleetDataProvider";
 
-export const dynamic = "force-dynamic";
-
-export default async function AnalyticsPage() {
-  const { mappedRoutes, mappedDrivers, mappedReserves } = await fetchInitialFleetData();
-
+export default function AnalyticsPage() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 text-slate-900">
       {/* Desktop sidebar — hidden on mobile */}
@@ -36,13 +30,7 @@ export default async function AnalyticsPage() {
               </p>
             </div>
 
-            <FleetDataProvider
-              initialRoutes={mappedRoutes}
-              initialDrivers={mappedDrivers}
-              initialReserves={mappedReserves}
-            >
-              <AnalyticsDashboard />
-            </FleetDataProvider>
+            <AnalyticsDashboard />
           </div>
         </div>
 
