@@ -17,12 +17,13 @@ const ZONES: Array<{ key: RouteKey | "pool"; label: string; emoji: string; color
   { key: "green", label: "สายสีเขียว", emoji: "🟢", color: "#16a34a", border: "#bbf7d0", bg: "#f0fdf4" },
   { key: "blue",  label: "สายสีน้ำเงิน", emoji: "🔵", color: "#2563eb", border: "#bfdbfe", bg: "#eff6ff" },
   { key: "red",   label: "สายสีแดง",   emoji: "🔴", color: "#dc2626", border: "#fecaca",  bg: "#fef2f2" },
-  { key: "pool",  label: "คลังสำรอง",  emoji: "📦", color: "#64748b", border: "#e2e8f0", bg: "#f8fafc" },
+  { key: "pool",  label: "กลุ่มผู้ขับขี่สำรอง",  emoji: "🟠", color: "#64748b", border: "#e2e8f0", bg: "#f8fafc" },
 ];
 
 export function DriverAssignmentBoard({ assignments, onChange }: Props) {
   const [draggedDriver, setDraggedDriver] = useState<string | null>(null);
   const [dragOverZone, setDragOverZone] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Reassign a driver to a new zone
   const assignDriver = useCallback((name: string, target: RouteKey | "pool") => {
@@ -70,18 +71,35 @@ export function DriverAssignmentBoard({ assignments, onChange }: Props) {
       className="flex-shrink-0 border-b border-slate-200 bg-white"
     >
       {/* Section header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-slate-100 bg-slate-50">
+      <div 
+        className="flex items-center justify-between px-4 py-2 border-b border-slate-100 bg-slate-50 cursor-pointer hover:bg-slate-100 transition-colors"
+        onClick={() => setIsCollapsed(!isCollapsed)}
+      >
         <div className="flex items-center gap-2">
-          <span className="text-[0.5625rem] font-black uppercase tracking-widest text-slate-700">👥 จัดสรรคนขับ</span>
-          <span className="text-[0.45rem] text-slate-500 italic">— ลากการ์ดเพื่อย้ายสาย</span>
+          <span className="text-sm font-black uppercase tracking-widest text-slate-700">จัดสรรผู้ขับขี่</span>
+          {!isCollapsed && <span className="text-xs text-slate-500 italic">— ลากและวางเพื่อย้ายเส้นทาง</span>}
         </div>
-        <span className="text-[0.45rem] text-slate-500 font-bold">
-          {ALL_DRIVERS.filter(n => (assignments[n] ?? "pool") === "pool").length} คนใน Pool
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500 font-bold">
+            {ALL_DRIVERS.filter(n => (assignments[n] ?? "pool") === "pool").length} คนในกลุ่มสำรอง
+          </span>
+          <button className="text-slate-400 hover:text-slate-600 transition-colors">
+            {isCollapsed ? (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            ) : (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="18 15 12 9 6 15"></polyline>
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* 4 drop zones */}
-      <div className="flex items-stretch gap-0">
+      {!isCollapsed && (
+        <div className="flex items-stretch gap-0">
         {ZONES.map((zone, zi) => {
           const driversHere = grouped[zone.key] ?? [];
           const isOver = dragOverZone === zone.key;
@@ -108,16 +126,16 @@ export function DriverAssignmentBoard({ assignments, onChange }: Props) {
             >
               {/* Zone header */}
               <div
-                className="flex items-center justify-between px-2.5 py-1.5"
+                className="flex items-center justify-between px-3 py-2"
                 style={{ borderBottom: `1px solid ${zone.border}` }}
               >
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">{zone.emoji}</span>
-                  <span className="text-[0.5625rem] font-black" style={{ color: zone.color }}>{zone.label}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-base">{zone.emoji}</span>
+                  <span className="text-sm font-black" style={{ color: zone.color }}>{zone.label}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <span
-                    className="text-[0.5rem] font-bold px-1.5 py-0.5 rounded-full"
+                    className="text-xs font-bold px-2 py-0.5 rounded-full"
                     style={{
                       background: "#fff",
                       color: zone.color,
@@ -155,7 +173,7 @@ export function DriverAssignmentBoard({ assignments, onChange }: Props) {
                 {/* Empty drop hint */}
                 {driversHere.length === 0 && !isOver && (
                   <p className="text-[0.45rem] text-slate-400 italic self-center w-full text-center py-1">
-                    ลากการ์ดมาวางที่นี่
+                    ลากเพื่อจัดสรรเส้นทาง
                   </p>
                 )}
                 {isOver && draggedDriver && (
@@ -173,6 +191,7 @@ export function DriverAssignmentBoard({ assignments, onChange }: Props) {
           );
         })}
       </div>
+      )}
     </div>
   );
 }
@@ -195,7 +214,7 @@ function DriverCard({ name, zone, isDragging, onDragStart, onDragEnd, onDoubleCl
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       onDoubleClick={onDoubleClick}
-      className="flex items-center gap-1 px-2 py-1 rounded-lg cursor-grab active:cursor-grabbing select-none transition-all duration-100 shadow-sm"
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg cursor-grab active:cursor-grabbing select-none transition-all duration-100 shadow-sm"
       style={{
         background: isDragging ? "#ffffff" : "linear-gradient(to bottom, #ffffff, #f8fafc)",
         border: `1px solid ${zone.color}${isDragging ? "aa" : "30"}`,
@@ -205,13 +224,13 @@ function DriverCard({ name, zone, isDragging, onDragStart, onDragEnd, onDoubleCl
         opacity: isDragging ? 0.7 : 1,
         transform: isDragging ? "scale(0.95)" : "scale(1)",
       }}
-      title={`${name} (${zone.label}) — ลากเพื่อย้าย, ดับเบิลคลิกส่งไป Pool`}
+      title={`${name} (${zone.label}) — ลากเพื่อย้ายเส้นทาง, ดับเบิลคลิกเพื่อย้ายไปกลุ่มสำรอง`}
     >
       {/* Drag handle dots */}
-      <span className="text-[0.55rem] text-slate-300 leading-none">⠿</span>
+      <span className="text-xs text-slate-300 leading-none">⠿</span>
       {/* Avatar circle */}
       <div
-        className="w-4 h-4 rounded-full flex items-center justify-center text-[0.4rem] font-black text-white flex-shrink-0 shadow-sm"
+        className="w-5 h-5 rounded-full flex items-center justify-center text-[0.5rem] font-black text-white flex-shrink-0 shadow-sm"
         style={{
           background: `linear-gradient(135deg, ${zone.color}, ${zone.color}dd)`,
         }}
@@ -219,7 +238,7 @@ function DriverCard({ name, zone, isDragging, onDragStart, onDragEnd, onDoubleCl
         {name.charAt(0)}
       </div>
       {/* Name */}
-      <span className="text-[0.5625rem] font-semibold leading-none" style={{ color: zone.color }}>
+      <span className="text-xs font-semibold leading-none" style={{ color: zone.color }}>
         {name}
       </span>
     </div>

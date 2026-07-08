@@ -146,8 +146,9 @@ export interface DriverShift {
  * sheet      — fixed times from Excel (hardcoded)
  * cumulative — break after X cumulative work hours from shift start (incl. wait time)
  * continuous — break after X hours of actual driving (excludes wait time)
+ * smart      — dynamically insert break before exceeding threshold (Greedy Algorithm)
  */
-export type BreakMode = "sheet" | "cumulative" | "continuous";
+export type BreakMode = "sheet" | "cumulative" | "continuous" | "smart";
 
 /** How the next driver is chosen when a trip departs.
  * fewest-trips  — driver with fewest trips so far (default, fairest by count)
@@ -178,6 +179,7 @@ export interface SimConfig {
   tripDurationMin: number;  // minutes per trip cycle (default 20)
   otPayPerSession: number;  // baht per OT session (default 400)
   maxWorkingDrivers?: number;
+  customDepartures?: Record<RouteKey, Record<DayTypeKey, number[]>>;
 }
 
 export interface SimResult {
@@ -240,9 +242,12 @@ export function runSimulation(config: SimConfig): SimResult {
     restAfterHours,
     tripDurationMin,
     otPayPerSession,
+    customDepartures,
   } = config;
 
-  const departures = ROUTE_DEPARTURES[route][dayType];
+  const departures = customDepartures
+    ? customDepartures[route][dayType]
+    : ROUTE_DEPARTURES[route][dayType];
   const totalDriverCount = Math.max(1, numDrivers + numOTDrivers);
   const regularDriverNames = (config.customDriverNames && config.customDriverNames.length > 0)
     ? config.customDriverNames
@@ -270,7 +275,7 @@ export function runSimulation(config: SimConfig): SimResult {
 
   // ── Populate breaks (sheet mode only — other modes add breaks dynamically)
   if (breakMode === "sheet") {
-    const routeBreaks = hardcodedBreaks[route] || [];
+    const routeBreaks = hardcodedBreaks[route]?.[dayType] || [];
     for (let d = 0; d < driverNames.length; d++) {
       if (routeBreaks[d]) {
         for (const timeStr of routeBreaks[d]) {
@@ -301,6 +306,23 @@ export function runSimulation(config: SimConfig): SimResult {
     const rush = isRushHour(dep);
     if (rush) rushTotal++;
 
+    // ── Pre-process mandatory breaks for Smart & Cumulative Mode ──
+    if (breakMode === "smart" || breakMode === "cumulative") {
+      for (let d = 0; d < driverNames.length; d++) {
+        if (driverWorkStart[d] !== -1) {
+          const limit = driverLastBreakAt[d] + restThresholdMin;
+          if (dep >= limit) {
+             // For cumulative, insert exactly at the limit (ชนก็ชน). For smart, wait until they are free.
+             const breakStart = breakMode === "cumulative" ? limit : Math.max(driverAvailableAt[d], limit);
+             const breakEnd = breakStart + BREAK_DURATION;
+             driverBreaks[d].push({ startMin: breakStart, endMin: breakEnd, driverIndex: d });
+             driverAvailableAt[d] = Math.max(driverAvailableAt[d], breakEnd);
+             driverLastBreakAt[d] = breakEnd;
+          }
+        }
+      }
+    }
+
     const workingCount = config.maxWorkingDrivers
       ? Math.min(config.maxWorkingDrivers, regularCount)
       : regularCount;
@@ -315,10 +337,27 @@ export function runSimulation(config: SimConfig): SimResult {
       }
       // Busy check
       if (driverAvailableAt[d] > dep) return false;
-      // Break overlap check (sheet or dynamic breaks already in driverBreaks[d])
+
       const tripEnd = dep + tripDurationMin;
-      for (const b of driverBreaks[d]) {
-        if (dep < b.endMin && tripEnd > b.startMin) return false;
+
+      // Strict limit check for all dynamic modes EXCEPT cumulative
+      if ((breakMode === "smart" || breakMode === "continuous") && driverWorkStart[d] !== -1) {
+        const projectedSinceBreak = breakMode === "continuous"
+           ? driverDrivingMinutes[d] + tripDurationMin
+           : tripEnd - driverLastBreakAt[d];
+           
+        if (projectedSinceBreak > restThresholdMin) {
+          const breakEnd = driverAvailableAt[d] + BREAK_DURATION;
+          if (breakEnd > dep) return false;
+        }
+      }
+
+      // Break overlap check (sheet or dynamic breaks already in driverBreaks[d])
+      // For cumulative mode, we allow overlap ("ชนก็ชน")
+      if (breakMode !== "cumulative") {
+        for (const b of driverBreaks[d]) {
+          if (dep < b.endMin && tripEnd > b.startMin) return false;
+        }
       }
       return true;
     };
@@ -400,40 +439,37 @@ export function runSimulation(config: SimConfig): SimResult {
     coveredTrips++;
     if (rush) rushCovered++;
 
-    // ── Dynamic break scheduling (cumulative / continuous modes) ─────
-    if (breakMode !== "sheet") {
-      const elapsed =
-        breakMode === "cumulative"
-          ? tripEnd - driverWorkStart[bestDriver]   // clock time from shift start
-          : driverDrivingMinutes[bestDriver];        // pure driving minutes
-
-      const minutesSinceLastBreak =
-        breakMode === "cumulative"
-          ? tripEnd - driverLastBreakAt[bestDriver]
-          : driverDrivingMinutes[bestDriver] - (driverDrivingMinutes[bestDriver] - (tripEnd - driverLastBreakAt[bestDriver]));
-
-      // Simpler: use cumulative since last break
-      const sinceBreak =
-        breakMode === "cumulative"
-          ? tripEnd - driverLastBreakAt[bestDriver]
-          : driverDrivingMinutes[bestDriver];
-
-      // We track driving since last break separately for continuous mode
-      if (sinceBreak >= restThresholdMin) {
+    // ── Dynamic break scheduling (continuous mode only) ─────
+    if (breakMode === "continuous") {
+      if (driverDrivingMinutes[bestDriver] + tripDurationMin > restThresholdMin) {
         const breakStart = driverAvailableAt[bestDriver];
         const breakEnd = breakStart + BREAK_DURATION;
         driverBreaks[bestDriver].push({ startMin: breakStart, endMin: breakEnd, driverIndex: bestDriver });
         driverAvailableAt[bestDriver] = breakEnd;
         driverLastBreakAt[bestDriver] = breakEnd;
-        if (breakMode === "continuous") driverDrivingMinutes[bestDriver] = 0;
+        driverDrivingMinutes[bestDriver] = 0;
       }
     }
   }
 
   // ── Build DriverShift objects ────────────────────────────────────────
   const drivers: DriverShift[] = driverNames.map((name, d) => {
-    const trips = driverTrips[d];
     const breaks = driverBreaks[d];
+    const trips = driverTrips[d].map(t => {
+      let overlaps = t.isOverlapping;
+      if (!overlaps) {
+        const tEnd = t.departureMin + tripDurationMin;
+        for (const b of breaks) {
+          if (t.departureMin < b.endMin && tEnd > b.startMin) {
+            overlaps = true;
+            overlappedTrips++;
+            break;
+          }
+        }
+      }
+      return { ...t, isOverlapping: overlaps };
+    });
+    
     if (trips.length === 0) {
       return {
         driverIndex: d,
@@ -498,7 +534,7 @@ export function defaultConfig(route: RouteKey = "green"): SimConfig {
     numOTDrivers: meta.defaultOT,
     otThresholdHours: 8,
     restAfterHours: 4,
-    breakMode: "sheet",
+    breakMode: "smart",
     fairnessMode: "fewest-trips",
     shortStaffPolicy: "overlap",
     crossLineAssist: route === "green",
@@ -526,6 +562,7 @@ export interface SharedSimConfig {
   simulationDay: number;
   enableDayOff: boolean;
   rotateRoutes: boolean;
+  customDepartures?: Record<RouteKey, Record<DayTypeKey, number[]>>;
 }
 
 /** Result of running all 3 routes in one pass */
@@ -564,7 +601,7 @@ export function defaultSharedConfig(): SharedSimConfig {
     dayType: "weekday",
     otThresholdHours: 8,
     restAfterHours: 4,
-    breakMode: "sheet",
+    breakMode: "smart",
     fairnessMode: "fewest-trips",
     shortStaffPolicy: "overlap",
     crossLineAssist: false,
@@ -618,9 +655,9 @@ export function runAllRoutes(
       // No drivers assigned — return empty result
       return {
         config: { route, numDrivers: 0, numOTDrivers: 0, customDriverNames: [], ...shared, tripDurationMin: shared.tripDurations[route], crossLineAssist: false },
-        departures: ROUTE_DEPARTURES[route][shared.dayType],
+        departures: shared.customDepartures ? shared.customDepartures[route][shared.dayType] : ROUTE_DEPARTURES[route][shared.dayType],
         drivers: [],
-        totalTrips: ROUTE_DEPARTURES[route][shared.dayType].length,
+        totalTrips: shared.customDepartures ? shared.customDepartures[route][shared.dayType].length : ROUTE_DEPARTURES[route][shared.dayType].length,
         totalDrivers: 0,
         avgWorkHours: 0,
         avgTripsPerDriver: 0,
@@ -633,7 +670,9 @@ export function runAllRoutes(
       };
     }
 
-    const departures = ROUTE_DEPARTURES[route][shared.dayType];
+    const departures = shared.customDepartures
+      ? shared.customDepartures[route][shared.dayType]
+      : ROUTE_DEPARTURES[route][shared.dayType];
     const maxWorkingDrivers = customDriverNames.length;
 
     return runSimulation({
@@ -652,6 +691,7 @@ export function runAllRoutes(
       tripDurationMin: shared.tripDurations[route],
       otPayPerSession: shared.otPayPerSession,
       maxWorkingDrivers,
+      customDepartures: shared.customDepartures,
     });
   };
 

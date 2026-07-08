@@ -17,18 +17,21 @@ interface Props {
   tripDurations: Record<RouteKey, number>;
   otThresholdHours: number;
   activeView: "all" | "green" | "blue" | "red";
+  showBreaks: boolean;
+  showOverlap: boolean;
+  showIdle: boolean;
 }
 
 // ── Layout constants ──────────────────────────────────────────────────
-const GANTT_START = 6 * 60 + 25;
-const GANTT_END   = 21 * 60 + 30;
+const GANTT_START = 5 * 60 + 30; // 05:30
+const GANTT_END   = 22 * 60;     // 22:00
 const TOTAL_MINS  = GANTT_END - GANTT_START;
 const PX_PER_MIN  = 3.4;
 const MIN_COL_W   = 80;
 const TIME_COL_W  = 52;
 const SEP_W       = 10;       // route separator width
 const TOTAL_H     = TOTAL_MINS * PX_PER_MIN;
-const HOUR_MARKS  = Array.from({ length: 16 }, (_, i) => i + 6);
+const HOUR_MARKS  = Array.from({ length: 17 }, (_, i) => i + 5); // 5:00 to 21:00
 
 const RUSH_ZONES = [
   { s: 6 * 60 + 30, e: 9 * 60, label: "Rush AM" },
@@ -79,13 +82,10 @@ function computeLayout(multiResult: MultiRouteSimResult, activeView: string, con
   return { groups, totalWidth: x };
 }
 
-export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, activeView }: Props) {
+export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, activeView, showBreaks, showOverlap, showIdle }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(0);
   const [tooltip, setTooltip] = useState<TooltipData | null>(null);
-  const [showBreaks, setShowBreaks] = useState(true);
-  const [showOverlap, setShowOverlap] = useState(true);
-  const [showIdle, setShowIdle] = useState(false);
 
   // Track container width for dynamic columns
   useEffect(() => {
@@ -405,49 +405,6 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
             </div>
           );
         })()}
-      </div>
-
-      {/* ── Legend + filter bar ── */}
-      <div
-        className="sticky bottom-0 flex items-center gap-3 px-4 py-1.5 border-t flex-wrap z-30 bg-white border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
-      >
-        {/* Route coverage badges */}
-        {(["green", "blue", "red"] as RouteKey[]).filter(r => activeView === "all" || activeView === r).map(r => (
-          <div key={r} className="flex items-center gap-1">
-            <div className="w-4 h-3 rounded-sm" style={{ background: ROUTE_META[r].color }} />
-            <span className="text-[0.45rem] text-slate-600 font-bold">{ROUTE_META[r].label} ({multiResult[r].coverageRate.toFixed(0)}%)</span>
-          </div>
-        ))}
-        <div className="flex items-center gap-1">
-          <div className="w-4 h-3 rounded-sm" style={{ background: "#f59e0b" }} />
-          <span className="text-[0.45rem] text-slate-600 font-bold">OT</span>
-        </div>
-
-        {/* Divider */}
-        <div className="h-4 w-px bg-slate-200 mx-1" />
-
-        {/* Filter toggles */}
-        <span className="text-[0.45rem] text-slate-400 font-bold uppercase tracking-wide">แสดง:</span>
-        {([
-          { key: "breaks", label: "พัก", active: showBreaks, toggle: () => setShowBreaks(v => !v), color: "#f59e0b" },
-          { key: "overlap", label: "Overlap", active: showOverlap, toggle: () => setShowOverlap(v => !v), color: "#ef4444" },
-          { key: "idle", label: "รอคิว", active: showIdle, toggle: () => setShowIdle(v => !v), color: "#94a3b8" },
-        ] as const).map(f => (
-          <button
-            key={f.key}
-            onClick={f.toggle}
-            className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.45rem] font-bold border transition-all"
-            style={
-              f.active
-                ? { background: `${f.color}18`, border: `1px solid ${f.color}50`, color: f.color }
-                : { background: "#f8fafc", border: "1px solid #e2e8f0", color: "#94a3b8" }
-            }
-          >
-            {f.label}
-          </button>
-        ))}
-
-        <div className="ml-auto text-[0.45rem] text-slate-500 font-bold">เลื่อน ↕↔ เพื่อดูทั้งหมด</div>
       </div>
 
       {/* Tooltip */}
