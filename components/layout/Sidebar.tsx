@@ -2,7 +2,15 @@
 
 "use client";
 
-import { LayoutDashboard, MapPin, Bus, Users, BarChart3, Settings } from "lucide-react";
+import {
+  LayoutDashboard,
+  MapPin,
+  Bus,
+  Users,
+  BarChart3,
+  Settings,
+  FlaskConical,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,6 +20,7 @@ const NAV_ITEMS = [
   { icon: LayoutDashboard, label: "Dashboard", href: "/" },
   { icon: Users, label: "คนขับ", href: "/drivers" },
   { icon: BarChart3, label: "วิเคราะห์", href: "/analytics" },
+  { icon: FlaskConical, label: "Simulation", href: "/simulation" },
 ];
 
 export function Sidebar() {

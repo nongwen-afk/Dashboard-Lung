@@ -1,10 +1,4 @@
-"use client";
-
-import dynamic from "next/dynamic";
-
-const MainApp = dynamic(() => import("@/components/MainApp").then((mod) => mod.MainApp), {
-  ssr: false,
-});
+import { MainApp } from "@/components/MainApp";
 
 export default function Home() {
   return (

@@ -2,7 +2,6 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { DriverDashboard } from "@/components/drivers/DriverDashboard";
-
 export default function DriversPage() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 text-slate-900">

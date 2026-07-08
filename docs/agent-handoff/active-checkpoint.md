@@ -6,6 +6,52 @@
 - **Base branch:** dev
 - **Repo:** nongwen-afk/Dashboard-Lung
 
+## Completed Setup: Simulation UI Port
+
+- Simulation UI port from `pleum` branch completed.
+- Direct merge of `pleum` was rejected due to unrelated git history.
+- Manual port strategy used to copy exactly 11 simulation files and modify `Sidebar.tsx`.
+- Simulation components (`SimulationView`, `SimGanttBoard`, etc.) and logic engine added under `app/simulation`, `components/simulation`, and `lib`.
+- Branch `feature/port-simulation-ui` was merged into `dev`.
+- Local and remote `feature/port-simulation-ui` were cleanly deleted.
+- Branch `pleum` was preserved as an untouched reference.
+- DB schema, migrations, server actions, services, and CI files were completely untouched.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were strictly NOT run.
+- `dev` is clean and up to date.
+- Playwright remains local-only.
+- Basic CI remains active.
+- Epic #8 remains open/untouched.
+
+## Completed Setup: Playwright Smoke Test
+
+- Playwright smoke test completed.
+- PR merged into `dev`.
+- Remote `feature/playwright-smoke-test` deleted.
+- Local `feature/playwright-smoke-test` exists and is fully merged and safe to delete.
+- `test:e2e` script added.
+- Playwright is local-only and not in GitHub Actions CI yet.
+- Basic CI remains active.
+- Better Auth remains paused.
+- Mock Auth UI remains active.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were strictly NOT run.
+- Epic #8 remains open/untouched.
+- Current active issue: None.
+- Next candidate: decide between adding Playwright to CI later, Sentry, Better Auth, or CRUD/Admin UI.
+
+## Completed Setup: Basic CI Workflow
+
+- Basic CI completed.
+- PR #92 was merged into `dev`.
+- GitHub Actions CI passed.
+- Vercel passed.
+- CI workflow added at `.github/workflows/ci.yml`.
+- CI uses dummy env values only (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL`).
+- No real secrets were added.
+- `db:migrate`, `db:seed`, and `db:seed:mock` were strictly NOT run.
+- Better Auth remains paused.
+- Mock Auth UI remains active.
+- Epic #8 remains open/untouched.
+
 ## Completed Maintenance Note: Release v0.2.0
 
 - PR #90 release: v0.2.0 - Database & Mock Data Integration was merged into `main`.

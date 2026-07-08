@@ -2,7 +2,6 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
-
 export default function AnalyticsPage() {
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-50 text-slate-900">

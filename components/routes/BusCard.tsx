@@ -23,7 +23,7 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
       <div
         onClick={() => !isLeave && setFocusDriverId(driver.id)}
         className={cn(
-          "flex items-center gap-2.5 rounded-lg px-2.5 py-2 transition-all duration-200 group cursor-pointer",
+          "flex items-center gap-1.5 rounded-lg px-1.5 py-1.5 transition-all duration-200 group cursor-pointer",
           isLeave && "opacity-50"
         )}
         style={{
@@ -59,11 +59,6 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
           }
         }}
       >
-        {/* Route color dot */}
-        <div
-          className="w-2 h-2 rounded-full flex-shrink-0"
-          style={{ background: routeColor, boxShadow: `0 0 4px ${routeColor}80` }}
-        />
         <Avatar
           name={driver.name}
           size="xs"
@@ -71,14 +66,14 @@ export function BusCard({ driver, routeColor, expanded }: BusCardProps) {
           className="flex-shrink-0"
         />
         <div className="flex-1 min-w-0">
-          <p className="text-base font-semibold text-[#0f172a] truncate leading-tight">
-            {driver.name} {driver.surname}
+          <p className="text-sm font-semibold text-[#0f172a] truncate leading-tight">
+            {driver.name}
           </p>
-          <p className="text-sm text-gray-400 leading-tight">{driver.vehicle}</p>
+          <p className="text-[0.7rem] text-gray-400 leading-tight">{driver.vehicle}</p>
         </div>
         {/* Status */}
         <span
-          className="text-[0.78rem] font-bold px-2 py-0.5 rounded-full flex-shrink-0"
+          className="text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0"
           style={
             isLeave
               ? { background: "rgba(220,38,38,0.10)", color: "#dc2626" }
