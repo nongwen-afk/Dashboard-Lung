@@ -105,7 +105,7 @@ function SegmentedControl<T extends string>({
               ? "bg-white shadow-sm ring-1 ring-inset"
               : "bg-slate-50 border-slate-200 hover:bg-slate-100 opacity-70 hover:opacity-100"
           }`}
-          style={value === opt.value ? { borderColor: accent || "#6366f1", ringColor: accent || "#6366f1" } : {}}
+          style={value === opt.value ? { borderColor: accent || "#6366f1", "--tw-ring-color": accent || "#6366f1" } as React.CSSProperties : {}}
         >
           <div>
             <p className={`text-sm font-bold ${value === opt.value ? "text-slate-800" : "text-slate-600"}`}>
