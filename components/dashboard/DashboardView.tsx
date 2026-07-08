@@ -8,8 +8,11 @@ import { ReplaceDriverModal } from "@/components/modals/ReplaceDriverModal";
 import { Toast } from "@/components/ui/Toast";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { MobilePanel } from "@/components/dashboard/MobilePanel";
+import { useHydrateFleet } from "@/hooks/useHydrateFleet";
+import { Loader2 } from "lucide-react";
 
 export function DashboardView() {
+  const { isLoading } = useHydrateFleet();
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-gray-100">
       {/* Desktop sidebar — hidden on mobile */}
@@ -34,6 +37,14 @@ export function DashboardView() {
           <div className="block md:hidden">
             <MobilePanel />
           </div>
+
+          {isLoading && (
+            <div className="absolute inset-0 z-[1000] bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center text-slate-800">
+              <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+              <h2 className="text-xl font-bold">Loading Fleet Data...</h2>
+              <p className="text-slate-500 text-sm mt-2">กำลังเตรียมข้อมูลการเดินรถ</p>
+            </div>
+          )}
         </div>
 
         {/* Mobile bottom navigation — hidden on desktop */}

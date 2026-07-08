@@ -16,7 +16,8 @@ import {
 import { TrendingUp, Clock, Bus, Activity } from "lucide-react";
 import { CHART_DATA } from "@/lib/mock-data";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { useSharedFleetData } from "@/components/FleetDataProvider";
+import { useHydrateFleet } from "@/hooks/useHydrateFleet";
+import { Loader2 } from "lucide-react";
 
 import { ScheduleSimulator } from "./ScheduleSimulator";
 
@@ -41,7 +42,18 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export function AnalyticsDashboard() {
-  const { routes } = useSharedFleetData();
+  const { isLoading } = useHydrateFleet();
+  const routes = useFleetStore((state) => state.routes);
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-slate-500">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-500 mb-4" />
+        <h2 className="text-xl font-bold text-slate-700">Loading Analytics Data...</h2>
+        <p>กำลังเตรียมข้อมูลสถิติ</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
