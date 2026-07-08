@@ -1,29 +1,92 @@
-# Project Lung
+# 🚌 Fleet Management Dashboard
 
-Decision Support System for EV Bus Dispatch Operations.
+**ระบบจัดการรถโดยสารและการแทนที่พนักงานขับรถ** — Decision Support System for EV Bus Dispatch Operations.
+
+---
 
 ## Tech Stack
 
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS v4
-- shadcn/ui
-- Neon PostgreSQL
-- Drizzle ORM
-- Better Auth
-- npm
+| Package              | Version         | ใช้ทำอะไร                   |
+| -------------------- | --------------- | --------------------------- |
+| Next.js              | 16 (App Router) | Framework                   |
+| React                | 19              | UI Library                  |
+| TypeScript           | 5               | Type safety                 |
+| Tailwind CSS         | 4               | Styling                     |
+| shadcn/ui & Radix UI | latest          | Accessible UI components    |
+| Zustand              | 5               | Global state                |
+| Recharts             | 3               | Charts/Graphs               |
+| Lucide React         | latest          | Icons                       |
+| Neon PostgreSQL      | latest          | Primary database            |
+| Drizzle ORM          | latest          | Schema, migrations, queries |
+| Better Auth          | paused          | Authentication              |
+| npm                  | latest          | Package manager             |
 
-## Architecture Decisions
+---
 
-- Use `npm` as the package manager
-- Use Next.js Route Handlers and Server Actions for backend logic
-- Use Neon PostgreSQL as the primary canonical database
-- Use Drizzle ORM for schema, migrations, and type-safe queries
-- Use Better Auth for authentication and role-based access control
-- Use Role-Based Access Control (RBAC) for Admin and Dispatcher roles
-- Use Vercel for deployment
-- Use ESLint and Prettier for code quality
+## Features
+
+### Dashboard
+
+- Full-screen layout (Sidebar + Map + Right Panel)
+- Real-time clock and live status badges
+
+### Route Overview
+
+- 3 เส้นทาง (Red / Blue / Green Line)
+- Bus Cards พร้อม Driver Avatar
+- Passenger Load Progress Bar พร้อม Color coding
+- SVG mock city map พร้อม animated bus markers
+
+### Reserve Pool
+
+- แสดงคนสำรอง พร้อม Skill Stars, Availability Bar
+- Click to select reserve driver ก่อน replace
+- Real-time status update (Available → Assigned)
+
+### Driver Assignment Table
+
+- Filter by Route, Status
+- Search by Driver Name
+- Replace button → เปิด Modal
+- "On Leave" state แสดงหลัง confirm
+
+### Driver Replacement Modal
+
+- Transfer visualization (Reserve → Driver)
+- Reason dropdown (Sick Leave / Vacation / Emergency / Training)
+- Date picker
+- Notes textarea
+- Confirm → Zustand state update → Toast notification
+
+### Analytics & Simulation
+
+- **Simulation UI**: Interactive testing environment
+- **Charts & Timetables**: Fleet performance & utilization graphs
+- **Drivers Page**: Comprehensive driver management list
+- **Analytics Page**: Route & Fleet data aggregation
+
+---
+
+## Current Application State
+
+**Database-Backed Features**:
+
+- Dashboard fleet data
+- Drivers page
+- Analytics route/fleet data
+
+**UI-Only Mock / Local-State Features**:
+
+- Simulation UI
+- Charts, timetables, and performance metrics (currently mock data)
+- GPS/Map animation (currently mock visualization)
+
+**Authentication**:
+
+- Better Auth integration remains currently paused.
+- A Mock Auth UI remains active as the gatekeeper.
+
+---
 
 ## Getting Started
 
@@ -46,31 +109,6 @@ npm run db:migrate
 # Optional (dev only): npm run db:seed:mock
 ```
 
-## Current Application State
-
-**Database-Backed Features**:
-
-- Dashboard UI
-- Drivers Page
-- Analytics Routes & Fleet Data
-
-**UI-Only Mock Features**:
-
-- Charts & Timetables
-- Utilization Stats & Performance Metrics
-- GPS/Map Animation
-
-**Authentication**:
-
-- Better Auth integration remains currently paused.
-- A Mock Auth UI remains active as the gatekeeper.
-
-For full details on the workflow, environment setups, and project constraints, please read:
-
-- `docs/onboarding.md`
-- `docs/deployment.md`
-- `docs/project-bible.md`
-
 Start development server:
 
 ```bash
@@ -83,15 +121,20 @@ Build project:
 npm run build
 ```
 
+---
+
 ## Code Quality
 
-Run quality checks before creating a pull request:
+Run quality checks before creating a pull request. All team members should run these commands before submitting code:
 
 ```bash
+npm run format:check
 npm run lint
 npm run typecheck
 npm run build
-npm run format:check
+npm run db:generate
+npm run test:e2e
+git diff --check
 ```
 
 Format code automatically:
@@ -100,19 +143,26 @@ Format code automatically:
 npm run format
 ```
 
-All team members should run these commands before submitting code.
+---
 
 ## Project Structure
 
 ```text
-src/
-├── app/
-├── components/
-├── features/
-├── lib/
-├── hooks/
-├── services/
-├── types/
-├── constants/
-└── utils/
+/
+├── app/                  # Next.js App Router pages and layouts
+├── components/           # Reusable UI and layout components
+├── lib/                  # Utility functions and store state
+├── hooks/                # Custom React hooks
+├── src/db/               # Database connection and config
+├── src/actions/          # Server Actions
+├── src/services/         # Backend services and data fetching
+├── docs/                 # Documentation
+├── tests/                # Playwright end-to-end tests
+└── drizzle/              # Drizzle ORM migration files
 ```
+
+For full details on the workflow, environment setups, and project constraints, please read:
+
+- `docs/onboarding.md`
+- `docs/deployment.md`
+- `docs/project-bible.md`
