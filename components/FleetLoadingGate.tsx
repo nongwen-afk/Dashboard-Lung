@@ -10,15 +10,14 @@ export function FleetLoadingGate({ children }: { children: React.ReactNode }) {
   const hasHydratedFleetData = useFleetStore((state) => state.hasHydratedFleetData);
   const error = useFleetStore((state) => state.error);
 
+  if (hasHydratedFleetData) {
+    return <>{children}</>;
+  }
+
   if (error) {
     return <FleetLoadingScreen error={error} />;
   }
 
-  // If currently loading and we don't have data yet, show the full-page loading screen
-  if (isLoading || !hasHydratedFleetData) {
-    return <FleetLoadingScreen />;
-  }
-
-  // If data is ready, render the children
-  return <>{children}</>;
+  // Fallback to loading screen if we haven't hydrated yet
+  return <FleetLoadingScreen />;
 }

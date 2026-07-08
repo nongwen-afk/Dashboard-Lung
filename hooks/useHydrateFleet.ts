@@ -14,15 +14,15 @@ export function useHydrateFleet() {
 
   useEffect(() => {
     // Check if store is already populated to avoid duplicate fetches on soft navigation
-    const isAlreadyLoaded = useFleetStore.getState().routes.length > 0;
+    // We use hasHydratedFleetData rather than routes.length because the DB could be legitimately empty
+    const isAlreadyLoaded = useFleetStore.getState().hasHydratedFleetData;
 
     if (isAlreadyLoaded || hasFetched.current) {
-      // If we're already loaded, we just need to ensure isLoading is false
-      // (which hydrateFleetData already did)
       return;
     }
 
     hasFetched.current = true;
+    useFleetStore.setState({ isLoading: true, error: null });
 
     async function loadData() {
       try {
@@ -48,6 +48,7 @@ export function useHydrateFleet() {
           assignmentsRes.data || []
         );
 
+        // hydrateFleetData automatically sets hasHydratedFleetData = true and isLoading = false
         hydrateFleetData(mappedRoutes, mappedDrivers, mappedReserves);
       } catch (err) {
         console.error("Fleet hydration error:", err);

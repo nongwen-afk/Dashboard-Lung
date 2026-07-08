@@ -93,7 +93,7 @@ export function LoginView() {
                   onChange={(e) => setSelectedDriverId(e.target.value)}
                   className="w-full p-4 bg-gray-900/50 border border-white/10 rounded-2xl focus:ring-2 focus:ring-green-500/50 focus:border-green-500 outline-none transition-all shadow-inner text-white appearance-none"
                   required
-                  disabled={isLoading || !!error}
+                  disabled={isLoading || !!error || drivers.length === 0}
                 >
                   {isLoading ? (
                     <option value="" disabled className="bg-gray-800 text-gray-400">
@@ -102,6 +102,10 @@ export function LoginView() {
                   ) : error ? (
                     <option value="" disabled className="bg-gray-800 text-red-400">
                       Failed to load drivers
+                    </option>
+                  ) : drivers.length === 0 ? (
+                    <option value="" disabled className="bg-gray-800 text-gray-400">
+                      No driver accounts found
                     </option>
                   ) : (
                     <>
