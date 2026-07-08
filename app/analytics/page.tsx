@@ -5,6 +5,8 @@ import { AnalyticsDashboard } from "@/components/analytics/AnalyticsDashboard";
 import { fetchInitialFleetData } from "@/lib/server/fleet-data";
 import { FleetDataProvider } from "@/components/FleetDataProvider";
 
+export const dynamic = "force-dynamic";
+
 export default async function AnalyticsPage() {
   const { mappedRoutes, mappedDrivers, mappedReserves } = await fetchInitialFleetData();
 

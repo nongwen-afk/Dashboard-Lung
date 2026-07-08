@@ -5,6 +5,8 @@ import { DriverDashboard } from "@/components/drivers/DriverDashboard";
 import { fetchInitialFleetData } from "@/lib/server/fleet-data";
 import { FleetDataProvider } from "@/components/FleetDataProvider";
 
+export const dynamic = "force-dynamic";
+
 export default async function DriversPage() {
   const { mappedRoutes, mappedDrivers, mappedReserves } = await fetchInitialFleetData();
 
