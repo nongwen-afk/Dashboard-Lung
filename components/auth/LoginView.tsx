@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { useFleetStore } from "@/lib/store/fleetStore";
+import { useHydrateFleet } from "@/hooks/useHydrateFleet";
 
-import { Bus, ShieldAlert, User, ChevronRight } from "lucide-react";
+import { Bus, ShieldAlert, User, ChevronRight, Loader2 } from "lucide-react";
 
 export function LoginView() {
   // NOTE: This is a temporary UI-only mock auth flow for demo/navigation parity with pleum.
   // Real authentication will be handled by Better Auth later.
   // Do NOT connect this to the real auth database.
+  const { isLoading, error } = useHydrateFleet();
   const drivers = useFleetStore((state) => state.drivers);
   const { loginDispatcher, loginDriver } = useFleetStore();
   const [selectedRole, setSelectedRole] = useState<"none" | "dispatcher" | "driver">("none");
@@ -91,18 +93,35 @@ export function LoginView() {
                   onChange={(e) => setSelectedDriverId(e.target.value)}
                   className="w-full p-4 bg-gray-900/50 border border-white/10 rounded-2xl focus:ring-2 focus:ring-green-500/50 focus:border-green-500 outline-none transition-all shadow-inner text-white appearance-none"
                   required
+                  disabled={isLoading || !!error}
                 >
-                  <option value="" disabled className="bg-gray-800 text-gray-400">
-                    Select your name...
-                  </option>
-                  {drivers.map((d) => (
-                    <option key={d.id} value={d.id} className="bg-gray-800 text-white">
-                      {d.code} - {d.name} {d.surname} ({d.route})
+                  {isLoading ? (
+                    <option value="" disabled className="bg-gray-800 text-gray-400">
+                      Loading driver accounts...
                     </option>
-                  ))}
+                  ) : error ? (
+                    <option value="" disabled className="bg-gray-800 text-red-400">
+                      Failed to load drivers
+                    </option>
+                  ) : (
+                    <>
+                      <option value="" disabled className="bg-gray-800 text-gray-400">
+                        Select your name...
+                      </option>
+                      {drivers.map((d) => (
+                        <option key={d.id} value={d.id} className="bg-gray-800 text-white">
+                          {d.code} - {d.name} {d.surname} ({d.route})
+                        </option>
+                      ))}
+                    </>
+                  )}
                 </select>
                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
-                  <ChevronRight className="w-5 h-5 rotate-90" />
+                  {isLoading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <ChevronRight className="w-5 h-5 rotate-90" />
+                  )}
                 </div>
               </div>
             </div>
@@ -117,7 +136,8 @@ export function LoginView() {
               </button>
               <button
                 type="submit"
-                className="flex-1 px-4 py-4 text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 rounded-2xl font-medium transition-all duration-300 shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5"
+                disabled={isLoading || !!error || !selectedDriverId}
+                className="flex-1 px-4 py-4 text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 rounded-2xl font-medium transition-all duration-300 shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:shadow-[0_0_30px_rgba(34,197,94,0.5)] transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:-translate-y-0"
               >
                 Sign In
               </button>
