@@ -9,7 +9,6 @@ import { FleetLoadingGate } from "@/components/FleetLoadingGate";
 
 export function DriverDashboard() {
   const drivers = useFleetStore((state) => state.drivers);
-
   const [search, setSearch] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
