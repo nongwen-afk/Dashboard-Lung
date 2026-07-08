@@ -2,40 +2,16 @@
 
 import React, { useState } from "react";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { useHydrateFleet } from "@/hooks/useHydrateFleet";
+import { useSharedFleetData } from "@/components/FleetDataProvider";
 import { Driver } from "@/types";
 import { DriverDetailsModal } from "./DriverDetailsModal";
-import { Search, ShieldCheck, Clock, Users, Loader2 } from "lucide-react";
+import { Search, ShieldCheck, Clock, Users } from "lucide-react";
 
 export function DriverDashboard() {
-  const { isLoading, error } = useHydrateFleet();
-  const drivers = useFleetStore((state) => state.drivers);
+  const { drivers } = useSharedFleetData();
 
   const [search, setSearch] = useState("");
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
-
-  if (isLoading) {
-    return (
-      <div className="flex h-64 w-full items-center justify-center flex-col gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-        <p className="text-slate-600 font-medium">Loading Drivers Data...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex h-64 w-full items-center justify-center flex-col gap-4">
-        <p className="text-red-500 font-medium text-lg">{error}</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Retry
-        </button>
-      </div>
-    );
-  }
 
   const filteredDrivers = drivers.filter((d) =>
     `${d.name} ${d.surname} ${d.code} ${d.vehicle}`.toLowerCase().includes(search.toLowerCase())
