@@ -103,7 +103,15 @@ export function SimulationView() {
 
           {/* Right: route coverage badges + pool indicator */}
           <div className="flex-1 min-w-0 flex justify-start md:justify-end">
-            <div className="flex items-center gap-2 overflow-x-auto overflow-y-hidden pb-1 -mb-1 max-w-full" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div 
+              className="flex items-center gap-2 overflow-x-auto overflow-y-hidden pb-1 -mb-1 max-w-full" 
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              onWheel={(e) => {
+                if (e.deltaY !== 0) {
+                  e.currentTarget.scrollLeft += e.deltaY;
+                }
+              }}
+            >
               
             {/* View Tabs */}
             <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200 mr-2">

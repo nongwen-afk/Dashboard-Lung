@@ -267,12 +267,33 @@ export function SimGanttBoard({ multiResult, tripDurations, otThresholdHours, ac
                     <div className="absolute inset-0 pointer-events-none" style={{ background: di % 2 === 0 ? "transparent" : "rgba(0,0,0,0.02)", borderRight: "1px solid rgba(0,0,0,0.04)" }} />
 
                     {/* OT zone overlay */}
-                    {driver.trips.length > 0 && otStartMin < driver.endMin && (
+                    {driver.trips.length > 0 && otStartMin < driver.endMin && driver.offShiftMin === undefined && (
                       <div
                         className="absolute pointer-events-none"
                         style={{ left: 4, right: 4, top: minToPx(otStartMin), height: Math.max(0, (driver.endMin - otStartMin) * PX_PER_MIN), background: "rgba(249,115,22,0.07)", borderTop: "1.5px dashed rgba(249,115,22,0.5)", borderRadius: "0 0 4px 4px", zIndex: 0 }}
                       >
                         <span className="absolute top-0.5 left-1 text-[0.4rem] font-black" style={{ color: "rgba(251,146,60,0.7)" }}>OT</span>
+                      </div>
+                    )}
+
+                    {/* Off-shift block (Red "สิ้นสุดงาน") */}
+                    {driver.offShiftMin !== undefined && driver.trips.length > 0 && (
+                      <div
+                        className="absolute rounded-md cursor-pointer z-20 flex items-start justify-center pt-2"
+                        style={{ 
+                           left: 5, right: 5, 
+                           top: minToPx(driver.offShiftMin), 
+                           height: Math.max(20, (GANTT_END - driver.offShiftMin) * PX_PER_MIN), 
+                           background: "linear-gradient(135deg, #f87171, #ef4444)", 
+                           border: "1px solid rgba(255,255,255,0.6)", 
+                           borderRadius: '6px', 
+                           boxShadow: "0 4px 10px rgba(239,68,68,0.3), inset 0 1px 0 rgba(255,255,255,0.8)",
+                           overflow: "hidden"
+                        }}
+                      >
+                        <span className="text-[0.4rem] font-black text-center text-white" style={{ lineHeight: 1.2 }}>
+                          สิ้นสุดงาน<br/>{minToTime(driver.offShiftMin)}
+                        </span>
                       </div>
                     )}
 

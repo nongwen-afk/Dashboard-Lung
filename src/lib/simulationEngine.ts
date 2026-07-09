@@ -132,14 +132,15 @@ export interface TripAssignment {
 export interface DriverShift {
   driverIndex: number;
   name: string;
-  trips: TripAssignment[];
-  breaks: BreakEvent[];
   startMin: number;
   endMin: number;
-  workMinutes: number;    // actual work time
+  workMinutes: number;
   breakMinutes: number;
+  trips: TripAssignment[];
+  breaks: BreakEvent[];
   otCount: number;
   otPay: number;
+  offShiftMin?: number;
 }
 
 /** How breaks are scheduled.
@@ -180,6 +181,8 @@ export interface SimConfig {
   otPayPerSession: number;  // baht per OT session (default 400)
   maxWorkingDrivers?: number;
   customDepartures?: Record<RouteKey, Record<DayTypeKey, number[]>>;
+  allowedOTDrivers?: boolean[];
+  customShiftStarts?: string[];
 }
 
 export interface SimResult {
@@ -266,6 +269,15 @@ export function runSimulation(config: SimConfig): SimResult {
   const driverLastBreakAt: number[] = new Array(driverNames.length).fill(0);
   const driverWorkStart: number[] = new Array(driverNames.length).fill(-1);
 
+  for (let d = 0; d < driverNames.length; d++) {
+    if (d < regularCount && config.customShiftStarts && config.customShiftStarts[d]) {
+      const [h, m] = config.customShiftStarts[d].split(":").map(Number);
+      if (!isNaN(h) && !isNaN(m)) {
+        driverAvailableAt[d] = h * 60 + m;
+      }
+    }
+  }
+
   const otThresholdMin = otThresholdHours * 60;
   const restThresholdMin = restAfterHours * 60;
   const BREAK_DURATION = 30;
@@ -310,14 +322,20 @@ export function runSimulation(config: SimConfig): SimResult {
     if (breakMode === "smart" || breakMode === "cumulative") {
       for (let d = 0; d < driverNames.length; d++) {
         if (driverWorkStart[d] !== -1) {
+          const workSoFar = Math.max(0, dep - driverWorkStart[d]);
+          const isOffShift = (config.allowedOTDrivers && config.allowedOTDrivers[d] === false) && (workSoFar >= otThresholdMin);
+          if (isOffShift) continue;
+
           const limit = driverLastBreakAt[d] + restThresholdMin;
-          if (dep >= limit) {
-             // For cumulative, insert exactly at the limit (ชนก็ชน). For smart, wait until they are free.
-             const breakStart = breakMode === "cumulative" ? limit : Math.max(driverAvailableAt[d], limit);
+          const projectedSinceBreak = (dep - driverLastBreakAt[d]) + tripDurationMin;
+          
+          if (dep >= limit || (breakMode === "smart" && projectedSinceBreak > restThresholdMin)) {
+             const breakStart = breakMode === "cumulative" ? limit : Math.max(driverAvailableAt[d], driverLastBreakAt[d]);
              const breakEnd = breakStart + BREAK_DURATION;
+             
              driverBreaks[d].push({ startMin: breakStart, endMin: breakEnd, driverIndex: d });
              driverAvailableAt[d] = Math.max(driverAvailableAt[d], breakEnd);
-             driverLastBreakAt[d] = breakEnd;
+             driverLastBreakAt[d] = breakMode === "smart" ? Math.max(breakEnd, dep) : breakEnd;
           }
         }
       }
@@ -337,6 +355,11 @@ export function runSimulation(config: SimConfig): SimResult {
       }
       // Busy check
       if (driverAvailableAt[d] > dep) return false;
+
+      // Off-shift check (No OT)
+      const workSoFar = driverWorkStart[d] !== -1 ? Math.max(0, dep - driverWorkStart[d]) : 0;
+      const isOffShift = (config.allowedOTDrivers && config.allowedOTDrivers[d] === false) && (workSoFar >= otThresholdMin);
+      if (isOffShift) return false;
 
       const tripEnd = dep + tripDurationMin;
 
@@ -404,12 +427,29 @@ export function runSimulation(config: SimConfig): SimResult {
         isOverlapping = true;
         overlappedTrips++;
         let minAvail = Infinity;
+        let bestCandidate = -1;
+
         for (let d = 0; d < workingCount; d++) {
+          const workSoFar = driverWorkStart[d] !== -1 ? Math.max(0, dep - driverWorkStart[d]) : 0;
+          const isOffShift = (config.allowedOTDrivers && config.allowedOTDrivers[d] === false) && (workSoFar >= otThresholdMin);
+          if (isOffShift) continue;
+
           if (driverAvailableAt[d] < minAvail) {
             minAvail = driverAvailableAt[d];
-            bestDriver = d;
+            bestCandidate = d;
           }
         }
+        
+        if (bestCandidate === -1) {
+          // If everyone is off-shift, we have no choice but to force assign to someone
+          for (let d = 0; d < workingCount; d++) {
+            if (driverAvailableAt[d] < minAvail) {
+              minAvail = driverAvailableAt[d];
+              bestCandidate = d;
+            }
+          }
+        }
+        bestDriver = bestCandidate;
       }
     }
 
@@ -488,11 +528,17 @@ export function runSimulation(config: SimConfig): SimResult {
     const startMin = trips[0].departureMin;
     const endMin = trips[trips.length - 1].departureMin + tripDurationMin;
     const workMinutes = endMin - startMin;
-    const breakMinutes = breaks.reduce((s, b) => s + (b.endMin - b.startMin), 0);
+    const validBreaks = breaks.filter(b => b.startMin < endMin);
+    const breakMinutes = validBreaks.reduce((sum, b) => sum + (b.endMin - b.startMin), 0);
     const otCount = trips.filter(t => t.isOT).length;
     const otPay = otCount > 0 ? Math.ceil(otCount / 5) * otPayPerSession : 0;
 
-    return { driverIndex: d, name, trips, breaks, startMin, endMin, workMinutes, breakMinutes, otCount, otPay };
+    let offShiftMin = undefined;
+    if (driverWorkStart[d] !== -1 && config.allowedOTDrivers && config.allowedOTDrivers[d] === false) {
+       offShiftMin = driverWorkStart[d] + otThresholdMin;
+    }
+
+    return { driverIndex: d, name, trips, breaks: validBreaks, startMin, endMin, workMinutes, breakMinutes, otCount, otPay, offShiftMin };
   }).filter(d => d.trips.length > 0);
 
   // ── Summary stats ────────────────────────────────────────────────────
@@ -562,6 +608,8 @@ export interface SharedSimConfig {
   simulationDay: number;
   enableDayOff: boolean;
   rotateRoutes: boolean;
+  allowedOTDrivers?: Partial<Record<RouteKey, boolean[]>>;
+  customShiftStarts?: Partial<Record<RouteKey, string[]>>;
   customDepartures?: Record<RouteKey, Record<DayTypeKey, number[]>>;
 }
 
@@ -654,7 +702,7 @@ export function runAllRoutes(
     if (customDriverNames.length === 0) {
       // No drivers assigned — return empty result
       return {
-        config: { route, numDrivers: 0, numOTDrivers: 0, customDriverNames: [], ...shared, tripDurationMin: shared.tripDurations[route], crossLineAssist: false },
+        config: { route, numDrivers: 0, numOTDrivers: 0, customDriverNames: [], ...shared, tripDurationMin: shared.tripDurations[route], crossLineAssist: false } as any,
         departures: shared.customDepartures ? shared.customDepartures[route][shared.dayType] : ROUTE_DEPARTURES[route][shared.dayType],
         drivers: [],
         totalTrips: shared.customDepartures ? shared.customDepartures[route][shared.dayType].length : ROUTE_DEPARTURES[route][shared.dayType].length,
@@ -689,6 +737,8 @@ export function runAllRoutes(
       shortStaffPolicy: shared.shortStaffPolicy,
       crossLineAssist: shared.crossLineAssist && route === "green",
       tripDurationMin: shared.tripDurations[route],
+      allowedOTDrivers: shared.allowedOTDrivers?.[route],
+      customShiftStarts: shared.customShiftStarts?.[route],
       otPayPerSession: shared.otPayPerSession,
       maxWorkingDrivers,
       customDepartures: shared.customDepartures,

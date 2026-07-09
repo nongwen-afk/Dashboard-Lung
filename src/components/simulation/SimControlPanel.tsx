@@ -343,7 +343,65 @@ export function SimControlPanel({ config, multiResult, onChange, onReset }: Prop
           onChange={() => onChange({ rotateRoutes: !config.rotateRoutes })}
         />
 
-        {/* ── Work rules ── */}
+        {/* ── Driver Control ── */}
+        <SectionLabel>คนขับ & เวลาเริ่มงาน (STAGGERED STARTS)</SectionLabel>
+        {Object.keys(multiResult).map((route) => {
+           const routeDrivers = multiResult[route as RouteKey]?.config.customDriverNames || [];
+           if (routeDrivers.length === 0) return null;
+           const routeColor = ROUTE_META[route as RouteKey].color;
+           return (
+             <div key={route} className="mb-4">
+                <p className="text-xs font-bold mb-2" style={{ color: routeColor }}>{ROUTE_META[route as RouteKey].label}</p>
+                <div className="grid grid-cols-2 gap-2">
+                   {routeDrivers.map((name, idx) => {
+                      const currentStarts = config.customShiftStarts?.[route as RouteKey] || [];
+                      const val = currentStarts[idx] || "";
+                      const allowedOT = config.allowedOTDrivers?.[route as RouteKey]?.[idx] ?? true;
+                      
+                      return (
+                         <div key={idx} className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-2">
+                            <span className="text-xs text-slate-600 truncate mr-2 flex-1" title={name}>{name}</span>
+                            
+                            <button
+                              onClick={() => {
+                                const newAllowed = [...(config.allowedOTDrivers?.[route as RouteKey] || new Array(routeDrivers.length).fill(true))];
+                                newAllowed[idx] = !allowedOT;
+                                onChange({
+                                  allowedOTDrivers: {
+                                    ...(config.allowedOTDrivers || {}),
+                                    [route as RouteKey]: newAllowed
+                                  }
+                                });
+                              }}
+                              className={`text-[0.65rem] font-bold px-1.5 py-1 rounded border mr-2 transition-colors ${allowedOT ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-slate-100 text-slate-400 border-slate-200'}`}
+                            >
+                              {allowedOT ? 'OT' : 'No OT'}
+                            </button>
+
+                            <input 
+                               type="time" 
+                               className="text-xs font-mono bg-white border border-slate-300 rounded px-1.5 py-1 outline-none focus:border-indigo-500 w-[72px]"
+                               value={val}
+                               onChange={(e) => {
+                                  const newStarts = [...currentStarts];
+                                  newStarts[idx] = e.target.value;
+                                  onChange({
+                                     customShiftStarts: {
+                                        ...(config.customShiftStarts || {}),
+                                        [route as RouteKey]: newStarts
+                                     }
+                                  });
+                               }}
+                            />
+                         </div>
+                      );
+                   })}
+                </div>
+             </div>
+           );
+        })}
+
+        {/* ── Custom Departures ── */}
         <SectionLabel>กฎการทำงาน</SectionLabel>
         <Slider label="OT Threshold" value={config.otThresholdHours} min={4} max={12} unit=" ชม." color="#64748b" onChange={v => onChange({ otThresholdHours: v })} hint="เกินกี่ชั่วโมงถึงนับ OT" />
         <Slider label="ค่า OT ต่อครั้ง" value={config.otPayPerSession} min={100} max={1000} step={50} unit=" ฿" color="#64748b" onChange={v => onChange({ otPayPerSession: v })} />
