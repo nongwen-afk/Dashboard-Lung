@@ -20,6 +20,8 @@ export interface Driver {
     avgDelay: number; // Minutes
     rating: number; // 0-5
     totalTrips: number;
+    otDays: number; // เหมาวัน OT
+    tripsByRoute?: { L1: number; L2: number; L3: number };
   };
 }
 

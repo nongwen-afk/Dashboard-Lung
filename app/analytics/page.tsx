@@ -21,10 +21,10 @@ export default function AnalyticsPage() {
           <div className="max-w-7xl mx-auto space-y-6 pb-20 md:pb-6">
             {/* Header Section */}
             <div>
-              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight">
+              <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight">
                 Fleet Analytics
               </h1>
-              <p className="text-sm md:text-base text-slate-500 mt-1">
+              <p className="text-lg md:text-xl text-slate-500 mt-1">
                 ภาพรวมประสิทธิภาพการเดินรถและสถิติการดำเนินงาน
               </p>
             </div>
