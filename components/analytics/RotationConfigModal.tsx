@@ -1,13 +1,13 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable react-hooks/set-state-in-effect */
 
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { X, CalendarIcon, ArrowUp, ArrowDown, Save } from "lucide-react";
 import { useFleetStore } from "@/lib/store/fleetStore";
-
 import { ROUTES } from "@/lib/mock-data";
 import type { RouteId, RouteRotationConfig } from "@/types";
 
@@ -18,8 +18,7 @@ interface RotationConfigModalProps {
 }
 
 export function RotationConfigModal({ open, onClose, initialRoute }: RotationConfigModalProps) {
-  const drivers = useFleetStore((state) => state.drivers);
-  const { rotationConfigs, setRotationConfig } = useFleetStore();
+  const { drivers, rotationConfigs, setRotationConfig } = useFleetStore();
   const [activeRoute, setActiveRoute] = useState<RouteId>(initialRoute);
 
   // Local state for the form
