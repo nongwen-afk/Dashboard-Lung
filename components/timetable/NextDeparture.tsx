@@ -1,131 +1,92 @@
-/* eslint-disable react-hooks/set-state-in-effect */
-
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import { Clock, AlarmClock } from "lucide-react";
-import { getNextDepartures, getMinutesUntilNext } from "@/lib/mock-data/timetables";
+import { getMinutesUntilNext, getAllDepartures } from "@/lib/mock-data/timetables";
 import { getDriverForTrip } from "@/lib/shiftRotation";
 import type { RouteId } from "@/types";
 
 interface NextDepartureProps {
   routeId: RouteId;
   color: string;
+  now: Date;
 }
 
-export function NextDeparture({ routeId, color }: NextDepartureProps) {
-  const [departures, setDepartures] = useState<{ time: string; tripIndex: number }[]>([]);
-  const [countdown, setCountdown] = useState<{
-    minutes: number;
-    seconds: number;
-    time: string;
-    tripIndex: number;
-  } | null>(null);
-  const [blink, setBlink] = useState(true);
+export function NextDeparture({ routeId, color, now }: NextDepartureProps) {
+  const countdown = getMinutesUntilNext(routeId, now);
+  const blink = now.getSeconds() % 2 === 0;
 
-  useEffect(() => {
-    /* Update list of next departures every 30 s */
-    const refreshDepartures = () => setDepartures(getNextDepartures(routeId, new Date(), 3));
-    refreshDepartures();
-    const deptId = setInterval(refreshDepartures, 30_000);
+  const passedTrips = useMemo(() => {
+    const allDepts = getAllDepartures(routeId, now);
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    let passed = 0;
+    for (const d of allDepts) {
+      const [hStr, mStr] = d.time.split(":");
+      const h = parseInt(hStr, 10);
+      const m = parseInt(mStr, 10);
+      if (h < currentHour || (h === currentHour && m <= currentMinute)) {
+        passed++;
+      } else {
+        break;
+      }
+    }
+    return passed;
+  }, [routeId, now]);
 
-    /* Update countdown every second */
-    const tickId = setInterval(() => {
-      const result = getMinutesUntilNext(routeId, new Date());
-      setCountdown(result);
-    }, 1_000);
-    // Kick off immediately
-    setCountdown(getMinutesUntilNext(routeId, new Date()));
-
-    /* Blink toggle every 800 ms */
-    const blinkId = setInterval(() => setBlink((b) => !b), 800);
-
-    return () => {
-      clearInterval(deptId);
-      clearInterval(tickId);
-      clearInterval(blinkId);
-    };
-  }, [routeId]);
-
-  /* Urgency thresholds */
-  const mins = countdown?.minutes ?? Infinity;
-  const isUrgent = mins <= 3; // ≤3 min → bright red fast blink
-  const isWarning = mins <= 8; // ≤8 min → amber slow blink
-  const urgentColor = "#ef4444";
-  const warningColor = "#f59e0b";
-
-  const badgeColor = isUrgent ? urgentColor : isWarning ? warningColor : color;
+  const badgeColor = color;
 
   const currentDriver = countdown
     ? getDriverForTrip(routeId, countdown.tripIndex, new Date())
     : null;
+
+  const routeTotal = routeId === "L1" ? 66 : routeId === "L2" ? 76 : 69;
+  const clampedPassed = Math.max(0, Math.min(routeTotal, passedTrips));
+  const remaining = routeTotal - clampedPassed;
+  const progressPercent = routeTotal > 0 ? (clampedPassed / routeTotal) * 100 : 0;
 
   return (
     <div className="mt-1">
       {/* ── Countdown strip ── */}
       {countdown ? (
         <div
-          className="flex items-center gap-1.5 rounded-lg px-1.5 py-1.5 mb-1.5"
-          style={{
-            background: isUrgent
-              ? `rgba(239,68,68,0.08)`
-              : isWarning
-                ? `rgba(245,158,11,0.08)`
-                : `${color}0d`,
-            border: `1px solid ${isUrgent ? "rgba(239,68,68,0.2)" : isWarning ? "rgba(245,158,11,0.2)" : `${color}25`}`,
-          }}
+          className="flex flex-col items-center justify-center rounded-2xl px-3 py-3 mb-2 mt-1"
+          style={{ background: `${color}08` }}
         >
-          <AlarmClock className="w-3.5 h-3.5 flex-shrink-0" style={{ color: badgeColor }} />
+          <div className="text-sm font-semibold text-slate-500">รอบถัดไป</div>
 
-          <div className="flex flex-col flex-1 min-w-0 justify-center">
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm text-gray-500 whitespace-nowrap">อีก</span>
-
-              {/* Minutes — the prominent countdown number */}
-              <span
-                className="font-extrabold tabular-nums leading-none"
-                style={{
-                  color: badgeColor,
-                  fontSize: isUrgent ? "28.8px" : isWarning ? "26.4px" : "24px",
-                  /* Blink by reducing opacity; urgent blinks faster (handled by blinkId) */
-                  opacity: isWarning || isUrgent ? (blink ? 1 : 0.25) : 1,
-                  transition: "opacity 0.15s ease",
-                  textShadow: isUrgent
-                    ? `0 0 12px rgba(239,68,68,0.6)`
-                    : isWarning
-                      ? `0 0 8px rgba(245,158,11,0.4)`
-                      : "none",
-                }}
-              >
-                {countdown.minutes}
-              </span>
-
-              <span className="text-sm font-semibold" style={{ color: badgeColor }}>
-                นาที
-              </span>
-            </div>
-
-            <div className="text-[0.7rem] text-slate-500 truncate w-full mt-0.5 leading-tight">
-              {String(countdown.seconds).padStart(2, "0")} วิ •{" "}
-              {currentDriver ? currentDriver.name : "ไม่พบคนขับ"}
-            </div>
-          </div>
-
-          {/* Next departure time badge */}
-          <span
-            className="text-sm font-bold px-1.5 py-0.5 rounded-full flex-shrink-0 tabular-nums"
+          <div
+            className="mt-2 inline-flex rounded-full px-3 py-0.5 text-sm font-bold tracking-wide"
             style={{
-              background: isUrgent
-                ? "rgba(239,68,68,0.15)"
-                : isWarning
-                  ? "rgba(245,158,11,0.12)"
-                  : `${color}18`,
+              backgroundColor: `${color}15`,
               color: badgeColor,
-              border: `1px solid ${isUrgent ? "rgba(239,68,68,0.3)" : isWarning ? "rgba(245,158,11,0.25)" : `${color}30`}`,
+              border: `1px solid ${color}30`,
             }}
           >
+            {currentDriver ? `รถ ${currentDriver.vehicle}` : "ไม่พบรถ"}
+          </div>
+
+          <div
+            className="text-4xl font-bold tabular-nums tracking-tight mt-2"
+            style={{ color: badgeColor }}
+          >
             {countdown.time}
-          </span>
+          </div>
+
+          <div
+            className="mt-1 flex items-center justify-center gap-1.5 text-base font-semibold"
+            style={{ color: badgeColor }}
+          >
+            <AlarmClock className="w-4 h-4" />
+            <span
+              style={{
+                opacity: blink ? 1 : 0.8,
+                transition: "opacity 0.15s ease",
+              }}
+            >
+              อีก {countdown.minutes} นาที
+            </span>
+          </div>
         </div>
       ) : (
         <div
@@ -140,36 +101,27 @@ export function NextDeparture({ routeId, color }: NextDepartureProps) {
         </div>
       )}
 
-      {/* ── Upcoming departures row ── */}
-      <div className="flex items-center gap-1 flex-wrap">
-        <Clock className="w-3 h-3 flex-shrink-0 text-gray-400" />
-        {departures.length > 0 ? (
-          departures.map((dept, i) => {
-            const driver = getDriverForTrip(routeId, dept.tripIndex, new Date());
-            return (
-              <span
-                key={i}
-                className="text-sm px-1.5 py-0.5 rounded border flex items-center gap-1"
-                style={{
-                  background: "rgba(248,249,252,0.8)",
-                  borderColor: "rgba(148,163,184,0.2)",
-                  color: "#64748b",
-                }}
-                title={driver ? `รอบของ: ${driver.name} ${driver.surname}` : ""}
-              >
-                {dept.time}
-                {driver && (
-                  <span className="text-slate-400 truncate max-w-[3rem] hidden sm:inline-block">
-                    {" "}
-                    {driver.name}
-                  </span>
-                )}
-              </span>
-            );
-          })
-        ) : (
-          <span className="text-sm text-gray-400">ไม่มีรอบถัดไป</span>
-        )}
+      {/* ── Route Progress ── */}
+      <div className="w-full flex flex-col space-y-2 mt-4 px-1">
+        <div className="grid grid-cols-[minmax(0,1fr)_64px] items-center gap-2">
+          <span className="text-sm font-semibold text-slate-500 truncate">รอบวิ่งวันนี้</span>
+          <span
+            className="text-base font-bold tabular-nums text-right whitespace-nowrap"
+            style={{ color }}
+          >
+            {clampedPassed}/{routeTotal}
+          </span>
+        </div>
+        <div className="w-full bg-slate-100/80 rounded-full h-2 overflow-hidden">
+          <div
+            className="h-full rounded-full transition-all duration-500"
+            style={{ width: `${progressPercent}%`, backgroundColor: color }}
+          />
+        </div>
+        <div className="grid grid-cols-[minmax(0,1fr)_64px] items-center gap-2 text-xs font-medium text-slate-400">
+          <span className="truncate">ผ่านแล้ว {clampedPassed}</span>
+          <span className="tabular-nums text-right whitespace-nowrap">เหลือ {remaining}</span>
+        </div>
       </div>
     </div>
   );

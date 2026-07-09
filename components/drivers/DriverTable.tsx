@@ -1,6 +1,5 @@
 "use client";
 
-import { Avatar } from "@/components/ui/Avatar";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useFleetStore } from "@/lib/store/fleetStore";
@@ -23,6 +22,8 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
     setSearchQuery,
     openModal,
     panelsCollapsed,
+    focusDriverId,
+    setFocusDriverId,
   } = useFleetStore();
 
   const filtered = [...useFilteredDrivers()].sort(
@@ -134,18 +135,18 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
             >
               {(exp
                 ? [
-                    { label: "Lin.", w: "w-px" },
+                    { label: "LINE", w: "w-[88px]" },
                     { label: "Name", w: "w-full" },
-                    { label: "Vehicle", w: "w-px" },
-                    { label: "Status", w: "w-px" },
-                    { label: "Cap.", w: "w-px" },
-                    { label: "", w: "w-px" },
+                    { label: "Vehicle", w: "w-[110px]" },
+                    { label: "Status", w: "w-[110px]" },
+                    { label: "Cap.", w: "w-[140px]" },
+                    { label: "", w: "w-[140px]" },
                   ]
                 : [
-                    { label: "Lin.", w: "w-px" },
+                    { label: "LINE", w: "w-[76px]" },
                     { label: "Name", w: "w-full" },
-                    { label: "Vehicle", w: "w-px" },
-                    { label: "", w: "w-px" },
+                    { label: "Vehicle", w: "w-[96px]" },
+                    { label: "", w: "w-[132px]" },
                   ]
               ).map((col, i, arr) => {
                 const isFirst = i === 0;
@@ -172,39 +173,58 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
               filtered.map((d, idx) => {
                 const rc = ROUTE_COLORS[d.routeId] ?? "#8899bb";
                 const isLeave = d.status === "Leave";
+                const isSelected = d.id === focusDriverId;
+                const baseBg = idx % 2 === 0 ? "rgba(255,255,255,0.8)" : "rgba(248,249,252,0.7)";
+
                 return (
                   <tr
                     key={d.id}
-                    className="transition-colors duration-150"
+                    className="transition-colors duration-150 cursor-pointer"
+                    onClick={() => setFocusDriverId(d.id)}
                     style={{
-                      background: idx % 2 === 0 ? "rgba(255,255,255,0.8)" : "rgba(248,249,252,0.7)",
+                      background: isSelected ? `${rc}15` : baseBg,
                       borderBottom: "1px solid rgba(26,26,46,0.04)",
+                      boxShadow: isSelected ? `inset 3px 0 0 ${rc}` : "none",
                     }}
                     onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLTableRowElement).style.background =
-                        "rgba(37,99,235,0.04)";
+                      if (!isSelected) {
+                        (e.currentTarget as HTMLTableRowElement).style.background =
+                          "rgba(37,99,235,0.04)";
+                      }
                     }}
                     onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLTableRowElement).style.background =
-                        idx % 2 === 0 ? "rgba(255,255,255,0.8)" : "rgba(248,249,252,0.7)";
+                      if (!isSelected) {
+                        (e.currentTarget as HTMLTableRowElement).style.background = baseBg;
+                      }
                     }}
                   >
                     {/* Line badge */}
-                    <td className="pl-4 pr-2 py-2 w-px whitespace-nowrap">
+                    <td className="pl-4 pr-2 py-2 whitespace-nowrap">
                       <span
-                        className={`inline-block whitespace-nowrap font-bold text-white px-1.5 py-0.5 rounded ${exp ? "text-[0.75rem]" : "text-[0.6rem]"}`}
+                        className={`inline-block text-center whitespace-nowrap font-bold text-white px-2.5 py-0.5 rounded min-w-[52px] ${exp ? "text-[0.8rem]" : "text-[0.7rem]"}`}
                         style={{
                           background: `linear-gradient(135deg, ${rc}, ${rc}cc)`,
                           boxShadow: `0 1px 4px ${rc}40`,
                         }}
                       >
-                        {d.routeId.replace("L", "L ")}
+                        {(() => {
+                          const pfx =
+                            d.routeId === "L1"
+                              ? "RL"
+                              : d.routeId === "L2"
+                                ? "BL"
+                                : d.routeId === "L3"
+                                  ? "GL"
+                                  : "L";
+                          const match = d.vehicle.match(/(\d+)$/);
+                          const seq = match ? parseInt(match[1].slice(-2), 10) : "";
+                          return `${pfx}${seq}`;
+                        })()}
                       </span>
                     </td>
                     {/* Name */}
                     <td className="px-2 py-2 w-full">
-                      <div className="flex items-center gap-1.5">
-                        <Avatar name={d.name} size="xs" color={isLeave ? "#94a3b8" : rc} />
+                      <div className="flex items-center">
                         <div className="min-w-0 flex-1">
                           <span
                             className={`block leading-tight break-words ${isLeave ? "text-gray-400" : "text-[#0f172a] font-medium"} ${exp ? "text-[0.9rem]" : "text-[0.75rem]"}`}
@@ -260,7 +280,10 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
                         </span>
                       ) : (
                         <button
-                          onClick={() => openModal(d.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openModal(d.id);
+                          }}
                           className={`text-white font-bold rounded-md transition-all duration-200 active:scale-95 ${exp ? "text-[0.75rem] px-3 py-1.5" : "text-[0.6rem] px-2 py-1"}`}
                           style={{
                             background: "linear-gradient(135deg, #1e3a8a, #1e40af)",

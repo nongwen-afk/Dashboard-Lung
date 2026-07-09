@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Calendar, Clock } from "lucide-react";
 import { TIMETABLES } from "@/lib/mock-data/timetables";
 import { ROUTES } from "@/lib/mock-data";
@@ -17,6 +17,14 @@ interface TimetableViewProps {
 export function TimetableView({ open, onClose, initialRoute = "L1" }: TimetableViewProps) {
   const [activeRoute, setActiveRoute] = useState<RouteId>(initialRoute);
   const [dayType, setDayType] = useState<DayType>("weekday");
+
+  // Sync active route when modal opens with a new initialRoute
+  useEffect(() => {
+    if (open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setActiveRoute(initialRoute);
+    }
+  }, [open, initialRoute]);
 
   if (!open) return null;
 
