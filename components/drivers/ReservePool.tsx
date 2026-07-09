@@ -5,8 +5,7 @@ import { useFleetStore } from "@/lib/store/fleetStore";
 import { Users } from "lucide-react";
 
 export function ReservePool() {
-  const reserveDrivers = useFleetStore((state) => state.reserveDrivers);
-  const { panelsCollapsed } = useFleetStore();
+  const { reserveDrivers, panelsCollapsed } = useFleetStore();
 
   return (
     <div>

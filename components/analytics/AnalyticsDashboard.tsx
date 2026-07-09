@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
 "use client";
 
@@ -17,7 +18,6 @@ import { TrendingUp, Clock, Bus, Activity } from "lucide-react";
 import { CHART_DATA } from "@/lib/mock-data";
 import { useFleetStore } from "@/lib/store/fleetStore";
 import { FleetLoadingGate } from "@/components/FleetLoadingGate";
-
 import { ScheduleSimulator } from "./ScheduleSimulator";
 
 const BAR_COLORS = {
@@ -26,12 +26,20 @@ const BAR_COLORS = {
   delay: "#ef4444", // Red
 };
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: any[];
+  label?: string;
+}) => {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-white/90 backdrop-blur-md border border-slate-200 shadow-xl rounded-lg p-3 text-sm">
       <p className="font-bold text-slate-800 mb-2">{label}</p>
-      {payload.map((p: any) => (
+      {payload.map((p) => (
         <p key={p.dataKey} style={{ color: p.fill }} className="font-medium">
           {p.name}: <span className="font-bold">{p.value}</span>
         </p>
