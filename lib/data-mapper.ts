@@ -186,12 +186,23 @@ export function mapDriversAndReserves(
         status,
         experience: 5, // Stub
         performance: {
-          onTimeRate: 90 + Math.floor(Math.random() * 8), // Stub
-          avgDelay: 2 + Math.random() * 4, // Stub
-          rating: 4.0 + Math.random(), // Stub
-          totalTrips: 100 + Math.floor(Math.random() * 150), // Stub
+          onTimeRate: 94 + Math.floor(Math.random() * 5), // 94-98%
+          avgDelay: parseFloat((1 + Math.random() * 2).toFixed(1)), // 1.0 - 2.9 mins
+          rating: parseFloat((4.5 + Math.random() * 0.4).toFixed(1)), // 4.5 - 4.8
+          totalTrips: (() => {
+            const t = 95 + Math.floor(Math.random() * 15);
+            return t;
+          })(),
+          otDays: 1 + Math.floor(Math.random() * 3), // 1-3 days
         },
       });
+      
+      // Compute trips by route
+      const t = drivers[drivers.length - 1].performance!.totalTrips;
+      const l1 = Math.floor(t / 3) + Math.floor(Math.random() * 8) - 4;
+      const l2 = Math.floor(t / 3) + Math.floor(Math.random() * 8) - 4;
+      const l3 = t - l1 - l2;
+      drivers[drivers.length - 1].performance!.tripsByRoute = { L1: l1, L2: l2, L3: l3 };
     }
   }
 
