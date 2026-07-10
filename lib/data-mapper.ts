@@ -196,7 +196,7 @@ export function mapDriversAndReserves(
           otDays: 1 + Math.floor(Math.random() * 3), // 1-3 days
         },
       });
-      
+
       // Compute trips by route
       const t = drivers[drivers.length - 1].performance!.totalTrips;
       const l1 = Math.floor(t / 3) + Math.floor(Math.random() * 8) - 4;

@@ -88,7 +88,9 @@ export function ScheduleSimulator() {
             <CalendarDays className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-sm sm:text-base md:text-lg font-bold text-slate-800 whitespace-nowrap tracking-tight">จำลองตารางเวรคนขับล่วงหน้า</h2>
+            <h2 className="text-sm sm:text-base md:text-lg font-bold text-slate-800 whitespace-nowrap tracking-tight">
+              จำลองตารางเวรคนขับล่วงหน้า
+            </h2>
             <p className="text-sm text-slate-500">ตรวจสอบคิวคนขับตามรอบเวลาของแต่ละวัน</p>
           </div>
         </div>
@@ -221,10 +223,7 @@ export function ScheduleSimulator() {
             </thead>
             <tbody>
               {matrixData.allHours.map((hour, hourIdx) => (
-                <tr
-                  key={hour}
-                  className={hourIdx % 2 === 0 ? "bg-white" : "bg-slate-50/80"}
-                >
+                <tr key={hour} className={hourIdx % 2 === 0 ? "bg-white" : "bg-slate-50/80"}>
                   <td
                     className="sticky left-0 z-10 border-r border-slate-200 py-4 px-4 align-top text-center"
                     style={{ backgroundColor: hourIdx % 2 === 0 ? "white" : "#f8fafc" }}
@@ -243,10 +242,16 @@ export function ScheduleSimulator() {
                       >
                         <div className="flex flex-col gap-2">
                           {trips.length === 0 ? (
-                            <span className="text-slate-300 text-center text-xl font-bold py-2">-</span>
+                            <span className="text-slate-300 text-center text-xl font-bold py-2">
+                              -
+                            </span>
                           ) : (
                             trips.map(({ minute, tripIndex }) => {
-                              const driver = getDriverForTrip(route.id as RouteId, tripIndex, selectedDate);
+                              const driver = getDriverForTrip(
+                                route.id as RouteId,
+                                tripIndex,
+                                selectedDate
+                              );
                               const isLeave = driver?.status === "Leave";
                               const isSubstitute = driver?.status === "Substitute";
 
@@ -258,7 +263,11 @@ export function ScheduleSimulator() {
                                 <div
                                   key={minute}
                                   className="group flex items-center gap-2.5 px-3 py-2 rounded-xl hover:bg-slate-100 transition-colors cursor-default"
-                                  title={driver ? `${driver.name} ${driver.surname} (${driver.code})` : "ไม่มีคนขับ"}
+                                  title={
+                                    driver
+                                      ? `${driver.name} ${driver.surname} (${driver.code})`
+                                      : "ไม่มีคนขับ"
+                                  }
                                 >
                                   <span
                                     className="text-2xl font-extrabold shrink-0"
@@ -335,10 +344,7 @@ export function ScheduleSimulator() {
                 if (trips.length === 0) return null;
 
                 return (
-                  <div
-                    key={hour}
-                    className="flex"
-                  >
+                  <div key={hour} className="flex">
                     {/* Hour Label */}
                     <div className="w-20 shrink-0 flex items-start justify-center py-4 border-r border-slate-600 bg-slate-700">
                       <span className="font-black text-4xl text-white">
@@ -359,10 +365,7 @@ export function ScheduleSimulator() {
                           else if (isSubstitute) textColor = mobileRouteObj.color;
 
                           return (
-                            <div
-                              key={minute}
-                              className="flex flex-col items-center text-center"
-                            >
+                            <div key={minute} className="flex flex-col items-center text-center">
                               <span
                                 className="text-lg font-extrabold leading-tight"
                                 style={{ color: textColor }}

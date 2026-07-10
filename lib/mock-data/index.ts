@@ -51,7 +51,14 @@ export const DRIVERS: Driver[] = [
     capacity: 38,
     status: "Active",
     experience: 6,
-    performance: { onTimeRate: 94, avgDelay: parseFloat("1.6"), rating: parseFloat("4.8"), totalTrips: 101, otDays: 1, tripsByRoute: { L1: 36, L2: 29, L3: 36 } },
+    performance: {
+      onTimeRate: 94,
+      avgDelay: parseFloat("1.6"),
+      rating: parseFloat("4.8"),
+      totalTrips: 101,
+      otDays: 1,
+      tripsByRoute: { L1: 36, L2: 29, L3: 36 },
+    },
   },
   {
     id: 2,
@@ -64,7 +71,14 @@ export const DRIVERS: Driver[] = [
     capacity: 42,
     status: "Active",
     experience: 4,
-    performance: { onTimeRate: 96, avgDelay: parseFloat("1.7"), rating: parseFloat("4.8"), totalTrips: 100, otDays: 3, tripsByRoute: { L1: 33, L2: 36, L3: 31 } },
+    performance: {
+      onTimeRate: 96,
+      avgDelay: parseFloat("1.7"),
+      rating: parseFloat("4.8"),
+      totalTrips: 100,
+      otDays: 3,
+      tripsByRoute: { L1: 33, L2: 36, L3: 31 },
+    },
   },
   {
     id: 3,
@@ -77,7 +91,14 @@ export const DRIVERS: Driver[] = [
     capacity: 35,
     status: "Active",
     experience: 7,
-    performance: { onTimeRate: 96, avgDelay: parseFloat("2.1"), rating: parseFloat("4.7"), totalTrips: 104, otDays: 2, tripsByRoute: { L1: 35, L2: 34, L3: 35 } },
+    performance: {
+      onTimeRate: 96,
+      avgDelay: parseFloat("2.1"),
+      rating: parseFloat("4.7"),
+      totalTrips: 104,
+      otDays: 2,
+      tripsByRoute: { L1: 35, L2: 34, L3: 35 },
+    },
   },
   {
     id: 4,
@@ -90,7 +111,14 @@ export const DRIVERS: Driver[] = [
     capacity: 40,
     status: "Active",
     experience: 5,
-    performance: { onTimeRate: 94, avgDelay: parseFloat("1.4"), rating: parseFloat("4.6"), totalTrips: 95, otDays: 2, tripsByRoute: { L1: 34, L2: 27, L3: 34 } },
+    performance: {
+      onTimeRate: 94,
+      avgDelay: parseFloat("1.4"),
+      rating: parseFloat("4.6"),
+      totalTrips: 95,
+      otDays: 2,
+      tripsByRoute: { L1: 34, L2: 27, L3: 34 },
+    },
   },
   {
     id: 5,
@@ -103,7 +131,14 @@ export const DRIVERS: Driver[] = [
     capacity: 44,
     status: "Active",
     experience: 3,
-    performance: { onTimeRate: 98, avgDelay: parseFloat("1.6"), rating: parseFloat("4.8"), totalTrips: 105, otDays: 1, tripsByRoute: { L1: 33, L2: 35, L3: 37 } },
+    performance: {
+      onTimeRate: 98,
+      avgDelay: parseFloat("1.6"),
+      rating: parseFloat("4.8"),
+      totalTrips: 105,
+      otDays: 1,
+      tripsByRoute: { L1: 33, L2: 35, L3: 37 },
+    },
   },
 
   // ---- สายสีน้ำเงิน / Blue Line (L2) ----
@@ -118,7 +153,14 @@ export const DRIVERS: Driver[] = [
     capacity: 50,
     status: "Active",
     experience: 8,
-    performance: { onTimeRate: 98, avgDelay: parseFloat("2.5"), rating: parseFloat("4.7"), totalTrips: 97, otDays: 3, tripsByRoute: { L1: 29, L2: 30, L3: 38 } },
+    performance: {
+      onTimeRate: 98,
+      avgDelay: parseFloat("2.5"),
+      rating: parseFloat("4.7"),
+      totalTrips: 97,
+      otDays: 3,
+      tripsByRoute: { L1: 29, L2: 30, L3: 38 },
+    },
   },
   {
     id: 7,
@@ -131,7 +173,14 @@ export const DRIVERS: Driver[] = [
     capacity: 65,
     status: "Active",
     experience: 5,
-    performance: { onTimeRate: 96, avgDelay: parseFloat("2.8"), rating: parseFloat("4.9"), totalTrips: 107, otDays: 1, tripsByRoute: { L1: 36, L2: 37, L3: 34 } },
+    performance: {
+      onTimeRate: 96,
+      avgDelay: parseFloat("2.8"),
+      rating: parseFloat("4.9"),
+      totalTrips: 107,
+      otDays: 1,
+      tripsByRoute: { L1: 36, L2: 37, L3: 34 },
+    },
   },
   {
     id: 8,
@@ -144,7 +193,14 @@ export const DRIVERS: Driver[] = [
     capacity: 45,
     status: "Active",
     experience: 2,
-    performance: { onTimeRate: 94, avgDelay: parseFloat("2.9"), rating: parseFloat("4.8"), totalTrips: 107, otDays: 2, tripsByRoute: { L1: 33, L2: 33, L3: 41 } },
+    performance: {
+      onTimeRate: 94,
+      avgDelay: parseFloat("2.9"),
+      rating: parseFloat("4.8"),
+      totalTrips: 107,
+      otDays: 2,
+      tripsByRoute: { L1: 33, L2: 33, L3: 41 },
+    },
   },
   {
     id: 9,
@@ -157,7 +213,14 @@ export const DRIVERS: Driver[] = [
     capacity: 70,
     status: "Active",
     experience: 6,
-    performance: { onTimeRate: 97, avgDelay: parseFloat("1.6"), rating: parseFloat("4.5"), totalTrips: 95, otDays: 1, tripsByRoute: { L1: 34, L2: 30, L3: 31 } },
+    performance: {
+      onTimeRate: 97,
+      avgDelay: parseFloat("1.6"),
+      rating: parseFloat("4.5"),
+      totalTrips: 95,
+      otDays: 1,
+      tripsByRoute: { L1: 34, L2: 30, L3: 31 },
+    },
   },
   {
     id: 10,
@@ -170,7 +233,14 @@ export const DRIVERS: Driver[] = [
     capacity: 58,
     status: "Active",
     experience: 9,
-    performance: { onTimeRate: 95, avgDelay: parseFloat("2.8"), rating: parseFloat("4.7"), totalTrips: 98, otDays: 1, tripsByRoute: { L1: 35, L2: 29, L3: 34 } },
+    performance: {
+      onTimeRate: 95,
+      avgDelay: parseFloat("2.8"),
+      rating: parseFloat("4.7"),
+      totalTrips: 98,
+      otDays: 1,
+      tripsByRoute: { L1: 35, L2: 29, L3: 34 },
+    },
   },
 
   // ---- สายสีแดง / Red Line (L1) ----
@@ -185,7 +255,14 @@ export const DRIVERS: Driver[] = [
     capacity: 72,
     status: "Active",
     experience: 10,
-    performance: { onTimeRate: 95, avgDelay: parseFloat("1.5"), rating: parseFloat("4.7"), totalTrips: 109, otDays: 1, tripsByRoute: { L1: 37, L2: 33, L3: 39 } },
+    performance: {
+      onTimeRate: 95,
+      avgDelay: parseFloat("1.5"),
+      rating: parseFloat("4.7"),
+      totalTrips: 109,
+      otDays: 1,
+      tripsByRoute: { L1: 37, L2: 33, L3: 39 },
+    },
   },
   {
     id: 12,
@@ -198,7 +275,14 @@ export const DRIVERS: Driver[] = [
     capacity: 68,
     status: "Active",
     experience: 4,
-    performance: { onTimeRate: 97, avgDelay: parseFloat("2.6"), rating: parseFloat("4.9"), totalTrips: 95, otDays: 1, tripsByRoute: { L1: 33, L2: 27, L3: 35 } },
+    performance: {
+      onTimeRate: 97,
+      avgDelay: parseFloat("2.6"),
+      rating: parseFloat("4.9"),
+      totalTrips: 95,
+      otDays: 1,
+      tripsByRoute: { L1: 33, L2: 27, L3: 35 },
+    },
   },
   {
     id: 13,
@@ -211,7 +295,14 @@ export const DRIVERS: Driver[] = [
     capacity: 80,
     status: "Active",
     experience: 3,
-    performance: { onTimeRate: 94, avgDelay: parseFloat("2.4"), rating: parseFloat("4.8"), totalTrips: 108, otDays: 1, tripsByRoute: { L1: 34, L2: 37, L3: 37 } },
+    performance: {
+      onTimeRate: 94,
+      avgDelay: parseFloat("2.4"),
+      rating: parseFloat("4.8"),
+      totalTrips: 108,
+      otDays: 1,
+      tripsByRoute: { L1: 34, L2: 37, L3: 37 },
+    },
   },
   {
     id: 14,
@@ -224,7 +315,14 @@ export const DRIVERS: Driver[] = [
     capacity: 55,
     status: "Active",
     experience: 2,
-    performance: { onTimeRate: 98, avgDelay: parseFloat("2.9"), rating: parseFloat("4.7"), totalTrips: 96, otDays: 3, tripsByRoute: { L1: 32, L2: 33, L3: 31 } },
+    performance: {
+      onTimeRate: 98,
+      avgDelay: parseFloat("2.9"),
+      rating: parseFloat("4.7"),
+      totalTrips: 96,
+      otDays: 3,
+      tripsByRoute: { L1: 32, L2: 33, L3: 31 },
+    },
   },
   {
     id: 15,
@@ -237,7 +335,14 @@ export const DRIVERS: Driver[] = [
     capacity: 60,
     status: "Active",
     experience: 5,
-    performance: { onTimeRate: 97, avgDelay: parseFloat("1.4"), rating: parseFloat("4.7"), totalTrips: 104, otDays: 2, tripsByRoute: { L1: 32, L2: 31, L3: 41 } },
+    performance: {
+      onTimeRate: 97,
+      avgDelay: parseFloat("1.4"),
+      rating: parseFloat("4.7"),
+      totalTrips: 104,
+      otDays: 2,
+      tripsByRoute: { L1: 32, L2: 31, L3: 41 },
+    },
   },
 ];
 
