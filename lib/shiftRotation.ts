@@ -55,7 +55,10 @@ export function getDriverForTrip(
     driverIdToFind = routeDrivers[driverIndex].id;
   }
 
-  const originalDriver = routeDrivers.find((d) => d.id === driverIdToFind) || null;
+  const originalDriver =
+    routeDrivers.find((d) => d.id === driverIdToFind) ||
+    useFleetStore.getState().drivers.find((d) => d.id === driverIdToFind) ||
+    null;
   return getEffectiveDriver(originalDriver, date);
 }
 

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { RouteSection } from "./RouteSection";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/lib/store/fleetStore";
+import { getAllDepartures } from "@/lib/mock-data/timetables";
+import { useCurrentTime } from "@/hooks/useCurrentTime";
 
 import type { RouteId } from "@/types";
 import { CalendarClock, Activity, Maximize } from "lucide-react";
@@ -35,6 +37,31 @@ export function RouteOverviewPanel() {
 
   const totalActive = drivers.filter((d) => d.status !== "Leave").length;
   const totalLeave = drivers.filter((d) => d.status === "Leave").length;
+
+  const now = useCurrentTime(1000);
+
+  const totalPassed = useMemo(() => {
+    let passed = 0;
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    for (const r of routes) {
+      const depts = getAllDepartures(r.id, now);
+      for (const d of depts) {
+        const [hStr, mStr] = d.time.split(":");
+        const h = parseInt(hStr, 10);
+        const m = parseInt(mStr, 10);
+        if (h < currentHour || (h === currentHour && m <= currentMinute)) {
+          passed++;
+        }
+      }
+    }
+    return Math.max(0, Math.min(211, passed));
+  }, [routes, now]);
+
+  const totalTrips = 211;
+  const remainingTrips = Math.max(0, totalTrips - totalPassed);
+  const progressPercent = totalTrips > 0 ? (totalPassed / totalTrips) * 100 : 0;
 
   const openTimetable = (routeId: RouteId) => {
     setTimetableRoute(routeId);
@@ -76,7 +103,10 @@ export function RouteOverviewPanel() {
         />
 
         {/* Header */}
-        <div className="flex items-center justify-between mt-1 mb-2">
+        <div
+          className="sticky top-[-12px] z-20 flex items-center justify-between -mx-3 px-3 pt-4 pb-3 mb-4 bg-white/95 backdrop-blur-xl border-b border-slate-100 shadow-sm"
+          style={{ marginTop: -12 }}
+        >
           <div className="flex items-center gap-2">
             <div
               className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -135,14 +165,6 @@ export function RouteOverviewPanel() {
           </div>
         </div>
 
-        {/* Divider */}
-        <div
-          className="h-[0.0625rem] w-full mb-3"
-          style={{
-            background: "linear-gradient(90deg, transparent, rgba(26,26,46,0.08), transparent)",
-          }}
-        />
-
         {/* Stats bar — only in expanded mode */}
         {panelsCollapsed && (
           <div className="flex gap-2 mb-3">
@@ -169,22 +191,51 @@ export function RouteOverviewPanel() {
           </div>
         )}
 
+        {/* Total Trips Summary */}
+        <div className="rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-sm mb-4">
+          <div className="flex items-center justify-between font-bold text-[#0f172a]">
+            <span>รอบวิ่งรวมวันนี้</span>
+            <span className="text-[#1e3a8a]">
+              {totalPassed}/{totalTrips}
+            </span>
+          </div>
+          <div className="mt-3 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-500"
+              style={{
+                width: `${progressPercent}%`,
+                background: "linear-gradient(90deg, #1e3a8a, #3b82f6)",
+              }}
+            />
+          </div>
+          <div className="mt-2 flex items-center justify-between text-xs font-medium text-slate-400">
+            <span>ผ่านแล้ว {totalPassed}</span>
+            <span>เหลือ {remainingTrips}</span>
+          </div>
+        </div>
+
         {/* Routes list — stack when collapsed=false, 3-column grid when collapsed=true */}
         <div
           className={panelsCollapsed ? "grid grid-cols-3 gap-3 items-start" : "flex flex-col gap-3"}
         >
           {[...routes]
-            .sort((a, b) => a.id.localeCompare(b.id))
-            .map((route, i) => (
-              <RouteSection
-                key={route.id}
-                route={route}
-                drivers={byRoute[route.id] ?? []}
-                lineNum={i + 1}
-                onShowTimetable={() => openTimetable(route.id)}
-                expanded={panelsCollapsed}
-              />
-            ))}
+            .sort((a, b) => {
+              const order: Record<string, number> = { L1: 1, L2: 2, L3: 3 };
+              return (order[a.id] || 99) - (order[b.id] || 99);
+            })
+            .map((route) => {
+              const order: Record<string, number> = { L1: 1, L2: 2, L3: 3 };
+              return (
+                <RouteSection
+                  key={route.id}
+                  route={route}
+                  drivers={byRoute[route.id] ?? []}
+                  lineNum={order[route.id] || 0}
+                  onShowTimetable={() => openTimetable(route.id)}
+                  expanded={panelsCollapsed}
+                />
+              );
+            })}
         </div>
       </div>
 

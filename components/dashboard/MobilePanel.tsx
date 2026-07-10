@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Users, ChevronUp, ChevronDown, X } from "lucide-react";
 import { ReservePool } from "@/components/drivers/ReservePool";
 import { DriverTable } from "@/components/drivers/DriverTable";
 import { RouteSection } from "@/components/routes/RouteSection";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/lib/store/fleetStore";
+import { getAllDepartures } from "@/lib/mock-data/timetables";
+import { useCurrentTime } from "@/hooks/useCurrentTime";
 import type { RouteId } from "@/types";
 
 type SheetState = "peek" | "full";
@@ -28,6 +30,31 @@ export function MobilePanel() {
     L2: drivers.filter((d) => d.routeId === "L2"),
     L3: drivers.filter((d) => d.routeId === "L3"),
   };
+
+  const now = useCurrentTime(1000);
+
+  const totalPassed = useMemo(() => {
+    let passed = 0;
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    for (const r of routes) {
+      const depts = getAllDepartures(r.id, now);
+      for (const d of depts) {
+        const [hStr, mStr] = d.time.split(":");
+        const h = parseInt(hStr, 10);
+        const m = parseInt(mStr, 10);
+        if (h < currentHour || (h === currentHour && m <= currentMinute)) {
+          passed++;
+        }
+      }
+    }
+    return Math.max(0, Math.min(211, passed));
+  }, [routes, now]);
+
+  const totalTrips = 211;
+  const remainingTrips = Math.max(0, totalTrips - totalPassed);
+  const progressPercent = totalTrips > 0 ? (totalPassed / totalTrips) * 100 : 0;
 
   const openTimetable = (routeId: RouteId) => {
     setTimetableRoute(routeId);
@@ -171,17 +198,49 @@ export function MobilePanel() {
                 <h3 className="text-[0.875rem] font-bold text-[#0f172a]">Active Routes</h3>
                 <span className="text-[0.625rem] text-gray-400">ดูเวลาและตารางเดินรถ</span>
               </div>
-              <div className="flex flex-col gap-3">
-                {routes.map((route, i) => (
-                  <RouteSection
-                    key={route.id}
-                    route={route}
-                    drivers={byRoute[route.id] ?? []}
-                    lineNum={i + 1}
-                    onShowTimetable={() => openTimetable(route.id)}
-                    expanded={false}
+
+              {/* Mobile Total Trips Summary */}
+              <div className="rounded-2xl border border-slate-100 bg-white/80 p-3 shadow-sm mb-4">
+                <div className="flex items-center justify-between text-sm font-bold text-[#0f172a]">
+                  <span>รอบวิ่งรวมวันนี้</span>
+                  <span className="text-[#1e3a8a] text-base">
+                    {totalPassed}/{totalTrips}
+                  </span>
+                </div>
+                <div className="mt-2 h-2 w-full rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{
+                      width: `${progressPercent}%`,
+                      background: "linear-gradient(90deg, #1e3a8a, #3b82f6)",
+                    }}
                   />
-                ))}
+                </div>
+                <div className="mt-2 flex items-center justify-between text-xs font-medium text-slate-400">
+                  <span>ผ่านแล้ว {totalPassed}</span>
+                  <span>เหลือ {remainingTrips}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-3">
+                {[...routes]
+                  .sort((a, b) => {
+                    const order: Record<string, number> = { L1: 1, L2: 2, L3: 3 };
+                    return (order[a.id] || 99) - (order[b.id] || 99);
+                  })
+                  .map((route) => {
+                    const order: Record<string, number> = { L1: 1, L2: 2, L3: 3 };
+                    return (
+                      <RouteSection
+                        key={route.id}
+                        route={route}
+                        drivers={byRoute[route.id] ?? []}
+                        lineNum={order[route.id] || 0}
+                        onShowTimetable={() => openTimetable(route.id)}
+                        expanded={false}
+                      />
+                    );
+                  })}
               </div>
             </div>
 
