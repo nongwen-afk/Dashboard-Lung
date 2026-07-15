@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { RouteSection } from "./RouteSection";
+import { RouteVehiclesDialog } from "./RouteVehiclesDialog";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/lib/store/fleetStore";
 import { getAllDepartures } from "@/lib/mock-data/timetables";
@@ -10,7 +11,6 @@ import { useCurrentTime } from "@/hooks/useCurrentTime";
 import type { RouteId } from "@/types";
 import { CalendarClock, Activity, Maximize } from "lucide-react";
 import { PanelToggleButton } from "@/components/ui/PanelToggleButton";
-
 import { getEffectiveDriver } from "@/lib/shiftRotation";
 
 export function RouteOverviewPanel() {
@@ -19,6 +19,8 @@ export function RouteOverviewPanel() {
   const { panelsCollapsed, mapOnly, toggleMapOnly } = useFleetStore();
   const [timetableOpen, setTimetableOpen] = useState(false);
   const [timetableRoute, setTimetableRoute] = useState<RouteId>("L1");
+  const [vehiclesOpen, setVehiclesOpen] = useState(false);
+  const [vehiclesRoute, setVehiclesRoute] = useState<RouteId>("L1");
 
   const byRoute: Record<string, typeof drivers> = {
     L1: drivers
@@ -66,6 +68,11 @@ export function RouteOverviewPanel() {
   const openTimetable = (routeId: RouteId) => {
     setTimetableRoute(routeId);
     setTimetableOpen(true);
+  };
+
+  const openVehicles = (routeId: RouteId) => {
+    setVehiclesRoute(routeId);
+    setVehiclesOpen(true);
   };
 
   return (
@@ -232,6 +239,7 @@ export function RouteOverviewPanel() {
                   drivers={byRoute[route.id] ?? []}
                   lineNum={order[route.id] || 0}
                   onShowTimetable={() => openTimetable(route.id)}
+                  onShowVehicles={() => openVehicles(route.id)}
                   expanded={panelsCollapsed}
                 />
               );
@@ -243,6 +251,14 @@ export function RouteOverviewPanel() {
         open={timetableOpen}
         onClose={() => setTimetableOpen(false)}
         initialRoute={timetableRoute}
+      />
+      <RouteVehiclesDialog
+        key={`${vehiclesOpen}-${vehiclesRoute}`}
+        open={vehiclesOpen}
+        onClose={() => setVehiclesOpen(false)}
+        initialRoute={vehiclesRoute}
+        drivers={drivers}
+        now={now}
       />
     </>
   );

@@ -1,12 +1,26 @@
 "use client";
 
+import { useState } from "react";
 import { ReservePool } from "@/components/drivers/ReservePool";
 import { DriverTable } from "@/components/drivers/DriverTable";
 import { Users } from "lucide-react";
+import { ActiveTripsSection } from "@/components/routes/ActiveTripsSection";
+import { RouteVehiclesDialog } from "@/components/routes/RouteVehiclesDialog";
+import { FleetOverviewSummary } from "@/components/dashboard/FleetOverviewSummary";
 import { useFleetStore } from "@/lib/store/fleetStore";
+import { useCurrentTime } from "@/hooks/useCurrentTime";
+import type { RouteId } from "@/types";
 
 export function RightPanel() {
-  const { panelsCollapsed, mapOnly } = useFleetStore();
+  const { panelsCollapsed, mapOnly, drivers } = useFleetStore();
+  const now = useCurrentTime(1000);
+  const [vehiclesOpen, setVehiclesOpen] = useState(false);
+  const [vehiclesRoute, setVehiclesRoute] = useState<RouteId>("L1");
+
+  const openVehicles = (routeId: RouteId) => {
+    setVehiclesRoute(routeId);
+    setVehiclesOpen(true);
+  };
 
   return (
     <aside
@@ -39,7 +53,7 @@ export function RightPanel() {
     >
       {/* Panel Header */}
       <div
-        className="px-4 py-3.5 flex-shrink-0 relative overflow-hidden"
+        className="px-4 py-3 flex-shrink-0 relative overflow-hidden"
         style={{
           background: "linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%)",
           boxShadow: "0 2px 16px rgba(26,26,46,0.3)",
@@ -73,7 +87,7 @@ export function RightPanel() {
             <h2 className="text-[1.05rem] font-bold text-white leading-tight">
               Fleet Management &amp; Reserve Pool
             </h2>
-            <p className="text-[0.75rem] text-slate-400 mt-0.5">การจัดการกองรถและกลุ่มคนสำรอง</p>
+            <p className="text-[0.75rem] text-slate-400 mt-0.5">การจัดการรถ คนขับ และกำลังสำรอง</p>
           </div>
         </div>
 
@@ -88,12 +102,28 @@ export function RightPanel() {
       </div>
 
       {/* Panel Body */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
-        <ReservePool />
-        <div className="border-t pt-4" style={{ borderColor: "rgba(26,26,46,0.06)" }}>
-          <DriverTable />
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 pb-24">
+        <div className="space-y-3">
+          <FleetOverviewSummary />
+          <div className="border-t border-slate-100 pt-3">
+            <ReservePool compact />
+          </div>
+          <div className="border-t border-slate-100 pt-3">
+            <ActiveTripsSection onShowVehicles={openVehicles} />
+          </div>
+          <div className="border-t border-slate-100 pt-3">
+            <DriverTable />
+          </div>
         </div>
       </div>
+      <RouteVehiclesDialog
+        key={`${vehiclesOpen}-${vehiclesRoute}`}
+        open={vehiclesOpen}
+        onClose={() => setVehiclesOpen(false)}
+        initialRoute={vehiclesRoute}
+        drivers={drivers}
+        now={now}
+      />
     </aside>
   );
 }

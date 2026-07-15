@@ -5,6 +5,7 @@ import { Users, ChevronUp, ChevronDown, X } from "lucide-react";
 import { ReservePool } from "@/components/drivers/ReservePool";
 import { DriverTable } from "@/components/drivers/DriverTable";
 import { RouteSection } from "@/components/routes/RouteSection";
+import { RouteVehiclesDialog } from "@/components/routes/RouteVehiclesDialog";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/lib/store/fleetStore";
 import { getAllDepartures } from "@/lib/mock-data/timetables";
@@ -24,6 +25,8 @@ export function MobilePanel() {
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [timetableOpen, setTimetableOpen] = useState(false);
   const [timetableRoute, setTimetableRoute] = useState<RouteId>("L1");
+  const [vehiclesOpen, setVehiclesOpen] = useState(false);
+  const [vehiclesRoute, setVehiclesRoute] = useState<RouteId>("L1");
 
   const byRoute: Record<string, typeof drivers> = {
     L1: drivers.filter((d) => d.routeId === "L1"),
@@ -61,6 +64,11 @@ export function MobilePanel() {
     setTimetableOpen(true);
   };
 
+  const openVehicles = (routeId: RouteId) => {
+    setVehiclesRoute(routeId);
+    setVehiclesOpen(true);
+  };
+
   const toggle = () => setSheetState((prev) => (prev === "peek" ? "full" : "peek"));
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -93,7 +101,7 @@ export function MobilePanel() {
 
       {/* Bottom Sheet */}
       <div
-        className="absolute left-0 right-0 bottom-0 z-[800] flex flex-col"
+        className="absolute left-0 right-0 bottom-0 z-[800] flex min-h-0 flex-col"
         style={{
           height: "calc(100% - 16px)", // Use constant height relative to container to prevent layout reflows
           transform: `translateY(${SHEET_HEIGHTS[sheetState]})`,
@@ -188,10 +196,10 @@ export function MobilePanel() {
 
         {/* Scrollable content */}
         <div
-          className="flex-1 overflow-y-auto overscroll-contain"
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          <div className="p-4 space-y-6">
+          <div className="space-y-6 p-4 pb-24">
             {/* Active Routes Section */}
             <div>
               <div className="flex items-center justify-between mb-3">
@@ -237,6 +245,7 @@ export function MobilePanel() {
                         drivers={byRoute[route.id] ?? []}
                         lineNum={order[route.id] || 0}
                         onShowTimetable={() => openTimetable(route.id)}
+                        onShowVehicles={() => openVehicles(route.id)}
                         expanded={false}
                       />
                     );
@@ -259,6 +268,14 @@ export function MobilePanel() {
         open={timetableOpen}
         onClose={() => setTimetableOpen(false)}
         initialRoute={timetableRoute}
+      />
+      <RouteVehiclesDialog
+        key={`${vehiclesOpen}-${vehiclesRoute}`}
+        open={vehiclesOpen}
+        onClose={() => setVehiclesOpen(false)}
+        initialRoute={vehiclesRoute}
+        drivers={drivers}
+        now={now}
       />
     </>
   );

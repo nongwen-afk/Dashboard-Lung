@@ -259,6 +259,8 @@ export function LeafletMap() {
             driverId: driver ? driver.id : null,
             displaySpeed: initialDisplaySpeed,
             isSpeeding: false,
+            passengerCapacity: 20,
+            passengerCount: Math.floor(Math.random() * 20 * 0.9),
             innerEl: null as HTMLElement | null,
             badgeEl: null as HTMLElement | null,
             updatePopup: () => {},
@@ -329,21 +331,38 @@ export function LeafletMap() {
                 '<br/><span style="font-size: 11px; font-weight: bold; color: #ef4444;">⚠️ เตือน: ความเร็วเกิน 80 km/h!</span>';
             }
 
+            const pct = Math.round((busObj.passengerCount / busObj.passengerCapacity) * 100);
+            let loadColor = "#10b981"; // green
+            if (pct > 85) loadColor = "#ef4444"; // red
+            else if (pct > 60) loadColor = "#eab308"; // yellow
+
+            const loadBar = `
+              <div style="font-size: 11px; font-weight: bold; color: #475569; margin-top: 4px; display: flex; justify-content: space-between; align-items: center;">
+                <span>👥 ผู้โดยสาร: ${busObj.passengerCount}/${busObj.passengerCapacity} คน</span>
+                <span style="color: ${loadColor};">${pct}%</span>
+              </div>
+              <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 2px; overflow: hidden; display: flex;">
+                <div style="height: 100%; width: ${pct}%; background: ${loadColor};"></div>
+              </div>
+            `;
+
             const popupContent = driver
               ? `
-              <div style="font-family: sans-serif; text-align: center; padding: 4px;">
+              <div style="font-family: sans-serif; text-align: center; padding: 4px; min-width: 140px;">
                 <b style="font-size: 13px;">${driver.name} ${driver.surname}</b><br/>
                 <span style="font-size: 11px; color: #64748b;">รหัส: ${driver.code}</span><br/>
                 <span style="font-size: 11px; font-weight: bold; color: ${route.color};">รถ: ${driver.vehicle}</span><br/>
                 <span style="font-size: 11px; font-weight: bold; color: ${displaySpeed > 80 ? "#ef4444" : "#10b981"};">ความเร็ว: ${displaySpeed} km/h</span>
                 ${warningHtml}
+                ${loadBar}
               </div>
             `
               : `
-              <div style="font-family: sans-serif; text-align: center; padding: 4px;">
+              <div style="font-family: sans-serif; text-align: center; padding: 4px; min-width: 140px;">
                 <span style="font-size: 11px; font-weight: bold; color: ${route.color};">รถบัสไม่ระบุ</span><br/>
                 <span style="font-size: 11px; font-weight: bold; color: ${displaySpeed > 80 ? "#ef4444" : "#10b981"};">ความเร็ว: ${displaySpeed} km/h</span>
                 ${warningHtml}
+                ${loadBar}
               </div>
             `;
 
@@ -420,6 +439,18 @@ export function LeafletMap() {
             }
           } else {
             b.isSpeeding = false;
+          }
+
+          // Randomly change passenger count occasionally
+          if (Math.random() < 0.1) {
+            const diff = Math.floor(Math.random() * 9) - 4; // -4 to +4
+            let newCount = b.passengerCount + diff;
+            newCount = Math.max(0, Math.min(newCount, b.passengerCapacity));
+            b.passengerCount = newCount;
+          }
+
+          if (b.marker.isPopupOpen()) {
+            b.updatePopup();
           }
         });
       }, 2000); // Check speed every 2 seconds

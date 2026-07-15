@@ -1,9 +1,5 @@
-import { useMemo } from "react";
-import { BusCard } from "./BusCard";
-import { ProgressBar } from "@/components/ui/ProgressBar";
+import { BusFront } from "lucide-react";
 import { NextDeparture } from "@/components/timetable/NextDeparture";
-import { getAllDepartures } from "@/lib/mock-data/timetables";
-import { getDriverForTrip } from "@/lib/shiftRotation";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import type { Route, Driver } from "@/types";
 
@@ -12,6 +8,7 @@ interface RouteSectionProps {
   drivers: Driver[];
   lineNum: number;
   onShowTimetable?: () => void;
+  onShowVehicles?: () => void;
   expanded?: boolean;
 }
 
@@ -27,38 +24,13 @@ export function RouteSection({
   drivers,
   lineNum,
   onShowTimetable,
+  onShowVehicles,
   expanded,
 }: RouteSectionProps) {
   const now = useCurrentTime(1000);
 
-  const prevDeparture = useMemo(() => {
-    const allDepts = getAllDepartures(route.id, now);
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-
-    let latestPassed: { time: string; tripIndex: number } | null = null;
-    for (let i = 0; i < allDepts.length; i++) {
-      const d = allDepts[i];
-      const [hStr, mStr] = d.time.split(":");
-      const h = parseInt(hStr, 10);
-      const m = parseInt(mStr, 10);
-      if (h < currentHour || (h === currentHour && m <= currentMinute)) {
-        latestPassed = { time: d.time, tripIndex: i };
-      } else {
-        break;
-      }
-    }
-    return latestPassed;
-  }, [route.id, now]);
-
-  const prevDriver = prevDeparture
-    ? getDriverForTrip(route.id, prevDeparture.tripIndex, now)
-    : null;
-
   const activeCount = drivers.filter((d) => d.status !== "Leave").length;
   const leaveCount = drivers.length - activeCount;
-  const passengerCount = Math.max(0, Math.min(20, Math.round((route.passengerLoad / 100) * 20)));
-
   return (
     <div
       role="button"
@@ -154,51 +126,29 @@ export function RouteSection({
         <NextDeparture routeId={route.id} color={route.color} now={now} />
       </div>
 
-      {/* Passenger load */}
-      <div className="w-full mt-auto flex flex-col pt-2 px-1">
-        {prevDeparture ? (
-          <div className="mb-2 flex items-center justify-between gap-2 text-xs font-medium text-slate-400">
-            <span>รอบปัจจุบัน</span>
-            <span className="tabular-nums font-semibold text-amber-600">
-              รถ {prevDriver ? prevDriver.vehicle : "ไม่พบรถ"} · {prevDeparture.time}
-            </span>
-          </div>
-        ) : (
-          <div className="mb-2 text-xs font-medium text-slate-400 text-center">
-            ยังไม่มีรอบปัจจุบัน
-          </div>
-        )}
-        <div className="flex flex-col space-y-2">
-          <div className="grid grid-cols-[minmax(0,1fr)_64px] items-center gap-2">
-            <div className="text-sm font-semibold leading-tight text-slate-500">Passenger Load</div>
-            <div className="text-base font-bold text-amber-500 tabular-nums text-right whitespace-nowrap">
-              {passengerCount}/20
-            </div>
-          </div>
-          <div className="w-full bg-slate-100/80 rounded-full h-2 overflow-hidden">
-            <div
-              className="h-full rounded-full transition-all duration-500"
-              style={{
-                width: `${Math.min(100, route.passengerLoad)}%`,
-                backgroundColor: "#f59e0b",
-              }}
-            />
-          </div>
-          <div className="grid grid-cols-[minmax(0,1fr)_64px] items-center gap-2 text-xs font-medium text-slate-400">
-            <span className="truncate">ใช้งาน {passengerCount}</span>
-            <span className="tabular-nums text-right whitespace-nowrap">
-              ว่าง {20 - passengerCount}
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* Driver Summary Footer */}
       <div className="flex items-center justify-between mt-3 pt-2 border-t border-slate-100/80">
         <span className="text-[0.65rem] font-bold text-slate-500">
           {activeCount} vehicles active
         </span>
-        <span className="text-[0.65rem] text-slate-400 font-medium">Details</span>
+        <div className="flex items-center gap-2">
+          <span className="text-[0.65rem] text-slate-400 font-medium">Details</span>
+          <button
+            type="button"
+            title="ดูรถในสายนี้ 5 คัน"
+            aria-label={`ดูรถใน${route.labelTh} 5 คัน`}
+            onClick={(event) => {
+              event.stopPropagation();
+              onShowVehicles?.();
+            }}
+            className="relative flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-[#1e3a8a] shadow-sm transition-colors hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
+          >
+            <BusFront className="h-3.5 w-3.5" aria-hidden="true" />
+            <span className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#1e3a8a] px-1 text-[9px] font-bold leading-none text-white ring-2 ring-white">
+              5
+            </span>
+          </button>
+        </div>
       </div>
     </div>
   );
