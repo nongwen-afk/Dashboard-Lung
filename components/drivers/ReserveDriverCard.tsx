@@ -9,14 +9,46 @@ import { CheckCircle2 } from "lucide-react";
 
 interface ReserveDriverCardProps {
   driver: ReserveDriver;
+  compact?: boolean;
 }
 
-export function ReserveDriverCard({ driver }: ReserveDriverCardProps) {
+export function ReserveDriverCard({ driver, compact: compactOverride }: ReserveDriverCardProps) {
   const { selectedReserve, setSelectedReserve, panelsCollapsed } = useFleetStore();
   const isSelected = selectedReserve?.id === driver.id;
   const isAssigned = driver.status === "Assigned";
   // In expanded (4-col) mode the card is compact; in normal mode it's the standard size
-  const compact = panelsCollapsed;
+  const compact = compactOverride ?? panelsCollapsed;
+
+  if (compact) {
+    return (
+      <button
+        type="button"
+        disabled={isAssigned}
+        onClick={() => setSelectedReserve(isSelected ? null : driver)}
+        className="min-h-[88px] rounded-xl border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-55"
+        style={
+          isSelected && !isAssigned
+            ? { background: "#eff6ff", borderColor: "#93c5fd" }
+            : { background: "#ffffff", borderColor: "#e2e8f0" }
+        }
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-bold text-slate-900">{driver.name}</p>
+            <p className="mt-0.5 text-xs text-slate-500">{driver.role || "ไม่พบรหัสพนักงาน"}</p>
+          </div>
+          <span
+            className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${isAssigned ? "bg-slate-100 text-slate-500" : "bg-emerald-50 text-emerald-700"}`}
+          >
+            {isAssigned ? "มอบหมายแล้ว" : "พร้อมใช้งาน"}
+          </span>
+        </div>
+        <p className="mt-3 text-[13px] font-medium text-slate-600">
+          CAP. <span className="font-bold text-slate-800">{driver.availability}%</span>
+        </p>
+      </button>
+    );
+  }
 
   return (
     <div

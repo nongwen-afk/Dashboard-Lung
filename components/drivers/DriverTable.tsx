@@ -5,6 +5,7 @@ import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useFleetStore } from "@/lib/store/fleetStore";
 import { useFilteredDrivers } from "@/hooks/useFilteredDrivers";
 import { Search, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const ROUTE_COLORS: Record<string, string> = {
   L1: "#dc2626",
@@ -12,7 +13,12 @@ const ROUTE_COLORS: Record<string, string> = {
   L3: "#16a34a",
 };
 
-export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
+interface DriverTableProps {
+  compact?: boolean;
+  scrollable?: boolean;
+}
+
+export function DriverTable({ compact = false, scrollable = false }: DriverTableProps = {}) {
   const {
     routeFilter,
     statusFilter,
@@ -32,7 +38,7 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
   const exp = panelsCollapsed && !compact; // shorthand
 
   return (
-    <div>
+    <div className={cn(scrollable && "flex min-h-0 flex-1 flex-col")}>
       <p
         className={
           exp
@@ -40,7 +46,7 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
             : "text-[0.9rem] font-bold text-[#1a1a2e] mb-2.5"
         }
       >
-        Driver Assignment
+        ตารางรถและคนขับ
       </p>
 
       {/* Filters */}
@@ -120,14 +126,14 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
 
       {/* Table */}
       <div
-        className="rounded-xl overflow-hidden"
+        className={cn("rounded-xl overflow-hidden", scrollable && "min-h-0 flex-1 overflow-y-auto")}
         style={{
           border: "1px solid rgba(26,26,46,0.06)",
           boxShadow: "0 2px 8px rgba(26,26,46,0.05)",
         }}
       >
         <table className="w-full">
-          <thead>
+          <thead className={scrollable ? "sticky top-0 z-10" : undefined}>
             <tr
               style={{
                 background: "linear-gradient(135deg, #0f172a, #1e293b)",
@@ -263,9 +269,14 @@ export function DriverTable({ compact = false }: { compact?: boolean } = {}) {
                           <span className="text-[0.675rem] font-medium text-[#0f172a]">
                             {d.vehicle}
                           </span>
+                          <span className="text-[0.6rem] font-medium text-slate-500">
+                            {d.status}
+                          </span>
                           <div className="w-12">
                             <ProgressBar value={d.capacity} height="h-1" />
-                            <p className="text-[0.525rem] text-gray-400 mt-0.5">{d.capacity}%</p>
+                            <p className="text-[0.525rem] text-gray-400 mt-0.5">
+                              CAP. {d.capacity}%
+                            </p>
                           </div>
                         </div>
                       </td>
