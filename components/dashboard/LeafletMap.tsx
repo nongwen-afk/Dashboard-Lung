@@ -177,6 +177,8 @@ export function LeafletMap() {
         driverId: number | null;
         displaySpeed: number;
         isSpeeding: boolean;
+        passengerCapacity: number;
+        passengerCount: number;
         innerEl: HTMLElement | null;
         badgeEl: HTMLElement | null;
         updatePopup: () => void;
@@ -333,7 +335,8 @@ export function LeafletMap() {
 
             const pct = Math.round((busObj.passengerCount / busObj.passengerCapacity) * 100);
             let loadColor = "#10b981"; // green
-            if (pct > 85) loadColor = "#ef4444"; // red
+            if (pct > 85)
+              loadColor = "#ef4444"; // red
             else if (pct > 60) loadColor = "#eab308"; // yellow
 
             const loadBar = `
