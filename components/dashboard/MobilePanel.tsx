@@ -1,17 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Users, ChevronUp, ChevronDown, X } from "lucide-react";
-import { FleetDateNavigator } from "@/components/drivers/FleetDateNavigator";
+import { Users } from "lucide-react";
 import { ReservePool } from "@/components/drivers/ReservePool";
 import { DriverTable } from "@/components/drivers/DriverTable";
 import { RouteSection } from "@/components/routes/RouteSection";
 import { RouteVehiclesDialog } from "@/components/routes/RouteVehiclesDialog";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { useDailyFleet } from "@/hooks/useDailyFleet";
-import { getAllDepartures } from "@/lib/mock-data/timetables";
-import { useCurrentTime } from "@/hooks/useCurrentTime";
+import { useOperationalFleet } from "@/hooks/useOperationalFleet";
 import type { RouteId } from "@/types";
 
 type SheetState = "peek" | "full";
@@ -23,7 +20,7 @@ const SHEET_HEIGHTS: Record<SheetState, string> = {
 
 export function MobilePanel() {
   const { routes } = useFleetStore();
-  const { assignments } = useDailyFleet();
+  const { assignments, tripsByRoute, date, isLive, isPast, now } = useOperationalFleet();
   const [sheetState, setSheetState] = useState<SheetState>("peek");
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [timetableOpen, setTimetableOpen] = useState(false);
@@ -33,43 +30,46 @@ export function MobilePanel() {
 
   const dailyDrivers = useMemo(
     () =>
-      assignments.map(({ driver, vehicle, capacity, status }) => ({
-        ...driver,
-        vehicle,
-        capacity,
-        status,
-      })),
+      assignments.map(
+        ({ driver, vehicle, capacity, status, operatingRouteId, operationalState }) => ({
+          ...driver,
+          vehicle,
+          capacity,
+          status,
+          routeId: operatingRouteId,
+          operationalState,
+        })
+      ),
     [assignments]
   );
 
   const byRoute: Record<string, typeof dailyDrivers> = {
-    L1: dailyDrivers.filter((driver) => driver.routeId === "L1"),
-    L2: dailyDrivers.filter((driver) => driver.routeId === "L2"),
-    L3: dailyDrivers.filter((driver) => driver.routeId === "L3"),
+    L1: dailyDrivers.filter(
+      (driver) => driver.routeId === "L1" && driver.operationalState !== "unavailable"
+    ),
+    L2: dailyDrivers.filter(
+      (driver) => driver.routeId === "L2" && driver.operationalState !== "unavailable"
+    ),
+    L3: dailyDrivers.filter(
+      (driver) => driver.routeId === "L3" && driver.operationalState !== "unavailable"
+    ),
   };
 
-  const now = useCurrentTime(1000);
-
   const totalPassed = useMemo(() => {
-    let passed = 0;
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
+    if (!isLive) return 0;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    return Object.values(tripsByRoute)
+      .flat()
+      .filter((trip) => {
+        const [hour, minute] = trip.time.split(":").map(Number);
+        return hour * 60 + minute <= currentMinutes;
+      }).length;
+  }, [isLive, now, tripsByRoute]);
 
-    for (const r of routes) {
-      const depts = getAllDepartures(r.id, now);
-      for (const d of depts) {
-        const [hStr, mStr] = d.time.split(":");
-        const h = parseInt(hStr, 10);
-        const m = parseInt(mStr, 10);
-        if (h < currentHour || (h === currentHour && m <= currentMinute)) {
-          passed++;
-        }
-      }
-    }
-    return Math.max(0, Math.min(211, passed));
-  }, [routes, now]);
-
-  const totalTrips = 211;
+  const totalTrips = useMemo(
+    () => Object.values(tripsByRoute).reduce((total, trips) => total + trips.length, 0),
+    [tripsByRoute]
+  );
   const remainingTrips = Math.max(0, totalTrips - totalPassed);
   const progressPercent = totalTrips > 0 ? (totalPassed / totalTrips) * 100 : 0;
 
@@ -224,7 +224,7 @@ export function MobilePanel() {
               {/* Mobile Total Trips Summary */}
               <div className="rounded-2xl border border-slate-100 bg-white/80 p-3 shadow-sm mb-4">
                 <div className="flex items-center justify-between text-sm font-bold text-[#0f172a]">
-                  <span>รอบวิ่งรวมวันนี้</span>
+                  <span>{isLive ? "รอบวิ่งรวมวันนี้" : "รอบวิ่งตามแผน"}</span>
                   <span className="text-[#1e3a8a] text-base">
                     {totalPassed}/{totalTrips}
                   </span>
@@ -239,8 +239,14 @@ export function MobilePanel() {
                   />
                 </div>
                 <div className="mt-2 flex items-center justify-between text-xs font-medium text-slate-400">
-                  <span>ผ่านแล้ว {totalPassed}</span>
-                  <span>เหลือ {remainingTrips}</span>
+                  <span>{isLive ? `ผ่านแล้ว ${totalPassed}` : `กำหนด ${totalTrips} รอบ`}</span>
+                  <span>
+                    {isLive
+                      ? `เหลือ ${remainingTrips}`
+                      : isPast
+                        ? "ไม่มีข้อมูลจริง"
+                        : "ยังไม่เริ่ม"}
+                  </span>
                 </div>
               </div>
 
@@ -268,10 +274,6 @@ export function MobilePanel() {
             </div>
 
             <div className="border-t pt-4" style={{ borderColor: "rgba(26,26,46,0.06)" }}>
-              <FleetDateNavigator />
-            </div>
-
-            <div className="border-t pt-4" style={{ borderColor: "rgba(26,26,46,0.06)" }}>
               <ReservePool />
             </div>
 
@@ -286,14 +288,13 @@ export function MobilePanel() {
         open={timetableOpen}
         onClose={() => setTimetableOpen(false)}
         initialRoute={timetableRoute}
+        date={date}
       />
       <RouteVehiclesDialog
         key={`${vehiclesOpen}-${vehiclesRoute}`}
         open={vehiclesOpen}
         onClose={() => setVehiclesOpen(false)}
         initialRoute={vehiclesRoute}
-        drivers={dailyDrivers}
-        now={now}
       />
     </>
   );

@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import { X, ArrowRight } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
+import { useDailyFleet } from "@/hooks/useDailyFleet";
 import { useFleetStore } from "@/lib/store/fleetStore";
 import { toServiceDate } from "@/lib/dailyFleetSchedule";
 import type { LeaveReason } from "@/types";
@@ -18,18 +19,23 @@ export function ReplaceDriverModal() {
     pendingDriverId,
     selectedReserve,
     drivers,
-    reserveDrivers,
     selectedServiceDate,
     closeModal,
     confirmTransfer,
   } = useFleetStore();
+  const { reserveDrivers } = useDailyFleet();
 
   const [reason, setReason] = useState<LeaveReason>("Sick Leave");
   const [notes, setNotes] = useState("");
   const serviceDate = selectedServiceDate ?? toServiceDate(new Date());
 
   const driver = drivers.find((d) => d.id === pendingDriverId);
-  const reserve = selectedReserve ?? reserveDrivers.find((r) => r.status === "Available") ?? null;
+  const reserve =
+    reserveDrivers.find(
+      (candidate) => candidate.id === selectedReserve?.id && candidate.status === "Available"
+    ) ??
+    reserveDrivers.find((candidate) => candidate.status === "Available") ??
+    null;
 
   useEffect(() => {
     if (modalOpen) {

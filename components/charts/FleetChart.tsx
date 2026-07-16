@@ -2,10 +2,12 @@
 
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
-import { CHART_DATA, UTILIZATION_DATA } from "@/lib/mock-data";
+import { CHART_DATA, ROUTES, UTILIZATION_DATA } from "@/lib/mock-data";
 import { TrendingUp, ChevronRight, BarChart2 } from "lucide-react";
+import { countDailyTrips } from "@/lib/mock-data/timetables";
+import { useDashboardServiceDate } from "@/hooks/useDashboardServiceDate";
 
 const BAR_COLORS = {
   efficiency: "#1e3a8a",
@@ -41,6 +43,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export function FleetChart() {
   const [pilten, setPilten] = useState(true);
   const [open, setOpen] = useState(true);
+  const { date, isLive, isPast } = useDashboardServiceDate();
+  const plannedTrips = useMemo(
+    () => ROUTES.reduce((total, route) => total + countDailyTrips(route.id, date), 0),
+    [date]
+  );
 
   /* ── Collapsed: แสดงแค่ปุ่มเล็กๆ ── */
   if (!open) {
@@ -157,111 +164,126 @@ export function FleetChart() {
         </button>
       </div>
 
-      {/* Bar chart */}
-      <ResponsiveContainer width="100%" height={62}>
-        <BarChart data={CHART_DATA} margin={{ top: 2, right: 0, left: -28, bottom: 0 }}>
-          <XAxis
-            dataKey="name"
-            tick={{ fontSize: 7, fill: "#94a3b8" }}
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            tick={{ fontSize: 7, fill: "#94a3b8" }}
-            axisLine={false}
-            tickLine={false}
-            domain={[0, 70]}
-          />
-          <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(26,26,46,0.04)" }} />
-          <Bar
-            dataKey="efficiency"
-            fill={BAR_COLORS.efficiency}
-            radius={[3, 3, 0, 0]}
-            name="Efficiency"
-          />
-          <Bar dataKey="trips" fill={BAR_COLORS.trips} radius={[3, 3, 0, 0]} name="Trips" />
-          <Bar dataKey="delay" fill={BAR_COLORS.delay} radius={[3, 3, 0, 0]} name="Delay" />
-        </BarChart>
-      </ResponsiveContainer>
-
-      {/* Legend dots */}
-      <div className="flex gap-2 mb-2 justify-center">
-        {Object.entries(BAR_COLORS).map(([key, color]) => (
-          <div key={key} className="flex items-center gap-0.5">
-            <span
-              className="w-1.5 h-1.5 rounded-full inline-block"
-              style={{ background: color, boxShadow: `0 0 4px ${color}80` }}
-            />
-            <span className="text-[0.4375rem] text-gray-400 capitalize">{key}</span>
-          </div>
-        ))}
-      </div>
-
-      {/* Pilten toggle */}
-      <div
-        className="flex items-center justify-between mb-2 px-2 py-1.5 rounded-lg"
-        style={{ background: "rgba(26,26,46,0.04)", border: "1px solid rgba(26,26,46,0.05)" }}
-      >
-        <span className="text-[0.5625rem] text-gray-500 font-semibold">Pilten</span>
-        <button
-          onClick={() => setPilten((v) => !v)}
-          className="relative inline-flex h-4 w-7 items-center rounded-full transition-all duration-300 focus:outline-none"
-          style={{
-            background: pilten ? "linear-gradient(135deg, #1e3a8a, #1e40af)" : "#e2e8f0",
-            boxShadow: pilten
-              ? "0 2px 8px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)"
-              : "none",
-          }}
-          aria-label="Toggle Pilten"
-        >
-          <span
-            className="inline-block h-3 w-3 transform rounded-full bg-white shadow-md transition-transform duration-300"
-            style={{
-              transform: pilten ? "translateX(14px)" : "translateX(2px)",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
-            }}
-          />
-        </button>
-      </div>
-
-      {/* Divider */}
-      <div
-        className="h-[0.0625rem] mb-2"
-        style={{
-          background: "linear-gradient(90deg, transparent, rgba(26,26,46,0.08), transparent)",
-        }}
-      />
-
-      {/* Fleet utilization */}
-      <div>
-        <p
-          className="text-[0.5625rem] font-bold mb-1.5"
-          style={{
-            background: "linear-gradient(135deg, #0f172a, #1e293b)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-          }}
-        >
-          Fleet utilization
-        </p>
-        <ResponsiveContainer width="100%" height={48}>
-          <BarChart data={UTILIZATION_DATA} margin={{ top: 0, right: 0, left: -28, bottom: 0 }}>
+      {/* A non-live date must show the schedule, never the mock live metrics. */}
+      {isLive ? (
+        <ResponsiveContainer width="100%" height={62}>
+          <BarChart data={CHART_DATA} margin={{ top: 2, right: 0, left: -28, bottom: 0 }}>
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 6, fill: "#94a3b8" }}
+              tick={{ fontSize: 7, fill: "#94a3b8" }}
               axisLine={false}
               tickLine={false}
             />
-            <YAxis hide />
+            <YAxis
+              tick={{ fontSize: 7, fill: "#94a3b8" }}
+              axisLine={false}
+              tickLine={false}
+              domain={[0, 70]}
+            />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(26,26,46,0.04)" }} />
-            <Bar dataKey="value" radius={[3, 3, 0, 0]} name="Utilization %">
-              {UTILIZATION_DATA.map((_: unknown, i: number) => (
-                <Cell key={i} fill={`hsl(${210 + i * 15}, 70%, ${55 + i * 3}%)`} />
-              ))}
-            </Bar>
+            <Bar
+              dataKey="efficiency"
+              fill={BAR_COLORS.efficiency}
+              radius={[3, 3, 0, 0]}
+              name="Efficiency"
+            />
+            <Bar dataKey="trips" fill={BAR_COLORS.trips} radius={[3, 3, 0, 0]} name="Trips" />
+            <Bar dataKey="delay" fill={BAR_COLORS.delay} radius={[3, 3, 0, 0]} name="Delay" />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      ) : (
+        <div className="mb-2 flex h-[62px] flex-col justify-center rounded-lg bg-slate-50 px-3">
+          <span className="text-[0.625rem] font-semibold text-slate-500">
+            {isPast ? "แผนย้อนหลัง" : "แผนล่วงหน้า"}
+          </span>
+          <span className="mt-0.5 text-lg font-extrabold tabular-nums text-[#1e3a8a]">
+            {plannedTrips} รอบ
+          </span>
+        </div>
+      )}
+
+      {isLive ? (
+        <>
+          {/* Legend dots */}
+          <div className="flex gap-2 mb-2 justify-center">
+            {Object.entries(BAR_COLORS).map(([key, color]) => (
+              <div key={key} className="flex items-center gap-0.5">
+                <span
+                  className="w-1.5 h-1.5 rounded-full inline-block"
+                  style={{ background: color, boxShadow: `0 0 4px ${color}80` }}
+                />
+                <span className="text-[0.4375rem] text-gray-400 capitalize">{key}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Pilten toggle */}
+          <div
+            className="flex items-center justify-between mb-2 px-2 py-1.5 rounded-lg"
+            style={{ background: "rgba(26,26,46,0.04)", border: "1px solid rgba(26,26,46,0.05)" }}
+          >
+            <span className="text-[0.5625rem] text-gray-500 font-semibold">Pilten</span>
+            <button
+              onClick={() => setPilten((v) => !v)}
+              className="relative inline-flex h-4 w-7 items-center rounded-full transition-all duration-300 focus:outline-none"
+              style={{
+                background: pilten ? "linear-gradient(135deg, #1e3a8a, #1e40af)" : "#e2e8f0",
+                boxShadow: pilten
+                  ? "0 2px 8px rgba(37,99,235,0.35), inset 0 1px 0 rgba(255,255,255,0.2)"
+                  : "none",
+              }}
+              aria-label="Toggle Pilten"
+            >
+              <span
+                className="inline-block h-3 w-3 transform rounded-full bg-white shadow-md transition-transform duration-300"
+                style={{
+                  transform: pilten ? "translateX(14px)" : "translateX(2px)",
+                  boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
+                }}
+              />
+            </button>
+          </div>
+
+          {/* Divider */}
+          <div
+            className="h-[0.0625rem] mb-2"
+            style={{
+              background: "linear-gradient(90deg, transparent, rgba(26,26,46,0.08), transparent)",
+            }}
+          />
+
+          {/* Fleet utilization */}
+          <div>
+            <p
+              className="text-[0.5625rem] font-bold mb-1.5"
+              style={{
+                background: "linear-gradient(135deg, #0f172a, #1e293b)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}
+            >
+              Fleet utilization
+            </p>
+            <ResponsiveContainer width="100%" height={48}>
+              <BarChart data={UTILIZATION_DATA} margin={{ top: 0, right: 0, left: -28, bottom: 0 }}>
+                <XAxis
+                  dataKey="name"
+                  tick={{ fontSize: 6, fill: "#94a3b8" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis hide />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(26,26,46,0.04)" }} />
+                <Bar dataKey="value" radius={[3, 3, 0, 0]} name="Utilization %">
+                  {UTILIZATION_DATA.map((_: unknown, i: number) => (
+                    <Cell key={i} fill={`hsl(${210 + i * 15}, 70%, ${55 + i * 3}%)`} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

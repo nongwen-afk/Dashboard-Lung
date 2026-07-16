@@ -38,3 +38,91 @@ test.describe("Dashboard Smoke Test", () => {
     await expect(errorOverlay).not.toBeVisible();
   });
 });
+
+test.describe("Fleet Dispatch", () => {
+  test("dispatcher can open the operational fleet controls", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /Dispatcher/i }).click();
+
+    const manageFleetButton = page.getByRole("button", { name: /จัดการรถ/ }).first();
+    await expect(manageFleetButton).toBeVisible({ timeout: 15000 });
+    await manageFleetButton.click();
+
+    const dispatchDialog = page.getByRole("dialog");
+    await expect(dispatchDialog).toHaveCSS("z-index", "1001");
+    await expect(page.getByRole("heading", { name: "จัดการกำลังรถ" })).toBeVisible();
+    const reportUnavailable = page.getByRole("button", { name: /รายงานรถไม่พร้อม/ });
+    await expect(reportUnavailable).toBeEnabled();
+
+    await reportUnavailable.click();
+
+    await expect(dispatchDialog).not.toBeVisible();
+    await expect(page.getByText(/ถูกพักจากคิวแล้ว รถคันถัดไปรับรอบทันที/)).toBeVisible();
+
+    await manageFleetButton.click();
+    await page.getByRole("tab", { name: "ประวัติ" }).click();
+    await expect(page.getByRole("heading", { name: "ประวัติการจัดรถ" })).toBeVisible();
+    await expect(page.getByText(/ไม่พร้อมออก/).first()).toBeVisible();
+
+    await page.reload();
+    await page.getByRole("button", { name: /Dispatcher/i }).click();
+    await manageFleetButton.click();
+    await page.getByRole("tab", { name: "ประวัติ" }).click();
+    await expect(page.getByText(/ไม่พร้อมออก/).first()).toBeVisible();
+
+    await page.getByRole("button", { name: "รีเซ็ตข้อมูล" }).click();
+    await expect(page.getByText("ยืนยันรีเซ็ตข้อมูลทดสอบทั้งหมด?")).toBeVisible();
+    await page.getByRole("button", { name: "ยืนยันรีเซ็ต" }).click();
+    await expect(page.getByText("ยังไม่มีประวัติสำหรับวันที่และตัวกรองที่เลือก")).toBeVisible();
+
+    await page.reload();
+    await page.getByRole("button", { name: /Dispatcher/i }).click();
+    await manageFleetButton.click();
+    await page.getByRole("tab", { name: "ประวัติ" }).click();
+    await expect(page.getByText("ยังไม่มีประวัติสำหรับวันที่และตัวกรองที่เลือก")).toBeVisible();
+  });
+});
+
+test.describe("Route vehicle details", () => {
+  test("keeps the vehicle list scrollable inside its dialog", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /Dispatcher/i }).click();
+
+    await page
+      .getByRole("button", { name: /ดูรถในสาย/ })
+      .first()
+      .click();
+
+    const vehicleDialog = page.getByRole("dialog");
+    await expect(vehicleDialog).toBeVisible();
+    await expect(page.getByRole("heading", { name: "รถและผู้โดยสารแต่ละสาย" })).toBeVisible();
+
+    const scrollRegion = vehicleDialog.locator("div.overflow-y-auto");
+    await expect(scrollRegion).toHaveCSS("overflow-y", "auto");
+
+    const scrollTop = await scrollRegion.evaluate((element) => {
+      element.scrollTop = 120;
+      return element.scrollTop;
+    });
+    expect(scrollTop).toBeGreaterThan(0);
+  });
+});
+
+test.describe("Daily driver assignment", () => {
+  test("shows the daily plan and a manual reserve replacement", async ({ page }) => {
+    await page.goto("/");
+    await page.getByRole("button", { name: /Dispatcher/i }).click();
+
+    await expect(page.getByRole("columnheader", { name: "สาย" })).toBeVisible();
+    const assignmentRows = page.locator("tbody");
+    await expect(assignmentRows.getByText("ตามแผน", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("RL1", { exact: true })).not.toBeVisible();
+
+    await page.getByRole("button", { name: "Replace" }).first().click();
+    await expect(page.getByRole("heading", { name: "Confirm Substitute Driver" })).toBeVisible();
+    await page.getByRole("button", { name: "ยืนยันการย้าย" }).click();
+
+    await expect(assignmentRows.getByText("สำรองแทน", { exact: true }).first()).toBeVisible();
+    await expect(assignmentRows.getByText(/แทน /).first()).toBeVisible();
+  });
+});

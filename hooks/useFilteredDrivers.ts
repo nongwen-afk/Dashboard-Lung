@@ -13,8 +13,11 @@ export function useFilteredDrivers(): DailyFleetAssignment[] {
     const q = searchQuery.trim().toLowerCase();
     return assignments.filter((assignment) => {
       const { baseDriver, driver, status, vehicle } = assignment;
-      const matchRoute = !routeFilter || baseDriver.route === routeFilter;
-      const matchStatus = !statusFilter || status === statusFilter;
+      const matchRoute = !routeFilter || assignment.routeId === routeFilter;
+      const matchStatus =
+        !statusFilter ||
+        (statusFilter === "planned" && status === "Active") ||
+        (statusFilter === "substitute" && status === "Substitute");
       const matchSearch =
         !q ||
         `${driver.name} ${driver.surname} ${driver.code} ${vehicle}`.toLowerCase().includes(q) ||

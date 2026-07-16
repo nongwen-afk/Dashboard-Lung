@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useDashboardServiceDate } from "@/hooks/useDashboardServiceDate";
 
 const LeafletMap = dynamic(() => import("./LeafletMap").then((m) => m.LeafletMap), {
   ssr: false,
@@ -8,5 +9,6 @@ const LeafletMap = dynamic(() => import("./LeafletMap").then((m) => m.LeafletMap
 });
 
 export function MapBackground() {
-  return <LeafletMap />;
+  const { isLive } = useDashboardServiceDate();
+  return <LeafletMap isLive={isLive} />;
 }

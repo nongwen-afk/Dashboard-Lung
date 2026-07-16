@@ -1,17 +1,35 @@
 "use client";
 
-import { StatusBadge } from "@/components/ui/status-badge";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { useFleetStore } from "@/lib/store/fleetStore";
 import { useFilteredDrivers } from "@/hooks/useFilteredDrivers";
 import { Search, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { RouteId } from "@/types";
 
-const ROUTE_COLORS: Record<string, string> = {
-  L1: "#dc2626",
-  L2: "#1e3a8a",
-  L3: "#16a34a",
+const ROUTE_META: Record<RouteId, { label: string; color: string }> = {
+  L1: { label: "สายแดง", color: "#dc2626" },
+  L2: { label: "สายน้ำเงิน", color: "#1e3a8a" },
+  L3: { label: "สายเขียว", color: "#16a34a" },
 };
+
+function AssignmentStatusBadge({
+  substitute,
+  compact = false,
+}: {
+  substitute: boolean;
+  compact?: boolean;
+}) {
+  return (
+    <span
+      className={`inline-flex items-center whitespace-nowrap rounded px-1.5 py-0.5 font-semibold ${
+        compact ? "text-[0.5625rem]" : "text-[0.675rem]"
+      } ${substitute ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"}`}
+    >
+      {substitute ? "สำรองแทน" : "ตามแผน"}
+    </span>
+  );
+}
 
 interface DriverTableProps {
   compact?: boolean;
@@ -54,19 +72,19 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
             value: routeFilter,
             onChange: setRouteFilter,
             options: [
-              { value: "", label: "All Lines" },
-              { value: "Line 1", label: "Line 1" },
-              { value: "Line 2", label: "Line 2" },
-              { value: "Line 3", label: "Line 3" },
+              { value: "", label: "ทุกสาย" },
+              { value: "L1", label: "สายสีแดง" },
+              { value: "L2", label: "สายสีน้ำเงิน" },
+              { value: "L3", label: "สายสีเขียว" },
             ],
           },
           {
             value: statusFilter,
             onChange: setStatusFilter,
             options: [
-              { value: "", label: "All Status" },
-              { value: "Active", label: "Active" },
-              { value: "Leave", label: "Leave" },
+              { value: "", label: "ทุกสถานะ" },
+              { value: "planned", label: "ตามแผน" },
+              { value: "substitute", label: "สำรองแทน" },
             ],
           },
         ].map((sel, i) => (
@@ -99,7 +117,7 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
         <Search className="w-3 h-3 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
           type="text"
-          placeholder="Search driver..."
+          placeholder="ค้นหาชื่อหรือรถ..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className={`w-full rounded-lg pl-7 pr-3 outline-none transition-all duration-200 ${expanded ? "py-2 text-[0.9rem]" : "py-1.5 text-[0.75rem]"}`}
@@ -139,17 +157,17 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
             >
               {(expanded
                 ? [
-                    { label: "LINE", w: "w-[88px]" },
-                    { label: "Name", w: "w-full" },
-                    { label: "Vehicle", w: "w-[110px]" },
-                    { label: "Status", w: "w-[110px]" },
+                    { label: "สาย", w: "w-[102px]" },
+                    { label: "คนขับ", w: "w-full" },
+                    { label: "รถ", w: "w-[110px]" },
+                    { label: "สถานะ", w: "w-[110px]" },
                     { label: "Cap.", w: "w-[140px]" },
                     { label: "", w: "w-[140px]" },
                   ]
                 : [
-                    { label: "LINE", w: "w-[76px]" },
-                    { label: "Name", w: "w-full" },
-                    { label: "Vehicle", w: "w-[96px]" },
+                    { label: "สาย", w: "w-[76px]" },
+                    { label: "คนขับ", w: "w-full" },
+                    { label: "รถ", w: "w-[96px]" },
                     { label: "", w: "w-[132px]" },
                   ]
               ).map((col, i, arr) => {
@@ -178,16 +196,17 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
               </tr>
             ) : (
               filtered.map((assignment, idx) => {
-                const { baseDriver, driver, status, vehicle, capacity, routeId, slotLabel, note } =
+                const { baseDriver, driver, status, vehicle, capacity, routeId, slot, note } =
                   assignment;
-                const rc = ROUTE_COLORS[routeId] ?? "#8899bb";
+                const route = ROUTE_META[routeId];
+                const rc = route.color;
                 const isSubstitute = status === "Substitute";
                 const isSelected = baseDriver.id === focusDriverId;
                 const baseBg = idx % 2 === 0 ? "rgba(255,255,255,0.8)" : "rgba(248,249,252,0.7)";
 
                 return (
                   <tr
-                    key={`${baseDriver.id}-${slotLabel}`}
+                    key={`${baseDriver.id}-${routeId}-${slot}`}
                     className="transition-colors duration-150 cursor-pointer"
                     onClick={() => setFocusDriverId(baseDriver.id)}
                     style={{
@@ -207,16 +226,16 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
                       }
                     }}
                   >
-                    {/* Line badge */}
+                    {/* Daily route assignment */}
                     <td className="pl-4 pr-2 py-2 whitespace-nowrap">
                       <span
-                        className={`inline-block min-w-[52px] rounded px-2.5 py-0.5 text-center font-bold whitespace-nowrap text-white ${expanded ? "text-[0.8rem]" : "text-[0.7rem]"}`}
+                        className={`inline-block min-w-[62px] rounded px-2 py-0.5 text-center font-bold whitespace-nowrap text-white ${expanded ? "text-[0.8rem]" : "text-[0.7rem]"}`}
                         style={{
                           background: `linear-gradient(135deg, ${rc}, ${rc}cc)`,
                           boxShadow: `0 1px 4px ${rc}40`,
                         }}
                       >
-                        {slotLabel}
+                        {route.label}
                       </span>
                     </td>
                     {/* Name */}
@@ -228,11 +247,16 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
                           >
                             {driver.name} {driver.surname}
                           </span>
-                          <span
-                            className={`block text-gray-400 ${expanded ? "text-[0.675rem]" : "text-[0.5625rem]"}`}
-                          >
-                            {note ? `${driver.code} · ${note}` : driver.code}
-                          </span>
+                          <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                            <span
+                              className={`text-gray-400 ${expanded ? "text-[0.675rem]" : "text-[0.5625rem]"}`}
+                            >
+                              {note ? `${driver.code} · ${note}` : driver.code}
+                            </span>
+                            {!expanded ? (
+                              <AssignmentStatusBadge substitute={isSubstitute} compact />
+                            ) : null}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -243,7 +267,7 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
                           {vehicle}
                         </td>
                         <td className="w-px px-2 py-2 whitespace-nowrap">
-                          <StatusBadge status={status} />
+                          <AssignmentStatusBadge substitute={isSubstitute} />
                         </td>
                         <td className="w-px px-2 py-2 whitespace-nowrap">
                           <div className="w-20">

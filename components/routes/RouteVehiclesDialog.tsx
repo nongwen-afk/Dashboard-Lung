@@ -1,9 +1,18 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { Bus, CheckCircle2, Clock3, Coffee, PlayCircle, X } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowRightLeft,
+  Bus,
+  CheckCircle2,
+  Clock3,
+  Coffee,
+  PlayCircle,
+  X,
+} from "lucide-react";
 import { ROUTES } from "@/lib/mock-data";
-import { getAllDepartures, getNextDepartures } from "@/lib/mock-data/timetables";
+import { getVehicleOperationalTimeline, type OperationalTrip } from "@/lib/operationalFleet";
 import {
   Dialog,
   DialogClose,
@@ -12,75 +21,144 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Driver, RouteId } from "@/types";
-import {
-  MOCK_ROUTE_VEHICLES,
-  VEHICLE_STATUS_ORDER,
-  type VehiclePreviewStatus,
-} from "./mockRouteVehicles";
+import type { RouteId } from "@/types";
+import { MOCK_ROUTE_VEHICLES, type VehiclePreviewStatus } from "./mockRouteVehicles";
+import { useOperationalFleet } from "@/hooks/useOperationalFleet";
+import { useFleetStore } from "@/lib/store/fleetStore";
 
 interface RouteVehiclesDialogProps {
   open: boolean;
   initialRoute: RouteId;
   onClose: () => void;
-  drivers: Driver[];
-  now: Date;
 }
 
 const ROUTE_IDS: RouteId[] = ["L1", "L2", "L3"];
 
-const STATUS_META: Record<VehiclePreviewStatus, { icon: typeof PlayCircle; className: string }> = {
+type OperationalVehiclePreviewStatus = VehiclePreviewStatus | "เสริมสาย" | "เลื่อนคิว" | "ไม่พร้อม";
+
+const STATUS_META: Record<
+  OperationalVehiclePreviewStatus,
+  { icon: typeof PlayCircle; className: string }
+> = {
   กำลังวิ่ง: { icon: PlayCircle, className: "bg-emerald-50 text-emerald-800" },
   กำลังจะออก: { icon: Clock3, className: "bg-blue-50 text-blue-800" },
   รอรอบ: { icon: Clock3, className: "bg-amber-50 text-amber-900" },
   พัก: { icon: Coffee, className: "bg-slate-100 text-slate-700" },
   จบรอบ: { icon: CheckCircle2, className: "bg-slate-100 text-slate-700" },
+  เสริมสาย: { icon: ArrowRightLeft, className: "bg-indigo-50 text-indigo-800" },
+  เลื่อนคิว: { icon: Clock3, className: "bg-amber-50 text-amber-900" },
+  ไม่พร้อม: { icon: AlertTriangle, className: "bg-rose-50 text-rose-800" },
 };
 
-const getLatestDeparture = (routeId: RouteId, now: Date) => {
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const departures = getAllDepartures(routeId, now);
-
-  return departures.reduce<string | null>((latest, departure) => {
-    const [hour, minute] = departure.time.split(":").map(Number);
-    return hour * 60 + minute <= currentMinutes ? departure.time : latest;
-  }, null);
+const getTripMinutes = (trip: OperationalTrip) => {
+  const [hour, minute] = trip.time.split(":").map(Number);
+  return hour * 60 + minute;
 };
 
-export function RouteVehiclesDialog({
-  open,
-  initialRoute,
-  onClose,
-  drivers,
-  now,
-}: RouteVehiclesDialogProps) {
+const getRouteLabel = (routeId: RouteId) =>
+  ROUTES.find((route) => route.id === routeId)?.labelTh ?? routeId;
+
+export function RouteVehiclesDialog({ open, initialRoute, onClose }: RouteVehiclesDialogProps) {
   const [selectedRoute, setSelectedRoute] = useState<RouteId>(initialRoute);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const { assignments, tripsByRoute, routeStats, isLive, now } = useOperationalFleet();
+  const openDispatchPanel = useFleetStore((state) => state.openDispatchPanel);
 
   const route = ROUTES.find((candidate) => candidate.id === selectedRoute)!;
   const vehicles = useMemo(() => {
-    const nextDepartures = getNextDepartures(selectedRoute, now, 5);
-    const latestDeparture = getLatestDeparture(selectedRoute, now);
+    const previews = new Map(
+      Object.values(MOCK_ROUTE_VEHICLES)
+        .flat()
+        .map((vehicle) => [vehicle.code, vehicle])
+    );
 
-    return MOCK_ROUTE_VEHICLES[selectedRoute].map((vehicle, index) => {
-      const driver = drivers.find((candidate) => candidate.vehicle === vehicle.code);
-      const timetableTime =
-        vehicle.status === "กำลังวิ่ง"
-          ? (latestDeparture ?? nextDepartures[0]?.time ?? null)
-          : (nextDepartures[index]?.time ?? nextDepartures.at(-1)?.time ?? null);
-
-      return { ...vehicle, driver, timetableTime };
+    const assignmentsByVehicle = new Map(
+      assignments
+        .filter(
+          (assignment) =>
+            assignment.homeRouteId === selectedRoute ||
+            assignment.operatingRouteId === selectedRoute
+        )
+        .map((assignment) => [assignment.vehicle, assignment])
+    );
+    tripsByRoute[selectedRoute].forEach((trip) => {
+      assignmentsByVehicle.set(trip.vehicle, trip.assignment);
     });
-  }, [drivers, now, selectedRoute]);
+    const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+    return Array.from(assignmentsByVehicle.values())
+      .map((assignment) => {
+        const preview = previews.get(assignment.vehicle);
+        const timeline = getVehicleOperationalTimeline({
+          vehicle: assignment.vehicle,
+          tripsByRoute,
+          now,
+          isLive,
+        });
+        const routeTrips = tripsByRoute[selectedRoute].filter(
+          (trip) => trip.vehicle === assignment.vehicle
+        );
+        const activeRouteTrip =
+          routeTrips.find((trip) => trip.id === timeline.activeTrip?.id) ?? null;
+        const nextRouteTrip = routeTrips.find((trip) => getTripMinutes(trip) >= nowMinutes) ?? null;
+        const routeTrip = activeRouteTrip ?? nextRouteTrip ?? routeTrips[0] ?? null;
+        const timelineTrip = timeline.activeTrip ?? timeline.nextTrip;
+        const status: OperationalVehiclePreviewStatus =
+          assignment.operationalState === "unavailable"
+            ? "ไม่พร้อม"
+            : routeTrip?.kind === "replacement" || routeTrip?.kind === "supplemental"
+              ? "เสริมสาย"
+              : routeTrip?.note?.includes("รถคันถัดไป")
+                ? "เลื่อนคิว"
+                : assignment.operationalState === "borrowed"
+                  ? "เสริมสาย"
+                  : assignment.operationalState === "queue-shifted"
+                    ? "เลื่อนคิว"
+                    : timeline.activeTrip
+                      ? "กำลังวิ่ง"
+                      : timeline.nextTrip && getTripMinutes(timeline.nextTrip) - nowMinutes <= 10
+                        ? "กำลังจะออก"
+                        : isLive
+                          ? (preview?.status ?? "รอรอบ")
+                          : "รอรอบ";
+        const eventNote =
+          assignment.operationalNote ??
+          routeTrip?.note ??
+          (timelineTrip &&
+          timelineTrip.routeId !== selectedRoute &&
+          (timelineTrip.kind === "replacement" || timelineTrip.kind === "supplemental")
+            ? `${timelineTrip.vehicle} ไป${timelineTrip.kind === "replacement" ? "รับรอบแทน" : "เสริม"}${getRouteLabel(timelineTrip.routeId)}`
+            : undefined);
+
+        return {
+          code: assignment.vehicle,
+          passengerCount:
+            assignment.operationalState === "unavailable" ? 0 : (preview?.passengerCount ?? 0),
+          status,
+          driver: assignment.driver,
+          currentTrip: timeline.activeTrip,
+          nextTrip: timeline.nextTrip,
+          nextTripMinutes: timeline.nextTrip
+            ? getTripMinutes(timeline.nextTrip)
+            : Number.POSITIVE_INFINITY,
+          routeTrip,
+          note: eventNote,
+        };
+      })
+      .toSorted(
+        (left, right) =>
+          Number(left.status !== "กำลังวิ่ง") - Number(right.status !== "กำลังวิ่ง") ||
+          left.nextTripMinutes - right.nextTripMinutes ||
+          left.code.localeCompare(right.code)
+      );
+  }, [assignments, isLive, now, selectedRoute, tripsByRoute]);
 
   const statusSummary = useMemo(
     () =>
-      Object.keys(VEHICLE_STATUS_ORDER)
-        .map((status) => ({
-          status: status as VehiclePreviewStatus,
-          count: vehicles.filter((vehicle) => vehicle.status === status).length,
-        }))
-        .filter(({ count }) => count > 0),
+      Array.from(new Set(vehicles.map((vehicle) => vehicle.status))).map((status) => ({
+        status,
+        count: vehicles.filter((vehicle) => vehicle.status === status).length,
+      })),
     [vehicles]
   );
 
@@ -108,7 +186,7 @@ export function RouteVehiclesDialog({
       <DialogContent
         showCloseButton={false}
         overlayClassName="z-[950] bg-slate-950/55 backdrop-blur-sm"
-        className="z-[951] fixed inset-x-0 bottom-0 top-auto max-h-[88dvh] max-w-none translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-t-2xl border-slate-200 bg-white p-0 shadow-2xl sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:flex sm:max-h-[88dvh] sm:w-[min(760px,calc(100%-2rem))] sm:max-w-[760px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:flex-col sm:rounded-2xl"
+        className="z-[951] fixed inset-x-0 bottom-0 top-auto flex max-h-[88dvh] max-w-none flex-col translate-x-0 translate-y-0 gap-0 overflow-hidden rounded-t-2xl border-slate-200 bg-white p-0 shadow-2xl sm:inset-x-auto sm:bottom-auto sm:left-1/2 sm:top-1/2 sm:h-[min(760px,calc(100dvh-2rem))] sm:max-h-[calc(100dvh-2rem)] sm:w-[min(760px,calc(100%-2rem))] sm:max-w-[760px] sm:-translate-x-1/2 sm:-translate-y-1/2 sm:rounded-2xl"
       >
         <div
           className="absolute inset-x-0 top-0 h-1"
@@ -129,7 +207,9 @@ export function RouteVehiclesDialog({
                 รถและผู้โดยสารแต่ละสาย
               </DialogTitle>
               <DialogDescription className="text-sm font-medium leading-tight text-slate-600">
-                สถานะรถ คนขับ รอบเดินรถ และผู้โดยสารของรถแต่ละคัน
+                {isLive
+                  ? "สถานะรถ คนขับ รอบเดินรถ และผู้โดยสารของรถแต่ละคัน"
+                  : "แผนรถและคนขับตามวันที่เลือก"}
               </DialogDescription>
             </div>
           </div>
@@ -144,7 +224,23 @@ export function RouteVehiclesDialog({
           </button>
         </DialogClose>
 
-        <div className="max-h-[calc(88dvh-105px)] overflow-y-auto p-4 sm:min-h-0 sm:max-h-none sm:flex-1 sm:overflow-y-visible sm:p-3">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 sm:p-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-sm font-medium text-slate-600">
+              คำสั่งย้ายรถจะมีผลกับรอบปัจจุบันเท่านั้น
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                openDispatchPanel();
+              }}
+              className="inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-md border border-blue-200 bg-blue-50 px-2.5 text-sm font-bold text-blue-900 transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
+            >
+              <ArrowRightLeft className="h-4 w-4" aria-hidden="true" />
+              จัดการรถ
+            </button>
+          </div>
           <div className="grid grid-cols-3 gap-2" role="tablist" aria-label="เลือกสายรถ">
             {ROUTE_IDS.map((routeId, index) => {
               const tabRoute = ROUTES.find((candidate) => candidate.id === routeId)!;
@@ -177,7 +273,7 @@ export function RouteVehiclesDialog({
                 >
                   <span>{tabRoute.labelTh}</span>
                   <span className="mt-0.5 text-xs font-medium opacity-80">
-                    {MOCK_ROUTE_VEHICLES[routeId].length} คัน
+                    {routeStats[routeId].activeVehicles} คัน
                   </span>
                 </button>
               );
@@ -197,6 +293,14 @@ export function RouteVehiclesDialog({
               <p className="text-[13px] leading-4 text-slate-600">
                 {statusSummary.map(({ status, count }) => `${status} ${count}`).join(" · ")}
               </p>
+              {routeStats[selectedRoute].borrowedVehicles > 0 ||
+              routeStats[selectedRoute].lentVehicles > 0 ? (
+                <p className="mt-1 text-[13px] font-semibold text-slate-700">
+                  {routeStats[selectedRoute].borrowedVehicles > 0
+                    ? `รถเสริม ${routeStats[selectedRoute].borrowedVehicles} คัน`
+                    : `ให้สายอื่นยืม ${routeStats[selectedRoute].lentVehicles} คัน`}
+                </p>
+              ) : null}
             </div>
 
             <div className="space-y-3 sm:space-y-0 sm:overflow-hidden sm:rounded-xl sm:border sm:border-slate-200 sm:divide-y sm:divide-slate-200">
@@ -219,10 +323,23 @@ export function RouteVehiclesDialog({
                             : "ไม่พบข้อมูลคนขับ"}
                         </p>
                         <p className="mt-1 text-sm font-medium text-slate-600">
-                          {vehicle.timetableTime
-                            ? `รอบ ${vehicle.timetableTime}`
-                            : "ไม่พบเวลาเดินรถ"}
+                          {vehicle.currentTrip
+                            ? `กำลังวิ่ง${getRouteLabel(vehicle.currentTrip.routeId)} · รอบ ${vehicle.currentTrip.time}`
+                            : vehicle.nextTrip
+                              ? `รอบถัดไป${getRouteLabel(vehicle.nextTrip.routeId)} · ${vehicle.nextTrip.time}`
+                              : "ไม่มีรอบที่เหลือ"}
                         </p>
+                        {vehicle.currentTrip && vehicle.nextTrip ? (
+                          <p className="mt-1 text-sm font-medium text-slate-500">
+                            ถัดไป {getRouteLabel(vehicle.nextTrip.routeId)} ·{" "}
+                            {vehicle.nextTrip.time}
+                          </p>
+                        ) : null}
+                        {vehicle.note ? (
+                          <p className="mt-1 text-sm font-semibold text-indigo-700">
+                            {vehicle.note}
+                          </p>
+                        ) : null}
                       </div>
                       <span
                         className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-sm font-medium ${statusMeta.className}`}
@@ -240,9 +357,20 @@ export function RouteVehiclesDialog({
                         ? `${vehicle.driver.name} ${vehicle.driver.surname}`
                         : "ไม่พบข้อมูลคนขับ"}
                     </p>
-                    <p className="hidden text-sm font-medium leading-4 text-slate-600 sm:col-start-3 sm:block">
-                      {vehicle.timetableTime ? `รอบ ${vehicle.timetableTime}` : "ไม่พบเวลาเดินรถ"}
-                    </p>
+                    <div className="hidden text-sm font-medium leading-4 text-slate-600 sm:col-start-3 sm:block">
+                      <p>
+                        {vehicle.currentTrip
+                          ? `กำลังวิ่ง · ${vehicle.currentTrip.time}`
+                          : vehicle.nextTrip
+                            ? `รอบถัดไป · ${vehicle.nextTrip.time}`
+                            : "ไม่มีรอบที่เหลือ"}
+                      </p>
+                      {vehicle.currentTrip && vehicle.nextTrip ? (
+                        <p className="mt-1 text-[13px] text-slate-500">
+                          ถัดไป {vehicle.nextTrip.time}
+                        </p>
+                      ) : null}
+                    </div>
                     <span
                       className={`hidden items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[13px] font-medium leading-4 sm:col-start-4 sm:inline-flex sm:justify-self-start ${statusMeta.className}`}
                     >
@@ -252,6 +380,12 @@ export function RouteVehiclesDialog({
                     <p className="hidden text-right text-base font-bold leading-4 tabular-nums text-slate-900 sm:col-start-5 sm:block">
                       {vehicle.passengerCount}/20
                     </p>
+
+                    {vehicle.note ? (
+                      <p className="hidden text-[13px] font-semibold leading-4 text-indigo-700 sm:col-start-2 sm:col-end-6 sm:block">
+                        {vehicle.note}
+                      </p>
+                    ) : null}
 
                     <div className="mt-4 border-t border-slate-100 pt-3 sm:col-start-2 sm:col-end-6 sm:mt-0 sm:grid sm:grid-cols-[155px_minmax(0,1fr)] sm:items-center sm:gap-3 sm:border-t-0 sm:pt-0">
                       <div className="flex items-center justify-between gap-3 sm:block">

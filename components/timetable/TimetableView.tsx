@@ -5,26 +5,34 @@ import { X, Calendar, Clock } from "lucide-react";
 import { TIMETABLES } from "@/lib/mock-data/timetables";
 import { ROUTES } from "@/lib/mock-data";
 import { getDriverForTrip } from "@/lib/shiftRotation";
-import { cn } from "@/lib/utils";
 import type { RouteId, DayType } from "@/types";
 
 interface TimetableViewProps {
   open: boolean;
   onClose: () => void;
   initialRoute?: RouteId;
+  date?: Date;
 }
 
-export function TimetableView({ open, onClose, initialRoute = "L1" }: TimetableViewProps) {
+export function TimetableView({
+  open,
+  onClose,
+  initialRoute = "L1",
+  date = new Date(),
+}: TimetableViewProps) {
   const [activeRoute, setActiveRoute] = useState<RouteId>(initialRoute);
-  const [dayType, setDayType] = useState<DayType>("weekday");
+  const [dayType, setDayType] = useState<DayType>(
+    date.getDay() === 0 || date.getDay() === 6 ? "weekend" : "weekday"
+  );
 
   // Sync active route when modal opens with a new initialRoute
   useEffect(() => {
     if (open) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setActiveRoute(initialRoute);
+      setDayType(date.getDay() === 0 || date.getDay() === 6 ? "weekend" : "weekday");
     }
-  }, [open, initialRoute]);
+  }, [date, open, initialRoute]);
 
   if (!open) return null;
 
@@ -231,7 +239,7 @@ export function TimetableView({ open, onClose, initialRoute = "L1" }: TimetableV
                       }}
                     >
                       {minutes.map(({ m, tripIndex }) => {
-                        const driver = getDriverForTrip(activeRoute, tripIndex);
+                        const driver = getDriverForTrip(activeRoute, tripIndex, date);
                         const isLeave = driver?.status === "Leave";
                         const isSubstitute = driver?.status === "Substitute";
                         return (

@@ -5,12 +5,22 @@ import { Header } from "@/components/layout/Header";
 import { MapArea } from "@/components/dashboard/MapArea";
 import { RightPanel } from "@/components/dashboard/RightPanel";
 import { ReplaceDriverModal } from "@/components/modals/ReplaceDriverModal";
+import { FleetDispatchDialog } from "@/components/modals/FleetDispatchDialog";
 import { Toast } from "@/components/ui/Toast";
 import { MobileBottomNav } from "@/components/layout/MobileBottomNav";
 import { MobilePanel } from "@/components/dashboard/MobilePanel";
 import { FleetLoadingGate } from "@/components/FleetLoadingGate";
+import { FleetDateNavigator } from "@/components/drivers/FleetDateNavigator";
+import { useDashboardServiceDate } from "@/hooks/useDashboardServiceDate";
 
 export function DashboardView() {
+  const { isLive, isPlanned } = useDashboardServiceDate();
+  const subtitle = isLive
+    ? "ภาพรวมการให้บริการวันนี้"
+    : isPlanned
+      ? "แผนการให้บริการล่วงหน้า"
+      : "แผนการให้บริการย้อนหลัง";
+
   return (
     <FleetLoadingGate>
       <div className="flex h-screen w-screen overflow-hidden bg-gray-100">
@@ -20,7 +30,11 @@ export function DashboardView() {
         </div>
 
         <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-          <Header />
+          <Header
+            title="ศูนย์ควบคุมการเดินรถ"
+            subtitle={subtitle}
+            contextControl={<FleetDateNavigator variant="header" />}
+          />
 
           {/* Main content area */}
           <div className="flex-1 min-h-0 relative overflow-hidden">
@@ -45,6 +59,7 @@ export function DashboardView() {
         </div>
 
         <ReplaceDriverModal />
+        <FleetDispatchDialog />
         <Toast />
       </div>
     </FleetLoadingGate>
