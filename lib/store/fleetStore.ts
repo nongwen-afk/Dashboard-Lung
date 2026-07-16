@@ -30,6 +30,7 @@ interface FleetState {
   routeFilter: string;
   statusFilter: string;
   searchQuery: string;
+  selectedServiceDate: string | null;
   toast: { message: string; visible: boolean };
   panelsCollapsed: boolean;
   mapOnly: boolean;
@@ -50,6 +51,8 @@ interface FleetState {
   setRouteFilter: (val: string) => void;
   setStatusFilter: (val: string) => void;
   setSearchQuery: (val: string) => void;
+  setSelectedServiceDate: (date: string) => void;
+  resetSelectedServiceDate: () => void;
   showToast: (message: string) => void;
   hideToast: () => void;
   updatePassengerLoad: (routeId: string, load: number) => void;
@@ -82,6 +85,7 @@ export const useFleetStore = create<FleetState>((set, get) => ({
   routeFilter: "",
   statusFilter: "",
   searchQuery: "",
+  selectedServiceDate: null,
   toast: { message: "", visible: false },
   panelsCollapsed: false,
   mapOnly: false,
@@ -133,7 +137,15 @@ export const useFleetStore = create<FleetState>((set, get) => ({
     const { pendingDriverId, selectedReserve, drivers, reserveDrivers, transferHistory } = get();
     if (!pendingDriverId) return;
 
-    const reserve = selectedReserve ?? reserveDrivers.find((r) => r.status === "Available") ?? null;
+    const reservedForDate = new Set(
+      transferHistory
+        .filter((transfer) => transfer.date === date)
+        .map((transfer) => transfer.reserveDriverId)
+    );
+    const reserve =
+      (selectedReserve && !reservedForDate.has(selectedReserve.id) ? selectedReserve : null) ??
+      reserveDrivers.find((candidate) => !reservedForDate.has(candidate.id)) ??
+      null;
     if (!reserve) return;
 
     const record: TransferRecord = {
@@ -147,11 +159,12 @@ export const useFleetStore = create<FleetState>((set, get) => ({
     };
 
     set({
-      drivers: drivers.map((d) => (d.id === pendingDriverId ? { ...d, status: "Leave" } : d)),
-      reserveDrivers: reserveDrivers.map((r) =>
-        r.id === reserve.id ? { ...r, status: "Assigned" } : r
-      ),
-      transferHistory: [record, ...transferHistory],
+      transferHistory: [
+        record,
+        ...transferHistory.filter(
+          (transfer) => transfer.originalDriverId !== pendingDriverId || transfer.date !== date
+        ),
+      ],
       modalOpen: false,
       pendingDriverId: null,
       selectedReserve: null,
@@ -166,6 +179,8 @@ export const useFleetStore = create<FleetState>((set, get) => ({
   setRouteFilter: (val) => set({ routeFilter: val }),
   setStatusFilter: (val) => set({ statusFilter: val }),
   setSearchQuery: (val) => set({ searchQuery: val }),
+  setSelectedServiceDate: (date) => set({ selectedServiceDate: date }),
+  resetSelectedServiceDate: () => set({ selectedServiceDate: null }),
 
   showToast: (message) => {
     set({ toast: { message, visible: true } });

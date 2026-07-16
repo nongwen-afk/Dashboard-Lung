@@ -2,12 +2,14 @@
 
 import { useState, useMemo } from "react";
 import { Users, ChevronUp, ChevronDown, X } from "lucide-react";
+import { FleetDateNavigator } from "@/components/drivers/FleetDateNavigator";
 import { ReservePool } from "@/components/drivers/ReservePool";
 import { DriverTable } from "@/components/drivers/DriverTable";
 import { RouteSection } from "@/components/routes/RouteSection";
 import { RouteVehiclesDialog } from "@/components/routes/RouteVehiclesDialog";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/lib/store/fleetStore";
+import { useDailyFleet } from "@/hooks/useDailyFleet";
 import { getAllDepartures } from "@/lib/mock-data/timetables";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
 import type { RouteId } from "@/types";
@@ -20,7 +22,8 @@ const SHEET_HEIGHTS: Record<SheetState, string> = {
 };
 
 export function MobilePanel() {
-  const { routes, drivers } = useFleetStore();
+  const { routes } = useFleetStore();
+  const { assignments } = useDailyFleet();
   const [sheetState, setSheetState] = useState<SheetState>("peek");
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [timetableOpen, setTimetableOpen] = useState(false);
@@ -28,10 +31,21 @@ export function MobilePanel() {
   const [vehiclesOpen, setVehiclesOpen] = useState(false);
   const [vehiclesRoute, setVehiclesRoute] = useState<RouteId>("L1");
 
-  const byRoute: Record<string, typeof drivers> = {
-    L1: drivers.filter((d) => d.routeId === "L1"),
-    L2: drivers.filter((d) => d.routeId === "L2"),
-    L3: drivers.filter((d) => d.routeId === "L3"),
+  const dailyDrivers = useMemo(
+    () =>
+      assignments.map(({ driver, vehicle, capacity, status }) => ({
+        ...driver,
+        vehicle,
+        capacity,
+        status,
+      })),
+    [assignments]
+  );
+
+  const byRoute: Record<string, typeof dailyDrivers> = {
+    L1: dailyDrivers.filter((driver) => driver.routeId === "L1"),
+    L2: dailyDrivers.filter((driver) => driver.routeId === "L2"),
+    L3: dailyDrivers.filter((driver) => driver.routeId === "L3"),
   };
 
   const now = useCurrentTime(1000);
@@ -254,6 +268,10 @@ export function MobilePanel() {
             </div>
 
             <div className="border-t pt-4" style={{ borderColor: "rgba(26,26,46,0.06)" }}>
+              <FleetDateNavigator />
+            </div>
+
+            <div className="border-t pt-4" style={{ borderColor: "rgba(26,26,46,0.06)" }}>
               <ReservePool />
             </div>
 
@@ -274,7 +292,7 @@ export function MobilePanel() {
         open={vehiclesOpen}
         onClose={() => setVehiclesOpen(false)}
         initialRoute={vehiclesRoute}
-        drivers={drivers}
+        drivers={dailyDrivers}
         now={now}
       />
     </>

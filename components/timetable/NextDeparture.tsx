@@ -73,19 +73,28 @@ export function NextDeparture({ routeId, color, now }: NextDepartureProps) {
             {countdown.time}
           </div>
 
-          <div
-            className="mt-1 flex items-center justify-center gap-1.5 text-base font-semibold"
-            style={{ color: badgeColor }}
-          >
-            <AlarmClock className="w-4 h-4" />
-            <span
+          <div className="mt-2 flex flex-col items-center" style={{ color: badgeColor }}>
+            <div className="flex items-center justify-center gap-1.5">
+              <AlarmClock className="w-4 h-4 shrink-0" />
+              <span className="text-sm font-semibold">เหลือเวลา</span>
+            </div>
+            <div
+              className="mt-0.5 flex items-baseline justify-center gap-1 whitespace-nowrap tabular-nums"
               style={{
                 opacity: blink ? 1 : 0.8,
                 transition: "opacity 0.15s ease",
               }}
             >
-              อีก {countdown.minutes} นาที
-            </span>
+              <span className="text-xl font-bold">{countdown.minutes}</span>
+              <span className="text-sm font-semibold">นาที</span>
+              <span className="mx-0.5 text-sm font-semibold opacity-60" aria-hidden="true">
+                ·
+              </span>
+              <span className="text-xl font-bold">
+                {String(countdown.seconds).padStart(2, "0")}
+              </span>
+              <span className="text-sm font-semibold">วินาที</span>
+            </div>
           </div>
         </div>
       ) : (

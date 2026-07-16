@@ -1,17 +1,9 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Calendar,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Info,
-  List,
-  Search,
-  Table2,
-} from "lucide-react";
+import { Calendar, ChevronLeft, ChevronRight, Info, List, Search, Table2 } from "lucide-react";
 import { Driver, ReserveDriver } from "@/types";
+import { getDailyRegularAssignments } from "@/lib/dailyFleetSchedule";
 import { getRouteMeta } from "./DriverDashboard";
 
 // TODO: Replace this mock weekly schedule with DB-backed roster data when weekly schedule tables are implemented.
@@ -44,65 +36,15 @@ const generateMockWeeklyData = (
 
   upcomingDates.forEach((date) => {
     const entries: ScheduleEntry[] = [];
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
     const dateKey = date.toISOString();
 
     // Use stable deterministic epoch days for mock data generation to ensure navigation consistency
     const epochDays = Math.floor((date.getTime() - date.getTimezoneOffset() * 60000) / 86400000);
 
-    // -- Analytics Time-slot Order --
-    const routeOrderMap = new Map<string, number>();
-    const routeIds = ["L1", "L2", "L3"] as const;
-    routeIds.forEach((routeId) => {
-      // 1. Gather drivers for this route and sort by vehicle to ensure a stable base array
-      // (matches the static DRIVERS order from Analytics)
-      const routeDrivers = baseDrivers
-        .filter((d) => d.routeId === routeId)
-        .sort((a, b) => (a.vehicle || "").localeCompare(b.vehicle || ""));
-
-      const N = routeDrivers.length;
-      if (N === 0) return;
-
-      // 2. Calculate day offset matching Analytics math
-      const timezoneOffsetMs = date.getTimezoneOffset() * 60000;
-      const localTimeMs = date.getTime() - timezoneOffsetMs;
-      const daysSinceEpoch = Math.floor(localTimeMs / 86400000);
-      const dayOffset = daysSinceEpoch % N;
-
-      // 3. Map the driver's employee code to their time-slot position (0 to N-1)
-      for (let trip = 0; trip < N; trip++) {
-        const driverIndex = (trip + dayOffset) % N;
-        const d = routeDrivers[driverIndex];
-        if (d && d.code && !routeOrderMap.has(d.code)) {
-          routeOrderMap.set(d.code, trip);
-        }
-      }
-    });
-
-    // 1. Process Regular Drivers (usually 15 total)
-    baseDrivers.forEach((driver, idx) => {
+    // 1. Process regular driver-vehicle pairs in the shared daily run order.
+    getDailyRegularAssignments(baseDrivers, date).forEach((assignment) => {
+      const { baseDriver: driver, role, note, originalIndex, slot } = assignment;
       const meta = getRouteMeta(driver.route);
-      let role: "regular" | "off" = "regular";
-      let note: string | undefined = undefined;
-
-      if (isWeekend) {
-        // Weekends: ~10 working, ~5 off
-        const offBase = (epochDays * 5) % baseDrivers.length;
-        const isOff = [0, 1, 2, 3, 4].some((j) => (offBase + j) % baseDrivers.length === idx);
-        if (isOff) {
-          role = "off";
-          note = "หยุดวันเสาร์/อาทิตย์";
-        }
-      } else {
-        // Weekdays: ~14 working, ~1 off
-        const offBase = (epochDays * 3) % baseDrivers.length;
-        const isOff = offBase === idx;
-        if (isOff) {
-          role = "off";
-          note = "หยุดพัก/ธุระ";
-        }
-      }
-
       entries.push({
         id: `reg-${driver.id}-${dateKey}`,
         driverName: `${driver.name} ${driver.surname}`,
@@ -113,8 +55,8 @@ const generateMockWeeklyData = (
         note,
         routeColor: meta.color,
         routeOrder: meta.order,
-        timeSlotOrder: routeOrderMap.get(driver.code) ?? 999,
-        originalIndex: idx,
+        timeSlotOrder: slot,
+        originalIndex,
       });
     });
 

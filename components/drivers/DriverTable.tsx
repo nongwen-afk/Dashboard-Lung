@@ -32,25 +32,23 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
     setFocusDriverId,
   } = useFleetStore();
 
-  const filtered = [...useFilteredDrivers()].sort(
-    (a, b) => a.routeId.localeCompare(b.routeId) || a.vehicle.localeCompare(b.vehicle)
-  );
-  const exp = panelsCollapsed && !compact; // shorthand
+  const filtered = useFilteredDrivers();
+  const expanded = panelsCollapsed && !compact;
 
   return (
     <div className={cn(scrollable && "flex min-h-0 flex-1 flex-col")}>
       <p
         className={
-          exp
-            ? "text-[1.05rem] font-bold text-[#1a1a2e] mb-3"
-            : "text-[0.9rem] font-bold text-[#1a1a2e] mb-2.5"
+          expanded
+            ? "mb-3 text-[1.05rem] font-bold text-[#1a1a2e]"
+            : "mb-2.5 text-[0.9rem] font-bold text-[#1a1a2e]"
         }
       >
         ตารางรถและคนขับ
       </p>
 
       {/* Filters */}
-      <div className={exp ? "flex gap-2 mb-3" : "flex gap-1.5 mb-2"}>
+      <div className={expanded ? "mb-3 flex gap-2" : "mb-2 flex gap-1.5"}>
         {[
           {
             value: routeFilter,
@@ -76,7 +74,7 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
             <select
               value={sel.value}
               onChange={(e) => sel.onChange(e.target.value)}
-              className={`w-full rounded-lg px-2 py-1.5 outline-none appearance-none pr-6 font-medium transition-all duration-200 ${exp ? "text-[0.9rem] py-2" : "text-[0.75rem]"}`}
+              className={`w-full appearance-none rounded-lg px-2 py-1.5 pr-6 font-medium outline-none transition-all duration-200 ${expanded ? "py-2 text-[0.9rem]" : "text-[0.75rem]"}`}
               style={{
                 background:
                   "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,249,252,0.9))",
@@ -104,7 +102,7 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
           placeholder="Search driver..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className={`w-full rounded-lg pl-7 pr-3 outline-none transition-all duration-200 ${exp ? "text-[0.9rem] py-2" : "text-[0.75rem] py-1.5"}`}
+          className={`w-full rounded-lg pl-7 pr-3 outline-none transition-all duration-200 ${expanded ? "py-2 text-[0.9rem]" : "py-1.5 text-[0.75rem]"}`}
           style={{
             background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,249,252,0.9))",
             border: "1px solid rgba(26,26,46,0.10)",
@@ -139,7 +137,7 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
                 background: "linear-gradient(135deg, #0f172a, #1e293b)",
               }}
             >
-              {(exp
+              {(expanded
                 ? [
                     { label: "LINE", w: "w-[88px]" },
                     { label: "Name", w: "w-full" },
@@ -160,7 +158,7 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
                 return (
                   <th
                     key={col.label || i}
-                    className={`font-bold text-slate-400 text-left uppercase tracking-wide ${col.w} ${exp ? "text-[0.75rem] py-2.5" : "text-[0.675rem] py-2"} ${isFirst ? "pl-4 pr-2" : isLast ? "pl-2 pr-4 text-right" : "px-2"}`}
+                    className={`text-left font-bold tracking-wide text-slate-400 uppercase ${col.w} ${expanded ? "py-2.5 text-[0.75rem]" : "py-2 text-[0.675rem]"} ${isFirst ? "pl-4 pr-2" : isLast ? "pl-2 pr-4 text-right" : "px-2"}`}
                   >
                     {col.label}
                   </th>
@@ -171,22 +169,27 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="text-center py-6 text-[0.825rem] text-gray-400">
+                <td
+                  colSpan={expanded ? 6 : 4}
+                  className="py-6 text-center text-[0.825rem] text-gray-400"
+                >
                   ไม่พบข้อมูลคนขับ
                 </td>
               </tr>
             ) : (
-              filtered.map((d, idx) => {
-                const rc = ROUTE_COLORS[d.routeId] ?? "#8899bb";
-                const isLeave = d.status === "Leave";
-                const isSelected = d.id === focusDriverId;
+              filtered.map((assignment, idx) => {
+                const { baseDriver, driver, status, vehicle, capacity, routeId, slotLabel, note } =
+                  assignment;
+                const rc = ROUTE_COLORS[routeId] ?? "#8899bb";
+                const isSubstitute = status === "Substitute";
+                const isSelected = baseDriver.id === focusDriverId;
                 const baseBg = idx % 2 === 0 ? "rgba(255,255,255,0.8)" : "rgba(248,249,252,0.7)";
 
                 return (
                   <tr
-                    key={d.id}
+                    key={`${baseDriver.id}-${slotLabel}`}
                     className="transition-colors duration-150 cursor-pointer"
-                    onClick={() => setFocusDriverId(d.id)}
+                    onClick={() => setFocusDriverId(baseDriver.id)}
                     style={{
                       background: isSelected ? `${rc}15` : baseBg,
                       borderBottom: "1px solid rgba(26,26,46,0.04)",
@@ -207,25 +210,13 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
                     {/* Line badge */}
                     <td className="pl-4 pr-2 py-2 whitespace-nowrap">
                       <span
-                        className={`inline-block text-center whitespace-nowrap font-bold text-white px-2.5 py-0.5 rounded min-w-[52px] ${exp ? "text-[0.8rem]" : "text-[0.7rem]"}`}
+                        className={`inline-block min-w-[52px] rounded px-2.5 py-0.5 text-center font-bold whitespace-nowrap text-white ${expanded ? "text-[0.8rem]" : "text-[0.7rem]"}`}
                         style={{
                           background: `linear-gradient(135deg, ${rc}, ${rc}cc)`,
                           boxShadow: `0 1px 4px ${rc}40`,
                         }}
                       >
-                        {(() => {
-                          const pfx =
-                            d.routeId === "L1"
-                              ? "RL"
-                              : d.routeId === "L2"
-                                ? "BL"
-                                : d.routeId === "L3"
-                                  ? "GL"
-                                  : "L";
-                          const match = d.vehicle.match(/(\d+)$/);
-                          const seq = match ? parseInt(match[1].slice(-2), 10) : "";
-                          return `${pfx}${seq}`;
-                        })()}
+                        {slotLabel}
                       </span>
                     </td>
                     {/* Name */}
@@ -233,69 +224,62 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
                       <div className="flex items-center">
                         <div className="min-w-0 flex-1">
                           <span
-                            className={`block leading-tight break-words ${isLeave ? "text-gray-400" : "text-[#0f172a] font-medium"} ${exp ? "text-[0.9rem]" : "text-[0.75rem]"}`}
+                            className={`block leading-tight break-words font-medium text-[#0f172a] ${expanded ? "text-[0.9rem]" : "text-[0.75rem]"}`}
                           >
-                            {d.name} {d.surname}
+                            {driver.name} {driver.surname}
                           </span>
                           <span
-                            className={`block ${exp ? "text-[0.675rem]" : "text-[0.5625rem]"} text-gray-400`}
+                            className={`block text-gray-400 ${expanded ? "text-[0.675rem]" : "text-[0.5625rem]"}`}
                           >
-                            {d.code}
+                            {note ? `${driver.code} · ${note}` : driver.code}
                           </span>
                         </div>
                       </div>
                     </td>
-                    {/* Vehicle & Capacity */}
-                    {exp ? (
+                    {/* Vehicle, status, and capacity */}
+                    {expanded ? (
                       <>
-                        <td
-                          className={`px-2 py-2 text-gray-500 whitespace-nowrap w-px ${exp ? "text-[0.825rem]" : "text-[0.675rem]"}`}
-                        >
-                          {d.vehicle}
+                        <td className="w-px px-2 py-2 text-[0.825rem] whitespace-nowrap text-gray-500">
+                          {vehicle}
                         </td>
-                        <td className="px-2 py-2 w-px whitespace-nowrap">
-                          <StatusBadge status={d.status as "Active" | "Leave"} />
+                        <td className="w-px px-2 py-2 whitespace-nowrap">
+                          <StatusBadge status={status} />
                         </td>
-                        <td className="px-2 py-2 w-px whitespace-nowrap">
+                        <td className="w-px px-2 py-2 whitespace-nowrap">
                           <div className="w-20">
-                            <ProgressBar value={d.capacity} height="h-1.5" />
-                            <p className="text-[0.675rem] text-gray-400 mt-0.5">{d.capacity}%</p>
+                            <ProgressBar value={capacity} height="h-1.5" />
+                            <p className="mt-0.5 text-[0.675rem] text-gray-400">{capacity}%</p>
                           </div>
                         </td>
                       </>
                     ) : (
-                      <td className="px-2 py-2 w-px whitespace-nowrap">
-                        <div className="flex flex-col gap-1 items-start">
+                      <td className="w-px px-2 py-2 whitespace-nowrap">
+                        <div className="flex flex-col items-start gap-1">
                           <span className="text-[0.675rem] font-medium text-[#0f172a]">
-                            {d.vehicle}
-                          </span>
-                          <span className="text-[0.6rem] font-medium text-slate-500">
-                            {d.status}
+                            {vehicle}
                           </span>
                           <div className="w-12">
-                            <ProgressBar value={d.capacity} height="h-1" />
-                            <p className="text-[0.525rem] text-gray-400 mt-0.5">
-                              CAP. {d.capacity}%
-                            </p>
+                            <ProgressBar value={capacity} height="h-1" />
+                            <p className="mt-0.5 text-[0.525rem] text-gray-400">{capacity}%</p>
                           </div>
                         </div>
                       </td>
                     )}
                     {/* Action */}
                     <td className="pl-2 pr-4 py-2 text-right w-px whitespace-nowrap">
-                      {isLeave ? (
+                      {isSubstitute ? (
                         <span
-                          className={`inline-block text-gray-400 font-semibold ${exp ? "text-[0.75rem]" : "text-[0.6rem]"}`}
+                          className={`inline-block font-semibold text-indigo-600 ${expanded ? "text-[0.75rem]" : "text-[0.6rem]"}`}
                         >
-                          On Leave
+                          แทนแล้ว
                         </span>
                       ) : (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            openModal(d.id);
+                            openModal(baseDriver.id);
                           }}
-                          className={`text-white font-bold rounded-md transition-all duration-200 active:scale-95 ${exp ? "text-[0.75rem] px-3 py-1.5" : "text-[0.6rem] px-2 py-1"}`}
+                          className={`rounded-md font-bold text-white transition-all duration-200 active:scale-95 ${expanded ? "px-3 py-1.5 text-[0.75rem]" : "px-2 py-1 text-[0.6rem]"}`}
                           style={{
                             background: "linear-gradient(135deg, #1e3a8a, #1e40af)",
                             boxShadow: "0 2px 8px rgba(37,99,235,0.30)",

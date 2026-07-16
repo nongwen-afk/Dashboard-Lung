@@ -2,9 +2,11 @@
 
 import { ReserveDriverCard } from "./ReserveDriverCard";
 import { useFleetStore } from "@/lib/store/fleetStore";
+import { useDailyFleet } from "@/hooks/useDailyFleet";
 
 export function ReservePool({ compact = false }: { compact?: boolean } = {}) {
-  const { reserveDrivers, panelsCollapsed } = useFleetStore();
+  const panelsCollapsed = useFleetStore((state) => state.panelsCollapsed);
+  const { reserveDrivers } = useDailyFleet();
 
   return (
     <div>
