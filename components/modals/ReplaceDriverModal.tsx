@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { X, ArrowRight } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { useFleetStore } from "@/lib/store/fleetStore";
+import { toServiceDate } from "@/lib/dailyFleetSchedule";
 import type { LeaveReason } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -18,21 +19,20 @@ export function ReplaceDriverModal() {
     selectedReserve,
     drivers,
     reserveDrivers,
+    selectedServiceDate,
     closeModal,
     confirmTransfer,
   } = useFleetStore();
 
   const [reason, setReason] = useState<LeaveReason>("Sick Leave");
-  const [date, setDate] = useState("");
   const [notes, setNotes] = useState("");
+  const serviceDate = selectedServiceDate ?? toServiceDate(new Date());
 
   const driver = drivers.find((d) => d.id === pendingDriverId);
   const reserve = selectedReserve ?? reserveDrivers.find((r) => r.status === "Available") ?? null;
 
   useEffect(() => {
     if (modalOpen) {
-      const today = new Date().toISOString().split("T")[0];
-      setDate(today);
       setNotes("");
       setReason("Sick Leave");
     }
@@ -41,8 +41,7 @@ export function ReplaceDriverModal() {
   if (!modalOpen || !driver || !reserve) return null;
 
   const handleConfirm = () => {
-    if (!date) return;
-    confirmTransfer(reason, date, notes);
+    confirmTransfer(reason, serviceDate, notes);
   };
 
   return (
@@ -137,16 +136,9 @@ export function ReplaceDriverModal() {
               </select>
             </div>
 
-            <div>
-              <label className="block text-[0.625rem] font-semibold text-gray-400 mb-1">
-                วันที่ / Date
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full text-[0.75rem] border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-[#1e3a8a]"
-              />
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+              <p className="text-[0.625rem] font-semibold text-gray-400">วันที่ปฏิบัติงาน</p>
+              <p className="mt-0.5 text-[0.75rem] font-semibold text-slate-700">{serviceDate}</p>
             </div>
 
             <div>
@@ -167,11 +159,10 @@ export function ReplaceDriverModal() {
         <div className="flex-shrink-0 p-4 pt-0 space-y-2">
           <button
             onClick={handleConfirm}
-            disabled={!date}
             className={cn(
               "w-full text-white text-[0.875rem] font-bold py-3.5 rounded-xl transition-all",
               "bg-gradient-to-br from-[#1e3a8a] to-[#1e40af]",
-              "hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed",
+              "hover:opacity-90",
               "shadow-lg shadow-[#1e3a8a]/25 active:scale-[0.98]"
             )}
           >

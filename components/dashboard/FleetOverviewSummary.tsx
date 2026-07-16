@@ -1,19 +1,15 @@
 "use client";
 
-import { BusFront, Clock3, Coffee, UsersRound } from "lucide-react";
+import { BusFront, Clock3, Coffee } from "lucide-react";
 import { MOCK_ROUTE_VEHICLES } from "@/components/routes/mockRouteVehicles";
-import { useFleetStore } from "@/lib/store/fleetStore";
 
 export function FleetOverviewSummary() {
-  const reserveDrivers = useFleetStore((state) => state.reserveDrivers);
   const vehicles = Object.values(MOCK_ROUTE_VEHICLES).flat();
   const inService = vehicles.filter(
     (vehicle) => vehicle.status !== "พัก" && vehicle.status !== "จบรอบ"
   ).length;
   const aboutToLeave = vehicles.filter((vehicle) => vehicle.status === "กำลังจะออก").length;
   const resting = vehicles.filter((vehicle) => vehicle.status === "พัก").length;
-  const reserveReady = reserveDrivers.filter((driver) => driver.status === "Available").length;
-
   const metrics = [
     {
       label: "รถให้บริการ",
@@ -23,12 +19,11 @@ export function FleetOverviewSummary() {
     },
     { label: "กำลังจะออก", value: aboutToLeave, icon: Clock3, color: "#2563eb" },
     { label: "รถพัก", value: resting, icon: Coffee, color: "#64748b" },
-    { label: "สำรองพร้อม", value: reserveReady, icon: UsersRound, color: "#15803d" },
   ];
 
   return (
     <section aria-label="ภาพรวมกองรถ">
-      <div className="grid grid-cols-4 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="grid grid-cols-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
         {metrics.map((metric, index) => {
           const Icon = metric.icon;
           return (

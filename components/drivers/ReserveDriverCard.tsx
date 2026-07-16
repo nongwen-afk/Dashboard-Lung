@@ -40,7 +40,7 @@ export function ReserveDriverCard({ driver, compact: compactOverride }: ReserveD
           <span
             className={`shrink-0 rounded-full px-2 py-1 text-xs font-semibold ${isAssigned ? "bg-slate-100 text-slate-500" : "bg-emerald-50 text-emerald-700"}`}
           >
-            {isAssigned ? "มอบหมายแล้ว" : "พร้อมใช้งาน"}
+            {isAssigned ? (driver.note ?? "มอบหมายแล้ว") : "พร้อมใช้งาน"}
           </span>
         </div>
         <p className="mt-3 text-[13px] font-medium text-slate-600">
@@ -140,7 +140,7 @@ export function ReserveDriverCard({ driver, compact: compactOverride }: ReserveD
                 }
           }
         >
-          {isAssigned ? "Assigned" : "● Available"}
+          {isAssigned ? (driver.note ?? "Assigned") : "● Available"}
         </span>
       </div>
 

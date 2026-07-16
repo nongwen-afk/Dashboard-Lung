@@ -75,10 +75,12 @@ export function RouteVehiclesDialog({
 
   const statusSummary = useMemo(
     () =>
-      Object.keys(VEHICLE_STATUS_ORDER).map((status) => ({
-        status: status as VehiclePreviewStatus,
-        count: vehicles.filter((vehicle) => vehicle.status === status).length,
-      })),
+      Object.keys(VEHICLE_STATUS_ORDER)
+        .map((status) => ({
+          status: status as VehiclePreviewStatus,
+          count: vehicles.filter((vehicle) => vehicle.status === status).length,
+        }))
+        .filter(({ count }) => count > 0),
     [vehicles]
   );
 
@@ -124,10 +126,10 @@ export function RouteVehiclesDialog({
             </div>
             <div>
               <DialogTitle className="text-base font-bold leading-tight text-slate-900">
-                ข้อมูลผู้โดยสารแต่ละสาย
+                รถและผู้โดยสารแต่ละสาย
               </DialogTitle>
               <DialogDescription className="text-sm font-medium leading-tight text-slate-600">
-                สถานะรถและจำนวนผู้โดยสารของรถแต่ละคัน
+                สถานะรถ คนขับ รอบเดินรถ และผู้โดยสารของรถแต่ละคัน
               </DialogDescription>
             </div>
           </div>
@@ -135,7 +137,7 @@ export function RouteVehiclesDialog({
         <DialogClose asChild>
           <button
             type="button"
-            aria-label="ปิดหน้าต่างข้อมูลผู้โดยสาร"
+            aria-label="ปิดหน้าต่างข้อมูลรถ"
             className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-full bg-white text-slate-700 shadow-sm ring-1 ring-slate-200 transition-colors hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700"
           >
             <X className="h-5 w-5" aria-hidden="true" />
@@ -162,7 +164,7 @@ export function RouteVehiclesDialog({
                   tabIndex={isSelected ? 0 : -1}
                   onClick={() => selectTab(routeId)}
                   onKeyDown={(event) => handleTabKeyDown(event, index)}
-                  className="min-h-11 rounded-lg border px-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
+                  className="flex min-h-14 flex-col items-center justify-center rounded-lg border px-2 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2"
                   style={
                     isSelected
                       ? {
@@ -173,7 +175,10 @@ export function RouteVehiclesDialog({
                       : { backgroundColor: "#f8fafc", borderColor: "#e2e8f0", color: "#475569" }
                   }
                 >
-                  {tabRoute.name}
+                  <span>{tabRoute.labelTh}</span>
+                  <span className="mt-0.5 text-xs font-medium opacity-80">
+                    {MOCK_ROUTE_VEHICLES[routeId].length} คัน
+                  </span>
                 </button>
               );
             })}
@@ -185,18 +190,13 @@ export function RouteVehiclesDialog({
             aria-labelledby={`passenger-load-tab-${selectedRoute}`}
             className="mt-2"
           >
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-lg bg-slate-100 px-3 py-2">
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-800">
-                  รถใน{route.labelTh} · {vehicles.length} คัน
-                </p>
-                <p className="text-[13px] leading-4 text-slate-600">
-                  {statusSummary.map(({ status, count }) => `${status} ${count}`).join(" · ")}
-                </p>
-              </div>
-              <span className="rounded-full bg-white px-2 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">
-                ข้อมูลตัวอย่าง
-              </span>
+            <div className="mb-2 rounded-lg bg-slate-100 px-3 py-2">
+              <p className="text-sm font-semibold text-slate-800">
+                รถใน{route.labelTh} · {vehicles.length} คัน
+              </p>
+              <p className="text-[13px] leading-4 text-slate-600">
+                {statusSummary.map(({ status, count }) => `${status} ${count}`).join(" · ")}
+              </p>
             </div>
 
             <div className="space-y-3 sm:space-y-0 sm:overflow-hidden sm:rounded-xl sm:border sm:border-slate-200 sm:divide-y sm:divide-slate-200">

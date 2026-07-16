@@ -1,18 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { FleetDateNavigator } from "@/components/drivers/FleetDateNavigator";
 import { ReservePool } from "@/components/drivers/ReservePool";
 import { DriverTable } from "@/components/drivers/DriverTable";
-import { Users } from "lucide-react";
-import { ActiveTripsSection } from "@/components/routes/ActiveTripsSection";
+import { useDailyFleet } from "@/hooks/useDailyFleet";
+import { BusFront, Users } from "lucide-react";
 import { RouteVehiclesDialog } from "@/components/routes/RouteVehiclesDialog";
-import { FleetOverviewSummary } from "@/components/dashboard/FleetOverviewSummary";
 import { useFleetStore } from "@/lib/store/fleetStore";
 import { useCurrentTime } from "@/hooks/useCurrentTime";
+import { ROUTES } from "@/lib/mock-data";
+import { MOCK_ROUTE_VEHICLES } from "@/components/routes/mockRouteVehicles";
 import type { RouteId } from "@/types";
 
 export function RightPanel() {
-  const { panelsCollapsed, mapOnly, drivers } = useFleetStore();
+  const { panelsCollapsed, mapOnly } = useFleetStore();
+  const { assignments, serviceDate } = useDailyFleet();
   const now = useCurrentTime(1000);
   const [vehiclesOpen, setVehiclesOpen] = useState(false);
   const [vehiclesRoute, setVehiclesRoute] = useState<RouteId>("L1");
@@ -21,6 +24,17 @@ export function RightPanel() {
     setVehiclesRoute(routeId);
     setVehiclesOpen(true);
   };
+
+  const dailyDrivers = useMemo(
+    () =>
+      assignments.map(({ driver, vehicle, capacity, status }) => ({
+        ...driver,
+        vehicle,
+        capacity,
+        status,
+      })),
+    [assignments]
+  );
 
   return (
     <aside
@@ -104,24 +118,60 @@ export function RightPanel() {
       {/* Panel Body */}
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 pb-24">
         <div className="space-y-3">
-          <FleetOverviewSummary />
-          <div className="border-t border-slate-100 pt-3">
+          <section aria-labelledby="route-vehicles-heading">
+            <div className="mb-2">
+              <h3 id="route-vehicles-heading" className="text-sm font-bold text-slate-900">
+                รถรายสาย
+              </h3>
+              <p className="text-xs text-slate-500">เลือกสายเพื่อดูรถและผู้โดยสาร</p>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {ROUTES.map((route) => {
+                const vehicleCount = MOCK_ROUTE_VEHICLES[route.id].length;
+
+                return (
+                  <button
+                    key={route.id}
+                    type="button"
+                    onClick={() => openVehicles(route.id)}
+                    aria-label={`ดูรถใน${route.labelTh} ${vehicleCount} คัน`}
+                    className="flex min-h-16 min-w-0 flex-col items-center justify-center rounded-xl border px-1.5 py-2 text-center transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
+                    style={{ borderColor: `${route.color}40`, backgroundColor: route.bgColor }}
+                  >
+                    <BusFront
+                      className="mb-1 h-4 w-4 shrink-0"
+                      style={{ color: route.color }}
+                      aria-hidden="true"
+                    />
+                    <span className="text-xs font-bold leading-tight text-slate-800">
+                      {route.labelTh}
+                    </span>
+                    <span className="mt-0.5 text-xs font-medium text-slate-600">
+                      {vehicleCount} คัน
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          <section aria-label="จัดการคนขับ" className="space-y-3 border-t border-slate-100 pt-3">
+            <FleetDateNavigator />
+
             <ReservePool compact />
-          </div>
-          <div className="border-t border-slate-100 pt-3">
-            <ActiveTripsSection onShowVehicles={openVehicles} />
-          </div>
-          <div className="border-t border-slate-100 pt-3">
-            <DriverTable />
-          </div>
+
+            <div className="border-t border-slate-100 pt-3">
+              <DriverTable />
+            </div>
+          </section>
         </div>
       </div>
       <RouteVehiclesDialog
-        key={`${vehiclesOpen}-${vehiclesRoute}`}
+        key={`${vehiclesOpen}-${vehiclesRoute}-${serviceDate}`}
         open={vehiclesOpen}
         onClose={() => setVehiclesOpen(false)}
         initialRoute={vehiclesRoute}
-        drivers={drivers}
+        drivers={dailyDrivers}
         now={now}
       />
     </aside>
