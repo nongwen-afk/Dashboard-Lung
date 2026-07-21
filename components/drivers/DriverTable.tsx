@@ -13,20 +13,14 @@ const ROUTE_META: Record<RouteId, { label: string; color: string }> = {
   L3: { label: "สายเขียว", color: "#16a34a" },
 };
 
-function AssignmentStatusBadge({
-  substitute,
-  compact = false,
-}: {
-  substitute: boolean;
-  compact?: boolean;
-}) {
+function AssignmentStatusBadge({ compact = false }: { compact?: boolean }) {
   return (
     <span
-      className={`inline-flex items-center whitespace-nowrap rounded px-1.5 py-0.5 font-semibold ${
+      className={`inline-flex items-center whitespace-nowrap rounded px-1.5 py-0.5 font-semibold bg-amber-100 text-amber-800 ${
         compact ? "text-[0.5625rem]" : "text-[0.675rem]"
-      } ${substitute ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"}`}
+      }`}
     >
-      {substitute ? "สำรองแทน" : "ตามแผน"}
+      สำรองแทน
     </span>
   );
 }
@@ -82,7 +76,7 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
             value: statusFilter,
             onChange: setStatusFilter,
             options: [
-              { value: "", label: "ทุกสถานะ" },
+              { value: "", label: "ทุกการจัดคนขับ" },
               { value: "planned", label: "ตามแผน" },
               { value: "substitute", label: "สำรองแทน" },
             ],
@@ -160,7 +154,6 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
                     { label: "สาย", w: "w-[102px]" },
                     { label: "คนขับ", w: "w-full" },
                     { label: "รถ", w: "w-[110px]" },
-                    { label: "สถานะ", w: "w-[110px]" },
                     { label: "Cap.", w: "w-[140px]" },
                     { label: "", w: "w-[140px]" },
                   ]
@@ -188,7 +181,7 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
             {filtered.length === 0 ? (
               <tr>
                 <td
-                  colSpan={expanded ? 6 : 4}
+                  colSpan={expanded ? 5 : 4}
                   className="py-6 text-center text-[0.825rem] text-gray-400"
                 >
                   ไม่พบข้อมูลคนขับ
@@ -253,21 +246,16 @@ export function DriverTable({ compact = false, scrollable = false }: DriverTable
                             >
                               {note ? `${driver.code} · ${note}` : driver.code}
                             </span>
-                            {!expanded ? (
-                              <AssignmentStatusBadge substitute={isSubstitute} compact />
-                            ) : null}
+                            {isSubstitute ? <AssignmentStatusBadge compact={!expanded} /> : null}
                           </div>
                         </div>
                       </div>
                     </td>
-                    {/* Vehicle, status, and capacity */}
+                    {/* Vehicle and capacity */}
                     {expanded ? (
                       <>
                         <td className="w-px px-2 py-2 text-[0.825rem] whitespace-nowrap text-gray-500">
                           {vehicle}
-                        </td>
-                        <td className="w-px px-2 py-2 whitespace-nowrap">
-                          <AssignmentStatusBadge substitute={isSubstitute} />
                         </td>
                         <td className="w-px px-2 py-2 whitespace-nowrap">
                           <div className="w-20">

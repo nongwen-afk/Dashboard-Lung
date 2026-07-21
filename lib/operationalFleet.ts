@@ -22,6 +22,7 @@ const ROUTE_TRIP_MINUTES: Record<RouteId, number> = {
   L2: 25,
   L3: 20,
 };
+const VEHICLE_PASSENGER_CAPACITY = 20;
 
 export type OperationalAssignmentState =
   "normal" | "unavailable" | "queue-shifted" | "borrowed" | "scheduled-borrow";
@@ -76,6 +77,7 @@ export interface OperationalFleetSnapshot {
   assignments: OperationalFleetAssignment[];
   tripsByRoute: Record<RouteId, OperationalTrip[]>;
   routeStats: Record<RouteId, OperationalRouteStats>;
+  passengerCountByVehicle: Record<string, number>;
   events: FleetDispatchEvent[];
 }
 
@@ -105,6 +107,36 @@ export const getRouteTripMinutes = (routeId: RouteId) => ROUTE_TRIP_MINUTES[rout
 
 const getTripEndMinutes = (trip: OperationalTrip) =>
   getMinutes(trip.time) + getRouteTripMinutes(trip.routeId);
+
+const clampPassengerLoad = (value: number) => Math.max(0, Math.min(value, 100));
+
+const getStablePassengerAdjustment = (vehicle: string, tripId: string) => {
+  const total = `${vehicle}-${tripId}`
+    .split("")
+    .reduce((sum, character) => sum + character.charCodeAt(0), 0);
+  return (total % 5) - 2;
+};
+
+/** A vehicle has passengers only while it is on an active trip. */
+export function getActiveTripPassengerCount({
+  vehicle,
+  trip,
+  passengerLoad,
+}: {
+  vehicle: string;
+  trip: OperationalTrip | null;
+  passengerLoad: number;
+}) {
+  if (!trip) return 0;
+
+  const baseLoad = Math.round(
+    (clampPassengerLoad(passengerLoad) / 100) * VEHICLE_PASSENGER_CAPACITY
+  );
+  return Math.max(
+    1,
+    Math.min(VEHICLE_PASSENGER_CAPACITY, baseLoad + getStablePassengerAdjustment(vehicle, trip.id))
+  );
+}
 
 const getEventMovementPhase = ({
   routeId,
@@ -164,12 +196,14 @@ export function getOperationalFleetSnapshot({
   now,
   isLive,
   assignments,
+  routePassengerLoads,
   dispatchEvents,
 }: {
   date: Date;
   now: Date;
   isLive: boolean;
   assignments: DailyFleetAssignment[];
+  routePassengerLoads: Record<RouteId, number>;
   dispatchEvents: FleetDispatchEvent[];
 }): OperationalFleetSnapshot {
   const serviceDate = toServiceDate(date);
@@ -380,10 +414,44 @@ export function getOperationalFleetSnapshot({
     { L1: createEmptyStats(), L2: createEmptyStats(), L3: createEmptyStats() }
   );
 
+  const activeTripByVehicle = new Map<string, OperationalTrip>();
+  if (isLive) {
+    const nowMinutes = dateToMinutes(now);
+    Object.values(tripsByRoute)
+      .flat()
+      .forEach((trip) => {
+        const departure = getMinutes(trip.time);
+        if (
+          departure <= nowMinutes &&
+          nowMinutes < getTripEndMinutes(trip) &&
+          !activeTripByVehicle.has(trip.vehicle)
+        ) {
+          activeTripByVehicle.set(trip.vehicle, trip);
+        }
+      });
+  }
+
+  const passengerCountByVehicle = Object.fromEntries(
+    operationalAssignments.map((assignment) => [
+      assignment.vehicle,
+      assignment.operationalState === "unavailable"
+        ? 0
+        : getActiveTripPassengerCount({
+            vehicle: assignment.vehicle,
+            trip: activeTripByVehicle.get(assignment.vehicle) ?? null,
+            passengerLoad:
+              routePassengerLoads[
+                activeTripByVehicle.get(assignment.vehicle)?.routeId ?? assignment.operatingRouteId
+              ] ?? 0,
+          }),
+    ])
+  );
+
   return {
     assignments: operationalAssignments,
     tripsByRoute,
     routeStats,
+    passengerCountByVehicle,
     events,
   };
 }

@@ -22,7 +22,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import type { RouteId } from "@/types";
-import { MOCK_ROUTE_VEHICLES, type VehiclePreviewStatus } from "./mockRouteVehicles";
+import type { VehiclePreviewStatus } from "./mockRouteVehicles";
 import { useOperationalFleet } from "@/hooks/useOperationalFleet";
 import { useFleetStore } from "@/lib/store/fleetStore";
 
@@ -61,17 +61,12 @@ const getRouteLabel = (routeId: RouteId) =>
 export function RouteVehiclesDialog({ open, initialRoute, onClose }: RouteVehiclesDialogProps) {
   const [selectedRoute, setSelectedRoute] = useState<RouteId>(initialRoute);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const { assignments, tripsByRoute, routeStats, isLive, now } = useOperationalFleet();
+  const { assignments, tripsByRoute, routeStats, passengerCountByVehicle, isLive, now } =
+    useOperationalFleet();
   const openDispatchPanel = useFleetStore((state) => state.openDispatchPanel);
 
   const route = ROUTES.find((candidate) => candidate.id === selectedRoute)!;
   const vehicles = useMemo(() => {
-    const previews = new Map(
-      Object.values(MOCK_ROUTE_VEHICLES)
-        .flat()
-        .map((vehicle) => [vehicle.code, vehicle])
-    );
-
     const assignmentsByVehicle = new Map(
       assignments
         .filter(
@@ -88,7 +83,6 @@ export function RouteVehiclesDialog({ open, initialRoute, onClose }: RouteVehicl
 
     return Array.from(assignmentsByVehicle.values())
       .map((assignment) => {
-        const preview = previews.get(assignment.vehicle);
         const timeline = getVehicleOperationalTimeline({
           vehicle: assignment.vehicle,
           tripsByRoute,
@@ -118,9 +112,11 @@ export function RouteVehiclesDialog({ open, initialRoute, onClose }: RouteVehicl
                       ? "กำลังวิ่ง"
                       : timeline.nextTrip && getTripMinutes(timeline.nextTrip) - nowMinutes <= 10
                         ? "กำลังจะออก"
-                        : isLive
-                          ? (preview?.status ?? "รอรอบ")
-                          : "รอรอบ";
+                        : timeline.nextTrip
+                          ? "รอรอบ"
+                          : isLive
+                            ? "จบรอบ"
+                            : "รอรอบ";
         const eventNote =
           assignment.operationalNote ??
           routeTrip?.note ??
@@ -132,8 +128,7 @@ export function RouteVehiclesDialog({ open, initialRoute, onClose }: RouteVehicl
 
         return {
           code: assignment.vehicle,
-          passengerCount:
-            assignment.operationalState === "unavailable" ? 0 : (preview?.passengerCount ?? 0),
+          passengerCount: passengerCountByVehicle[assignment.vehicle] ?? 0,
           status,
           driver: assignment.driver,
           currentTrip: timeline.activeTrip,
@@ -151,7 +146,7 @@ export function RouteVehiclesDialog({ open, initialRoute, onClose }: RouteVehicl
           left.nextTripMinutes - right.nextTripMinutes ||
           left.code.localeCompare(right.code)
       );
-  }, [assignments, isLive, now, selectedRoute, tripsByRoute]);
+  }, [assignments, isLive, now, passengerCountByVehicle, selectedRoute, tripsByRoute]);
 
   const statusSummary = useMemo(
     () =>
