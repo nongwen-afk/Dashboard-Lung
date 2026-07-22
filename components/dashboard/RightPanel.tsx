@@ -1,22 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { FleetDateNavigator } from "@/components/drivers/FleetDateNavigator";
+import { useState } from "react";
 import { ReservePool } from "@/components/drivers/ReservePool";
 import { DriverTable } from "@/components/drivers/DriverTable";
-import { useDailyFleet } from "@/hooks/useDailyFleet";
-import { BusFront, Users } from "lucide-react";
+import { ArrowRightLeft, BusFront, Users } from "lucide-react";
 import { RouteVehiclesDialog } from "@/components/routes/RouteVehiclesDialog";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { useCurrentTime } from "@/hooks/useCurrentTime";
 import { ROUTES } from "@/lib/mock-data";
-import { MOCK_ROUTE_VEHICLES } from "@/components/routes/mockRouteVehicles";
+import { useOperationalFleet } from "@/hooks/useOperationalFleet";
 import type { RouteId } from "@/types";
 
 export function RightPanel() {
-  const { panelsCollapsed, mapOnly } = useFleetStore();
-  const { assignments, serviceDate } = useDailyFleet();
-  const now = useCurrentTime(1000);
+  const { panelsCollapsed, mapOnly, openDispatchPanel } = useFleetStore();
+  const { routeStats, serviceDate } = useOperationalFleet();
   const [vehiclesOpen, setVehiclesOpen] = useState(false);
   const [vehiclesRoute, setVehiclesRoute] = useState<RouteId>("L1");
 
@@ -24,17 +20,6 @@ export function RightPanel() {
     setVehiclesRoute(routeId);
     setVehiclesOpen(true);
   };
-
-  const dailyDrivers = useMemo(
-    () =>
-      assignments.map(({ driver, vehicle, capacity, status }) => ({
-        ...driver,
-        vehicle,
-        capacity,
-        status,
-      })),
-    [assignments]
-  );
 
   return (
     <aside
@@ -119,15 +104,26 @@ export function RightPanel() {
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3 pb-24">
         <div className="space-y-3">
           <section aria-labelledby="route-vehicles-heading">
-            <div className="mb-2">
-              <h3 id="route-vehicles-heading" className="text-sm font-bold text-slate-900">
-                รถรายสาย
-              </h3>
-              <p className="text-xs text-slate-500">เลือกสายเพื่อดูรถและผู้โดยสาร</p>
+            <div className="mb-2 flex items-start justify-between gap-2">
+              <div>
+                <h3 id="route-vehicles-heading" className="text-sm font-bold text-slate-900">
+                  รถรายสาย
+                </h3>
+                <p className="text-xs text-slate-500">เลือกสายเพื่อดูรถและผู้โดยสาร</p>
+              </div>
+              <button
+                type="button"
+                onClick={openDispatchPanel}
+                className="inline-flex min-h-9 shrink-0 items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 text-xs font-bold text-blue-900 transition-colors hover:bg-blue-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
+              >
+                <ArrowRightLeft className="h-3.5 w-3.5" aria-hidden="true" />
+                จัดการรถ
+              </button>
             </div>
             <div className="grid grid-cols-3 gap-2">
               {ROUTES.map((route) => {
-                const vehicleCount = MOCK_ROUTE_VEHICLES[route.id].length;
+                const stats = routeStats[route.id];
+                const vehicleCount = stats.activeVehicles;
 
                 return (
                   <button
@@ -149,6 +145,13 @@ export function RightPanel() {
                     <span className="mt-0.5 text-xs font-medium text-slate-600">
                       {vehicleCount} คัน
                     </span>
+                    {stats.borrowedVehicles > 0 || stats.lentVehicles > 0 ? (
+                      <span className="mt-0.5 text-[10px] font-semibold text-slate-600">
+                        {stats.borrowedVehicles > 0
+                          ? `ยืม ${stats.borrowedVehicles}`
+                          : `ให้ยืม ${stats.lentVehicles}`}
+                      </span>
+                    ) : null}
                   </button>
                 );
               })}
@@ -156,8 +159,6 @@ export function RightPanel() {
           </section>
 
           <section aria-label="จัดการคนขับ" className="space-y-3 border-t border-slate-100 pt-3">
-            <FleetDateNavigator />
-
             <ReservePool compact />
 
             <div className="border-t border-slate-100 pt-3">
@@ -171,8 +172,6 @@ export function RightPanel() {
         open={vehiclesOpen}
         onClose={() => setVehiclesOpen(false)}
         initialRoute={vehiclesRoute}
-        drivers={dailyDrivers}
-        now={now}
       />
     </aside>
   );

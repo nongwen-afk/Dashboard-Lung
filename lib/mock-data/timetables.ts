@@ -118,11 +118,17 @@ export function getNextDepartures(
   return upcoming;
 }
 
-/** Total scheduled trips in a day (weekday) — useful for stats */
-export function countDailyTrips(routeId: string): number {
-  const table = TIMETABLES[routeId];
-  if (!table) return 0;
-  return table.weekday.reduce((sum, r) => sum + r.minutes.length, 0);
+/** Total scheduled trips for the supplied operating date. */
+export function countDailyTrips(routeId: string, date: Date = new Date()): number {
+  return getAllDepartures(routeId, date).length;
+}
+
+export function countCompletedDepartures(routeId: string, date: Date, now: Date): number {
+  const currentMinutes = now.getHours() * 60 + now.getMinutes();
+  return getAllDepartures(routeId, date).filter((departure) => {
+    const [hour, minute] = departure.time.split(":").map(Number);
+    return hour * 60 + minute <= currentMinutes;
+  }).length;
 }
 
 /**

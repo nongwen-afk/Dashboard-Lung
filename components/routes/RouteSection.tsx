@@ -1,6 +1,5 @@
 import { BusFront } from "lucide-react";
 import { NextDeparture } from "@/components/timetable/NextDeparture";
-import { useCurrentTime } from "@/hooks/useCurrentTime";
 import type { Route, Driver } from "@/types";
 
 interface RouteSectionProps {
@@ -27,8 +26,6 @@ export function RouteSection({
   onShowVehicles,
   expanded,
 }: RouteSectionProps) {
-  const now = useCurrentTime(1000);
-
   const activeCount = drivers.filter((d) => d.status !== "Leave").length;
   const leaveCount = drivers.length - activeCount;
   return (
@@ -123,7 +120,7 @@ export function RouteSection({
 
       {/* Next departure */}
       <div className="w-full text-left mt-1">
-        <NextDeparture routeId={route.id} color={route.color} now={now} />
+        <NextDeparture routeId={route.id} color={route.color} />
       </div>
 
       {/* Driver Summary Footer */}
@@ -135,8 +132,8 @@ export function RouteSection({
           <span className="text-[0.65rem] text-slate-400 font-medium">Details</span>
           <button
             type="button"
-            title="ดูรถในสายนี้ 5 คัน"
-            aria-label={`ดูรถใน${route.labelTh} 5 คัน`}
+            title={`ดูรถในสายนี้ ${drivers.length} คัน`}
+            aria-label={`ดูรถใน${route.labelTh} ${drivers.length} คัน`}
             onClick={(event) => {
               event.stopPropagation();
               onShowVehicles?.();
@@ -145,7 +142,7 @@ export function RouteSection({
           >
             <BusFront className="h-3.5 w-3.5" aria-hidden="true" />
             <span className="absolute -right-1 -top-1 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-[#1e3a8a] px-1 text-[9px] font-bold leading-none text-white ring-2 ring-white">
-              5
+              {drivers.length}
             </span>
           </button>
         </div>

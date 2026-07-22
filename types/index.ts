@@ -67,6 +67,67 @@ export interface TransferRecord {
   timestamp: Date;
 }
 
+export type FleetDispatchEventType = "unavailable" | "transfer";
+export type VehicleUnavailableResolution = "queue-shift" | "cross-route-replacement";
+
+interface FleetDispatchEventBase {
+  id: string;
+  date: string;
+  vehicle: string;
+  createdAt: string;
+  note?: string;
+}
+
+/** A regular vehicle-driver pair is unavailable from one trip until dispatch returns it to service. */
+export interface VehicleUnavailableEvent extends FleetDispatchEventBase {
+  type: "unavailable";
+  routeId: RouteId;
+  tripIndex: number;
+  resolution: VehicleUnavailableResolution;
+  replacementVehicle?: string;
+  replacementSourceRouteId?: RouteId;
+  readyAt?: string;
+}
+
+/** A regular vehicle-driver pair temporarily covers one supplemental trip on another route. */
+export interface VehicleTransferEvent extends FleetDispatchEventBase {
+  type: "transfer";
+  sourceRouteId: RouteId;
+  targetRouteId: RouteId;
+  targetTripIndex: number;
+  purpose: "supplemental";
+}
+
+export type FleetDispatchEvent = VehicleUnavailableEvent | VehicleTransferEvent;
+
+export type FleetOperationType =
+  | "vehicle-unavailable"
+  | "queue-advanced"
+  | "cross-route-replacement"
+  | "supplemental-transfer"
+  | "vehicle-restored"
+  | "reserve-driver-replacement"
+  | "dispatch-reverted";
+
+export type FleetOperationStatus = "active" | "completed" | "reverted";
+
+/** Immutable audit entry for a dispatcher action. It is separate from active dispatch events. */
+export interface FleetOperationRecord {
+  id: string;
+  date: string;
+  occurredAt: string;
+  type: FleetOperationType;
+  status: FleetOperationStatus;
+  title: string;
+  detail: string;
+  vehicle?: string;
+  routeId?: RouteId;
+  sourceRouteId?: RouteId;
+  targetRouteId?: RouteId;
+  tripIndex?: number;
+  relatedEventId?: string;
+}
+
 export interface FleetStats {
   totalVehicles: number;
   activeVehicles: number;

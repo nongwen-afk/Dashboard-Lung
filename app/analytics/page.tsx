@@ -11,24 +11,14 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <Header />
+        <Header title="วิเคราะห์การเดินรถ" subtitle="ประสิทธิภาพและสถิติการดำเนินงาน" />
 
         {/* Main content area */}
         <div
           className="flex-1 min-h-0 overflow-y-auto p-4 md:p-8"
           style={{ background: "#f8fafc" }}
         >
-          <div className="max-w-7xl mx-auto space-y-6 pb-20 md:pb-6">
-            {/* Header Section */}
-            <div>
-              <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight">
-                Fleet Analytics
-              </h1>
-              <p className="text-lg md:text-xl text-slate-500 mt-1">
-                ภาพรวมประสิทธิภาพการเดินรถและสถิติการดำเนินงาน
-              </p>
-            </div>
-
+          <div className="max-w-7xl mx-auto pb-20 md:pb-6">
             <AnalyticsDashboard />
           </div>
         </div>

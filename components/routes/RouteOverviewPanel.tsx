@@ -5,63 +5,69 @@ import { RouteSection } from "./RouteSection";
 import { RouteVehiclesDialog } from "./RouteVehiclesDialog";
 import { TimetableView } from "@/components/timetable/TimetableView";
 import { useFleetStore } from "@/lib/store/fleetStore";
-import { getAllDepartures } from "@/lib/mock-data/timetables";
-import { useCurrentTime } from "@/hooks/useCurrentTime";
+import { useOperationalFleet } from "@/hooks/useOperationalFleet";
 
 import type { RouteId } from "@/types";
 import { CalendarClock, Activity, Maximize } from "lucide-react";
 import { PanelToggleButton } from "@/components/ui/PanelToggleButton";
-import { getEffectiveDriver } from "@/lib/shiftRotation";
 
 export function RouteOverviewPanel() {
   const routes = useFleetStore((state) => state.routes);
-  const drivers = useFleetStore((state) => state.drivers);
+  const baseDrivers = useFleetStore((state) => state.drivers);
   const { panelsCollapsed, mapOnly, toggleMapOnly } = useFleetStore();
+  const { assignments, tripsByRoute, date, isLive, isPast, now } = useOperationalFleet();
   const [timetableOpen, setTimetableOpen] = useState(false);
   const [timetableRoute, setTimetableRoute] = useState<RouteId>("L1");
   const [vehiclesOpen, setVehiclesOpen] = useState(false);
   const [vehiclesRoute, setVehiclesRoute] = useState<RouteId>("L1");
 
-  const byRoute: Record<string, typeof drivers> = {
-    L1: drivers
-      .filter((d) => d.routeId === "L1")
-      .sort((a, b) => a.vehicle.localeCompare(b.vehicle))
-      .map((d) => getEffectiveDriver(d) || d),
-    L2: drivers
-      .filter((d) => d.routeId === "L2")
-      .sort((a, b) => a.vehicle.localeCompare(b.vehicle))
-      .map((d) => getEffectiveDriver(d) || d),
-    L3: drivers
-      .filter((d) => d.routeId === "L3")
-      .sort((a, b) => a.vehicle.localeCompare(b.vehicle))
-      .map((d) => getEffectiveDriver(d) || d),
+  const dailyDrivers = useMemo(
+    () =>
+      assignments.map(
+        ({ driver, vehicle, capacity, status, operatingRouteId, operationalState }) => ({
+          ...driver,
+          vehicle,
+          capacity,
+          status,
+          routeId: operatingRouteId,
+          operationalState,
+        })
+      ),
+    [assignments]
+  );
+
+  const byRoute: Record<string, typeof dailyDrivers> = {
+    L1: dailyDrivers.filter(
+      (driver) => driver.routeId === "L1" && driver.operationalState !== "unavailable"
+    ),
+    L2: dailyDrivers.filter(
+      (driver) => driver.routeId === "L2" && driver.operationalState !== "unavailable"
+    ),
+    L3: dailyDrivers.filter(
+      (driver) => driver.routeId === "L3" && driver.operationalState !== "unavailable"
+    ),
   };
 
-  const totalActive = drivers.filter((d) => d.status !== "Leave").length;
-  const totalLeave = drivers.filter((d) => d.status === "Leave").length;
-
-  const now = useCurrentTime(1000);
+  const totalActive = dailyDrivers.filter(
+    (driver) => driver.status !== "Leave" && driver.operationalState !== "unavailable"
+  ).length;
+  const totalLeave = dailyDrivers.filter((driver) => driver.status === "Leave").length;
 
   const totalPassed = useMemo(() => {
-    let passed = 0;
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
+    if (!isLive) return 0;
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    return Object.values(tripsByRoute)
+      .flat()
+      .filter((trip) => {
+        const [hour, minute] = trip.time.split(":").map(Number);
+        return hour * 60 + minute <= currentMinutes;
+      }).length;
+  }, [isLive, now, tripsByRoute]);
 
-    for (const r of routes) {
-      const depts = getAllDepartures(r.id, now);
-      for (const d of depts) {
-        const [hStr, mStr] = d.time.split(":");
-        const h = parseInt(hStr, 10);
-        const m = parseInt(mStr, 10);
-        if (h < currentHour || (h === currentHour && m <= currentMinute)) {
-          passed++;
-        }
-      }
-    }
-    return Math.max(0, Math.min(211, passed));
-  }, [routes, now]);
-
-  const totalTrips = 211;
+  const totalTrips = useMemo(
+    () => Object.values(tripsByRoute).reduce((total, trips) => total + trips.length, 0),
+    [tripsByRoute]
+  );
   const remainingTrips = Math.max(0, totalTrips - totalPassed);
   const progressPercent = totalTrips > 0 ? (totalPassed / totalTrips) * 100 : 0;
 
@@ -179,7 +185,7 @@ export function RouteOverviewPanel() {
               { label: "Routes", value: routes.length, color: "#0f172a" },
               { label: "Active", value: totalActive, color: "#16a34a" },
               { label: "On Leave", value: totalLeave, color: "#dc2626" },
-              { label: "Total", value: drivers.length, color: "#1e3a8a" },
+              { label: "Total", value: baseDrivers.length, color: "#1e3a8a" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -201,7 +207,7 @@ export function RouteOverviewPanel() {
         {/* Total Trips Summary */}
         <div className="rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-sm mb-4">
           <div className="flex items-center justify-between font-bold text-[#0f172a]">
-            <span>รอบวิ่งรวมวันนี้</span>
+            <span>{isLive ? "รอบวิ่งรวมวันนี้" : "รอบวิ่งตามแผน"}</span>
             <span className="text-[#1e3a8a]">
               {totalPassed}/{totalTrips}
             </span>
@@ -216,8 +222,10 @@ export function RouteOverviewPanel() {
             />
           </div>
           <div className="mt-2 flex items-center justify-between text-xs font-medium text-slate-400">
-            <span>ผ่านแล้ว {totalPassed}</span>
-            <span>เหลือ {remainingTrips}</span>
+            <span>{isLive ? `ผ่านแล้ว ${totalPassed}` : `กำหนด ${totalTrips} รอบ`}</span>
+            <span>
+              {isLive ? `เหลือ ${remainingTrips}` : isPast ? "ไม่มีข้อมูลจริง" : "ยังไม่เริ่ม"}
+            </span>
           </div>
         </div>
 
@@ -251,14 +259,13 @@ export function RouteOverviewPanel() {
         open={timetableOpen}
         onClose={() => setTimetableOpen(false)}
         initialRoute={timetableRoute}
+        date={date}
       />
       <RouteVehiclesDialog
-        key={`${vehiclesOpen}-${vehiclesRoute}`}
+        key={`${vehiclesOpen}-${vehiclesRoute}-${date.toISOString()}`}
         open={vehiclesOpen}
         onClose={() => setVehiclesOpen(false)}
         initialRoute={vehiclesRoute}
-        drivers={drivers}
-        now={now}
       />
     </>
   );
